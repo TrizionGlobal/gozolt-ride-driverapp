@@ -1,0 +1,33 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../../driver/presentation/providers/location_provider.dart';
+import 'ride_session_provider.dart';
+
+/// Distance in meters from the driver to the current destination.
+final destinationDistanceProvider = Provider<double?>((ref) {
+  final ride = ref.watch(rideSessionProvider);
+  if (ride == null) return null;
+
+  final positionAsync = ref.watch(locationStreamProvider);
+  return positionAsync.when(
+    data: (position) {
+      final destLat = ride.currentStop?.lat ?? ride.dropoffLat;
+      final destLng = ride.currentStop?.lng ?? ride.dropoffLng;
+      return Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        destLat,
+        destLng,
+      );
+    },
+    loading: () => null,
+    error: (_, _) => null,
+  );
+});
+
+/// Whether the driver is near the destination (within 20 meters).
+final isNearDestinationProvider = Provider<bool>((ref) {
+  final distance = ref.watch(destinationDistanceProvider);
+  if (distance == null) return false;
+  return distance <= 20.0;
+});

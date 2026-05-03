@@ -1,0 +1,81 @@
+name: gozolt_driver
+description: "Gozolt Driver App - Born in Malta, Loved by Europe"
+publish_to: 'none'
+version: 1.0.0+101
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Networking
+  dio: ^5.7.0
+
+  # Secure Storage
+  flutter_secure_storage: ^9.2.4
+
+  # UI Utilities
+  smooth_page_indicator: ^1.2.0+3
+  cupertino_icons: ^1.0.8
+
+  # Serialization
+  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.4
+
+  # Internationalization
+  intl: any
+
+  # URL Launcher
+  url_launcher: ^6.3.1
+
+  # Camera / Image Picker
+  image_picker: ^1.1.2
+
+  # Audio
+  just_audio: ^0.9.40
+
+  # Google Maps & Location
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.2
+  permission_handler: ^11.3.1
+  socket_io_client: ^3.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+  # Code Generation
+  build_runner: ^2.4.14
+  riverpod_generator: ^2.6.3
+  json_serializable: ^6.9.4
+  freezed: ^2.5.8
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/App_icon_2.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/images/App_icon_2.png"
+  remove_alpha_ios: true
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/map/
+    - assets/sounds/
