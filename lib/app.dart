@@ -15,7 +15,6 @@ class GozoltDriverApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      restorationScopeId: 'app',
       title: 'Gozolt Driver',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

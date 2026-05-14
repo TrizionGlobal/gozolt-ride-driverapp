@@ -13,10 +13,10 @@ class OnboardingPageData {
 final onboardingPages = [
   OnboardingPageData(
     imagePath: AssetPaths.onboarding1Car,
-    getTitle: (l10n) => l10n.onboardingTitle1,
+    getTitle: (l10n) => "Let's get you on the road",
   ),
   OnboardingPageData(
     imagePath: AssetPaths.onboarding2Car,
-    getTitle: (l10n) => l10n.onboardingTitle2,
+    getTitle: (l10n) => "Start earning now",
   ),
 ];

@@ -8,24 +8,57 @@ import 'app.dart';
 import 'core/constants/app_constants.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+    // Force orientation
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
 
-  // Initialize Stripe
-  Stripe.publishableKey = AppConstants.stripePublishableKey;
-  await Stripe.instance.applySettings();
+    // Initialize Firebase with timeout
+    try {
+      await Firebase.initializeApp().timeout(
+        const Duration(seconds: 5),
+      );
+    } catch (e) {
+      debugPrint('Main: Firebase init error or timeout: $e');
+    }
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    statusBarBrightness: Brightness.dark,
-  ));
+    // Initialize Stripe
+    try {
+      Stripe.publishableKey = AppConstants.stripePublishableKey;
+      await Stripe.instance.applySettings().timeout(
+        const Duration(seconds: 3),
+      );
+    } catch (e) {
+      debugPrint('Main: Stripe error or timeout: $e');
+    }
 
-  runApp(
-    const ProviderScope(
-      child: GozoltDriverApp(),
-    ),
-  );
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ));
+
+    runApp(
+      const ProviderScope(
+        child: GozoltDriverApp(),
+      ),
+    );
+  } catch (e, stack) {
+    debugPrint('CRITICAL STARTUP ERROR: $e');
+    debugPrint(stack.toString());
+    
+    // Fallback minimal app
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Error starting app: $e'),
+          ),
+        ),
+      ),
+    );
+  }
 }

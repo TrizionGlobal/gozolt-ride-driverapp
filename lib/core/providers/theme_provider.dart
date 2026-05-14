@@ -10,14 +10,14 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((r
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   final dynamic _storage;
 
-  ThemeModeNotifier(this._storage) : super(ThemeMode.system) {
+  ThemeModeNotifier(this._storage) : super(ThemeMode.light) {
     _loadTheme();
   }
 
   Future<void> _loadTheme() async {
     // Note: You can implement theme persistence in your storage provider later
-    // For now, default to system
-    state = ThemeMode.system;
+    // For now, default to light
+    state = ThemeMode.light;
   }
 
   void setThemeMode(ThemeMode mode) {

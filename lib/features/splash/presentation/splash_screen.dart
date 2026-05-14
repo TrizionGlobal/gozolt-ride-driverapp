@@ -35,29 +35,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     Future.delayed(const Duration(seconds: 6)).then((_) {
       if (mounted && !_navigated) {
         debugPrint('SplashScreen: Hard fail-safe triggered');
-        _navigate();
+        _navigate(RouteNames.onboarding);
       }
     });
 
-    // Start auth check in parallel
-    final authCheck = _performAuthCheck();
-
-    // Guaranteed minimum delay for splash visibility
+    // Normal flow
     await Future.delayed(AppConstants.splashDuration);
-
     if (!mounted || _navigated) return;
 
-    // Wait for auth check with a strict timeout
-    try {
-      await authCheck.timeout(
-        const Duration(seconds: 3),
-        onTimeout: () => debugPrint('SplashScreen: Auth check timed out'),
-      );
-    } catch (e) {
-      debugPrint('SplashScreen: Auth check error: $e');
+    final storage = ref.read(secureStorageProvider);
+    final hasTokens = await storage.getAccessToken() != null;
+    
+    if (hasTokens) {
+      debugPrint('SplashScreen: Found tokens, navigating to home');
+      _navigate(RouteNames.home);
+    } else {
+      debugPrint('SplashScreen: No tokens, navigating to onboarding');
+      _navigate(RouteNames.onboarding);
     }
-
-    _navigate();
   }
 
   Future<void> _performAuthCheck() async {
@@ -85,18 +80,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     }
   }
 
-  void _navigate() {
+  void _navigate(String route) {
     if (_navigated || !mounted) return;
     _navigated = true;
     
-    final authState = ref.read(authProvider);
-    if (authState is AuthAuthenticated) {
-      debugPrint('SplashScreen: Navigating to home');
-      context.goNamed('home');
-    } else {
-      debugPrint('SplashScreen: Navigating to onboarding');
-      context.goNamed('onboarding');
-    }
+    debugPrint('SplashScreen: Navigating to $route');
+    context.go(route);
   }
 
   @override
