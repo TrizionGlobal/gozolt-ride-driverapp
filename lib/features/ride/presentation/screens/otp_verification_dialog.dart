@@ -74,7 +74,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -113,7 +113,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
             Text(
               'Enter Rider\'s PIN',
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.titleLarge?.color,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -151,7 +151,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                       counterText: '',
                       contentPadding: EdgeInsets.zero,
                       filled: true,
-                      fillColor: AppColors.backgroundPrimary,
+                      fillColor: AppColors.backgroundDark,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -199,7 +199,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     _isComplete && !_isVerifying ? _handleVerify : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGold,
-                  foregroundColor: AppColors.backgroundPrimary,
+                  foregroundColor: AppColors.backgroundDark,
                   disabledBackgroundColor:
                       AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(
@@ -212,7 +212,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.backgroundPrimary,
+                          color: AppColors.backgroundDark,
                         ),
                       )
                     : const Text(

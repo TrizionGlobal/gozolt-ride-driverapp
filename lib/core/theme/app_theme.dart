@@ -103,6 +103,13 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.backgroundLight,
+        selectedItemColor: AppColors.primaryGold,
+        unselectedItemColor: AppColors.textMutedLight,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
     );
   }
 

@@ -43,7 +43,7 @@ class HomeTopBar extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
+                    color: Theme.of(context).colorScheme.surface,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -70,7 +70,9 @@ class HomeTopBar extends ConsumerWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.white.withOpacity(0.3),
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.white.withOpacity(0.3) 
+                          : AppColors.backgroundPrimary.withOpacity(0.2),
                       width: 2,
                     ),
                     boxShadow: [
@@ -87,13 +89,13 @@ class HomeTopBar extends ConsumerWidget {
                           return Image.network(
                             profile.avatarUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) => _defaultAvatar(),
+                            errorBuilder: (ctx, err, stack) => _defaultAvatar(context),
                           );
                         }
-                        return _defaultAvatar();
+                        return _defaultAvatar(context);
                       },
-                      loading: () => _defaultAvatar(),
-                      error: (err, stack) => _defaultAvatar(),
+                      loading: () => _defaultAvatar(context),
+                      error: (err, stack) => _defaultAvatar(context),
                     ),
                   ),
                 ),
@@ -110,7 +112,7 @@ class HomeTopBar extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: Theme.of(context).colorScheme.surface,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -121,7 +123,7 @@ class HomeTopBar extends ConsumerWidget {
                     ),
                     child: Icon(
                       Icons.notifications_rounded,
-                      color: Theme.of(context).iconTheme.color,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       size: 22,
                     ),
                   ),
@@ -159,12 +161,14 @@ class HomeTopBar extends ConsumerWidget {
     );
   }
 
-  Widget _defaultAvatar() {
+  Widget _defaultAvatar(BuildContext context) {
     return Container(
-      color: AppColors.surfaceDark,
-      child: const Icon(
+      color: Theme.of(context).brightness == Brightness.dark 
+          ? AppColors.surfaceDark 
+          : Colors.grey.shade200,
+      child: Icon(
         Icons.person_rounded,
-        color: AppColors.textSecondary,
+        color: Theme.of(context).textTheme.bodySmall?.color,
         size: 24,
       ),
     );

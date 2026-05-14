@@ -16,9 +16,11 @@ class SosEmergencyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundPrimary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark 
+          ? AppColors.backgroundPrimary 
+          : Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -52,7 +54,7 @@ class SosEmergencyScreen extends StatelessWidget {
           Text(
             'Emergency SOS',
             style: AppTextStyles.headlineMedium.copyWith(
-              color: AppColors.white,
+              color: Theme.of(context).textTheme.headlineMedium?.color,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -60,7 +62,7 @@ class SosEmergencyScreen extends StatelessWidget {
           Text(
             'Choose an emergency action below',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodySmall?.color,
             ),
           ),
           const SizedBox(height: 24),
@@ -101,7 +103,7 @@ class SosEmergencyScreen extends StatelessWidget {
             child: Text(
               'Cancel',
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ),

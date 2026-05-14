@@ -124,7 +124,7 @@ class _EarningsBreakdown extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.surfaceDark,
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -140,7 +140,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       ),
                       Container(
                         width: 1,
-                        color: AppColors.surfaceDark,
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                       Expanded(
                         child: _MetricColumn(
@@ -150,7 +150,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       ),
                       Container(
                         width: 1,
-                        color: AppColors.surfaceDark,
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                       Expanded(
                         child: _MetricColumn(
@@ -189,7 +189,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       Text(
                         'Tips',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -248,7 +248,7 @@ class _MetricColumn extends StatelessWidget {
         Text(
           value,
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -256,7 +256,7 @@ class _MetricColumn extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
       ],

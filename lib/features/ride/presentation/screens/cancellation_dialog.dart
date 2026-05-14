@@ -35,7 +35,7 @@ class _CancellationDialogState extends State<CancellationDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -45,7 +45,7 @@ class _CancellationDialogState extends State<CancellationDialog> {
             Text(
               'Cancellation Reason',
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             const SizedBox(height: 16),
@@ -66,7 +66,7 @@ class _CancellationDialogState extends State<CancellationDialog> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primaryGold
-                        : AppColors.white,
+                        : Theme.of(context).cardColor,
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primaryGold
@@ -78,8 +78,8 @@ class _CancellationDialogState extends State<CancellationDialog> {
                     reason,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: isSelected
-                          ? AppColors.backgroundPrimary
-                          : AppColors.backgroundPrimary,
+                          ? AppColors.backgroundDark
+                          : Theme.of(context).textTheme.bodyMedium?.color,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
@@ -117,7 +117,7 @@ class _CancellationDialogState extends State<CancellationDialog> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             const SizedBox(height: 20),
@@ -136,8 +136,8 @@ class _CancellationDialogState extends State<CancellationDialog> {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.backgroundPrimary,
-                  foregroundColor: AppColors.white,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.white : AppColors.backgroundPrimary,
+                  foregroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.backgroundPrimary : AppColors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -168,8 +168,8 @@ class _CancellationDialogState extends State<CancellationDialog> {
               child: OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.backgroundPrimary,
-                  side: const BorderSide(color: AppColors.backgroundPrimary),
+                  foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
+                  side: BorderSide(color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.grey),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),

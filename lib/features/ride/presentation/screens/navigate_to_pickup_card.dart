@@ -83,8 +83,8 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
         ),
         // Bottom card
         Container(
-          decoration: const BoxDecoration(
-            color: AppColors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
@@ -165,7 +165,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                           color: const Color(0xFFFFF8E1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primaryGold.withOpacity(0.3),
+                            color: AppColors.primaryGold.withOpacity(0.1),
                           ),
                         ),
                         child: Row(
@@ -180,7 +180,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                             Text(
                               'Waiting time: $_timerText',
                               style: AppTextStyles.titleSmall.copyWith(
-                                color: AppColors.backgroundPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -256,12 +256,12 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Report No Show?',
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
           textAlign: TextAlign.center,
         ),

@@ -90,9 +90,11 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundPrimary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark 
+          ? AppColors.backgroundPrimary 
+          : Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -111,7 +113,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
           Text(
             'Selfie Verification',
             style: AppTextStyles.headlineMedium.copyWith(
-              color: AppColors.white,
+                color: Theme.of(context).textTheme.headlineMedium?.color,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -119,7 +121,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
           Text(
             'Take a selfie to verify your identity before going online',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -130,7 +132,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
             height: 200,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.surfaceDark,
+                color: Theme.of(context).colorScheme.surface,
               border: Border.all(
                 color: AppColors.primaryGold.withOpacity(0.3),
                 width: 3,
@@ -181,14 +183,14 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
                   children: [
                     const Icon(
                       Icons.camera_alt,
-                      color: AppColors.backgroundPrimary,
+                      color: AppColors.backgroundDark,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
                     Text(
                       'Take Selfie',
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.backgroundPrimary,
+                        color: AppColors.backgroundDark,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -209,7 +211,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(26),
                         border: Border.all(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                           width: 1.5,
                         ),
                       ),
@@ -217,7 +219,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
                         child: Text(
                           'Retake',
                           style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -244,13 +246,13 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.backgroundPrimary,
+                                  color: AppColors.backgroundDark,
                                 ),
                               )
                             : Text(
                                 'Submit',
                                 style: AppTextStyles.titleMedium.copyWith(
-                                  color: AppColors.backgroundPrimary,
+                                  color: AppColors.backgroundDark,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -268,7 +270,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
             child: Text(
               'Cancel',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           ),

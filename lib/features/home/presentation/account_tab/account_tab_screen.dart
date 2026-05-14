@@ -39,12 +39,14 @@ class AccountTabScreen extends ConsumerWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.surfaceDark 
+                            : Colors.grey.shade200,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back_rounded,
-                        color: AppColors.backgroundPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         size: 18,
                       ),
                     ),
@@ -73,7 +75,7 @@ class AccountTabScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          color: AppColors.backgroundPrimary,
                         ),
                       )
                     : null,
@@ -82,7 +84,7 @@ class AccountTabScreen extends ConsumerWidget {
               Text(
                 profile?.fullName ?? 'Driver',
                 style: AppTextStyles.titleLarge.copyWith(
-                  color: AppColors.backgroundPrimary,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -225,14 +227,16 @@ class AccountTabScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark 
+            ? AppColors.surfaceDark 
+            : AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
           'Are you sure you want to Log Out?',
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
           textAlign: TextAlign.center,
         ),
@@ -271,14 +275,16 @@ class AccountTabScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark 
+            ? AppColors.surfaceDark 
+            : AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
           'Account Deactivation',
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
           textAlign: TextAlign.center,
         ),
@@ -297,7 +303,9 @@ class AccountTabScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.backgroundDarker 
+                    : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -305,7 +313,7 @@ class AccountTabScreen extends ConsumerWidget {
                   Text(
                     'GoZolt Support',
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.titleSmall?.color,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -369,7 +377,9 @@ class _MenuTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Material(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? AppColors.surfaceDark 
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,

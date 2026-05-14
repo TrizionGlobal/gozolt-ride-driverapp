@@ -9,6 +9,7 @@ abstract final class AppColors {
   static const Color backgroundPrimary = Color(0xFF1B2838);
   static const Color backgroundSecondary = Color(0xFF152233);
   static const Color backgroundDarker = Color(0xFF0F1923);
+  static const Color backgroundDark = Color(0xFF1A1A2E); // High contrast dark background
 
   // Light Background colors
   static const Color backgroundLight = Color(0xFFF8F9FA);

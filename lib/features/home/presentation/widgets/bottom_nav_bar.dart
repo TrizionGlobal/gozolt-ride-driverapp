@@ -15,14 +15,14 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      // White background fills the entire area including behind rounded corners
-      color: AppColors.white,
+      // Background color fills the entire area
+      color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
@@ -40,9 +40,9 @@ class AppBottomNavBar extends StatelessWidget {
                 currentIndex: currentIndex,
                 onTap: onTap,
                 type: BottomNavigationBarType.fixed,
-                backgroundColor: AppColors.white,
-                selectedItemColor: AppColors.primaryGold,
-                unselectedItemColor: AppColors.textMuted,
+                backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+                selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+                unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
                 selectedFontSize: 12,
                 unselectedFontSize: 12,
                 elevation: 0,
@@ -58,7 +58,7 @@ class AppBottomNavBar extends StatelessWidget {
           ),
           if (bottomPadding > 0)
             Container(
-              color: AppColors.white,
+              color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
               height: bottomPadding,
             ),
         ],

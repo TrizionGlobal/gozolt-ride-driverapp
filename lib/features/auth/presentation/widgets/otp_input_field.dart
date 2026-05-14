@@ -117,13 +117,17 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
                     decoration: InputDecoration(
                       counterText: '',
                       contentPadding: EdgeInsets.zero,
+                      filled: true,
+                      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
                           color: widget.hasError 
                               ? AppColors.error 
-                              : (Theme.of(context).dividerColor.withOpacity(0.2)),
-                          width: 2,
+                              : (Theme.of(context).brightness == Brightness.dark 
+                                  ? AppColors.surfaceDark 
+                                  : Colors.grey.shade200),
+                          width: 1.5,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(

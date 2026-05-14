@@ -14,7 +14,7 @@ class RideTimelineScreen extends StatelessWidget {
     final events = _buildEvents();
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -36,12 +36,12 @@ class RideTimelineScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withOpacity(0.2),
+                        color: AppColors.backgroundDark.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_back_rounded,
-                        color: AppColors.backgroundPrimary,
+                       color: AppColors.backgroundDark,
                         size: 18,
                       ),
                     ),
@@ -50,7 +50,7 @@ class RideTimelineScreen extends StatelessWidget {
                   Text(
                     'Details',
                     style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: AppColors.backgroundDark,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -227,7 +227,7 @@ class _TimelineItem extends StatelessWidget {
                   Text(
                     event.title,
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

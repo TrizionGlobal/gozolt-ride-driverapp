@@ -60,12 +60,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messages = ref.watch(chatMessagesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.white),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).textTheme.bodyLarge?.color),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -75,14 +75,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surfaceDark,
+                color: Theme.of(context).colorScheme.surface,
                 border: Border.all(
                   color: AppColors.primaryGold.withOpacity(0.3),
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person_rounded,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color,
                 size: 18,
               ),
             ),
@@ -90,7 +90,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Text(
               widget.riderName,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.white,
+                color: Theme.of(context).textTheme.titleMedium?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -143,7 +143,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             height: 44,
             padding: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: Theme.of(context).colorScheme.surface,
               border: Border(
                 top: BorderSide(
                   color: AppColors.primaryGold.withOpacity(0.15),
@@ -162,7 +162,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: AppColors.primaryGold.withOpacity(0.4),
@@ -191,7 +191,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               8 + MediaQuery.of(context).padding.bottom,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: Theme.of(context).colorScheme.surface,
               border: Border(
                 top: BorderSide(
                   color: AppColors.primaryGold.withOpacity(0.15),
@@ -203,7 +203,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: AppColors.textMuted.withOpacity(0.3),
@@ -225,7 +225,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       ),
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.white,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ),
@@ -242,7 +242,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: const Icon(
                       Icons.send_rounded,
-                      color: AppColors.backgroundPrimary,
+                      color: AppColors.backgroundDark,
                       size: 20,
                     ),
                   ),
@@ -276,7 +276,7 @@ class _ChatBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDriver
                 ? AppColors.primaryGold.withOpacity(0.2)
-                : AppColors.surfaceDark,
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
               topRight: const Radius.circular(16),
@@ -294,7 +294,7 @@ class _ChatBubble extends StatelessWidget {
               Text(
                 message.message,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.white,
+                  color: isDriver ? AppColors.backgroundDark : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 2),

@@ -76,11 +76,11 @@ dev_dependencies:
   freezed: ^2.4.1
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path: "assets/images/App_icon_2.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/App_icon_2.png"
+  image_path: "assets/images/Gozolt_Driver_Icon.png"
+  adaptive_icon_background: "#1A1A2E"
+  adaptive_icon_foreground: "assets/images/Gozolt_Driver_Icon.png"
   remove_alpha_ios: true
 
 flutter:

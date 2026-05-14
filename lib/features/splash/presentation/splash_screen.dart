@@ -34,47 +34,59 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    // Safety check: If the app has already restored state to a different screen, don't redirect
-    final router = GoRouter.of(context);
-    final isStillOnSplash =
-        router.routeInformationProvider.value.uri.path == RouteNames.splash;
-    if (!isStillOnSplash) return;
-
-    // Check auth status
-    await ref.read(authProvider.notifier).checkAuthStatus();
-
-    if (!mounted) return;
-
-    final authState = ref.read(authProvider);
-
-    if (authState is AuthAuthenticated) {
-      final storage = ref.read(secureStorageProvider);
-      final token = await storage.getAccessToken();
-
-      // Clear fake dev tokens and force real login
-      if (token == null || token == 'dev_access_token') {
-        await storage.clearTokens();
-        if (!mounted) return;
-        context.go(RouteNames.onboarding);
-        return;
-      }
-
-      try {
-        ref.read(socketServiceProvider).connect(token);
-        await ref.read(driverProfileProvider.notifier).fetchProfile();
-      } catch (_) {}
+    try {
+      // Check auth status with a timeout to prevent hanging
+      await ref.read(authProvider.notifier).checkAuthStatus().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('Auth check timed out');
+        },
+      );
 
       if (!mounted) return;
-      context.go(RouteNames.home);
-    } else {
-      context.go(RouteNames.onboarding);
+
+      final authState = ref.read(authProvider);
+
+      if (authState is AuthAuthenticated) {
+        final storage = ref.read(secureStorageProvider);
+        final token = await storage.getAccessToken().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => null,
+        );
+
+        // Clear fake dev tokens and force real login
+        if (token == null || token == 'dev_access_token') {
+          await storage.clearTokens();
+          if (!mounted) return;
+          context.go(RouteNames.onboarding);
+          return;
+        }
+
+        try {
+          ref.read(socketServiceProvider).connect(token);
+          // Don't await profile fetch - let it happen in background or handle in Home
+          ref.read(driverProfileProvider.notifier).fetchProfile();
+        } catch (e) {
+          debugPrint('Socket/Profile error: $e');
+        }
+
+        if (!mounted) return;
+        context.go(RouteNames.home);
+      } else {
+        context.go(RouteNames.onboarding);
+      }
+    } catch (e) {
+      debugPrint('Initialization error: $e');
+      if (mounted) {
+        context.go(RouteNames.onboarding);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -130,12 +142,14 @@ class _FallbackBranding extends StatelessWidget {
             Text(
               'ZOLT',
               style: AppTextStyles.splashTitle.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ],
         ),
-        const Text('GO PARTNER', style: AppTextStyles.splashSubtitle),
+        Text('GO PARTNER', style: AppTextStyles.splashSubtitle.copyWith(
+          color: Theme.of(context).brightness == Brightness.dark ? AppColors.brandYellow : AppColors.backgroundPrimary,
+        )),
       ],
     );
   }
@@ -163,9 +177,11 @@ class _SplashFooter extends StatelessWidget {
                   const Text('🇲🇹', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Born in Malta, Loved by Europe',
-              style: AppTextStyles.footerText,
+              style: AppTextStyles.footerText.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
             ),
             const SizedBox(width: 8),
             Image.asset(
@@ -184,8 +200,12 @@ class _SplashFooter extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Powered By ', style: AppTextStyles.footerText),
-            const Text('PRIMOOO', style: AppTextStyles.footerAccent),
+            Text('Powered By ', style: AppTextStyles.footerText.copyWith(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            )),
+            Text('PRIMOOO', style: AppTextStyles.footerAccent.copyWith(
+              color: AppColors.primaryGold,
+            )),
             const SizedBox(width: 8),
             Image.asset(
               AssetPaths.primoooLogo,

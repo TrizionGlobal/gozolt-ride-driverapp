@@ -48,7 +48,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -82,11 +82,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   SmoothPageIndicator(
                     controller: _pageController,
                     count: onboardingPages.length,
-                    effect: const WormEffect(
+                    effect: WormEffect(
                       dotWidth: 10,
                       dotHeight: 10,
                       activeDotColor: AppColors.primaryGold,
-                      dotColor: AppColors.surfaceDark,
+                      dotColor: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.surfaceDark
+                          : Colors.grey.shade300,
                       spacing: 8,
                     ),
                   ),
@@ -97,16 +99,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.white.withOpacity(0.15),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.white.withOpacity(0.15)
+                            : AppColors.backgroundPrimary.withOpacity(0.1),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.white.withOpacity(0.3),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? AppColors.white.withOpacity(0.3)
+                              : AppColors.backgroundPrimary.withOpacity(0.2),
                           width: 1.5,
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.chevron_right_rounded,
-                        color: AppColors.white,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.white
+                            : AppColors.backgroundPrimary,
                         size: 32,
                       ),
                     ),
@@ -149,7 +157,9 @@ class _OnboardingPage extends StatelessWidget {
                     width: 280,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceDark,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.surfaceDark
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(
@@ -167,7 +177,9 @@ class _OnboardingPage extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(
               title,
-              style: AppTextStyles.onboardingTitle,
+              style: AppTextStyles.onboardingTitle.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark ? AppColors.brandYellow : AppColors.backgroundPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
           ),

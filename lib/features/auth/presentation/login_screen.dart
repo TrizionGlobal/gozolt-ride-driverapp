@@ -96,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text(
                 "Login with your phone number to continue",
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -134,7 +134,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text(
                 "Phone Number",
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.titleSmall?.color,
                 ),
               ),
               const SizedBox(height: 8),
@@ -143,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onChanged: ref.read(loginFormProvider.notifier).setPhoneNumber,
                 keyboardType: TextInputType.phone,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
                 decoration: const InputDecoration(
                   hintText: '+356 0000 0000',
@@ -170,9 +170,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             .read(loginFormProvider.notifier)
                             .toggleRememberMe(),
                         activeColor: AppColors.primaryGold,
-                        checkColor: const Color(0xFF1B2838),
-                        side: const BorderSide(
-                          color: AppColors.textMuted,
+                        checkColor: Theme.of(context).scaffoldBackgroundColor,
+                        side: BorderSide(
+                          color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
                           width: 1.5,
                         ),
                       ),
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Text(
                       l10n.rememberMe,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
                   ],
@@ -201,15 +201,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            color: AppColors.backgroundPrimary,
+                            color: Colors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           "Continue",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1B2838),
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                 ),
@@ -230,6 +230,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     l10n.contactSupplier,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.primaryGold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

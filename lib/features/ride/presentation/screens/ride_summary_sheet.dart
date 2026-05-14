@@ -45,11 +45,9 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.backgroundPrimary, AppColors.surfaceDark],
-        ),
+        color: Theme.of(context).brightness == Brightness.dark 
+          ? AppColors.backgroundPrimary 
+          : Theme.of(context).cardColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: const [
           BoxShadow(
@@ -80,7 +78,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surfaceDark,
+                color: Theme.of(context).colorScheme.surface,
                 border: Border.all(
                   color: AppColors.primaryGold.withOpacity(0.5),
                   width: 2.5,
@@ -108,7 +106,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             Text(
               ride.rider.fullName,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -229,21 +227,21 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
               Text(
                 '${summary.distanceKm.toStringAsFixed(1)} km',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
               const SizedBox(width: 16),
               Text(
                 '${summary.durationMinutes} min',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
               const SizedBox(width: 16),
               Text(
                 summary.paymentMethod == 'cash' ? 'Cash' : 'Card',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
             ],
@@ -276,7 +274,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             Text(
               'Rate the Rider',
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             const SizedBox(height: 12),
@@ -294,7 +292,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                     color: AppColors.textMuted,
                   ),
                   filled: true,
-                  fillColor: AppColors.surfaceDark,
+                  fillColor: Theme.of(context).colorScheme.surface,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 10,
@@ -305,7 +303,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                   ),
                 ),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 12),
@@ -316,7 +314,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                   onPressed: _submitRating,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGold,
-                    foregroundColor: AppColors.backgroundPrimary,
+                    foregroundColor: AppColors.backgroundDark,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -327,7 +325,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                     child: Text(
                       'Submit Rating',
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.backgroundPrimary,
+                        color: AppColors.backgroundDark,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

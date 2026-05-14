@@ -177,7 +177,9 @@ class _OnlineSectionState extends State<_OnlineSection>
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.backgroundPrimary,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.backgroundPrimary 
+                  : AppColors.white,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -212,7 +214,7 @@ class _OnlineSectionState extends State<_OnlineSection>
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   ),
                   // Wavy gold-green gradient animation

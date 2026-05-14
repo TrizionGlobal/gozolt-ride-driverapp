@@ -74,7 +74,6 @@ abstract final class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
   );
 
   // Label styles
@@ -90,7 +89,6 @@ abstract final class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle labelSmall = TextStyle(
@@ -98,7 +96,6 @@ abstract final class AppTextStyles {
     fontSize: 10,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
-    color: AppColors.textSecondary,
   );
 
   // Splash screen specific styles

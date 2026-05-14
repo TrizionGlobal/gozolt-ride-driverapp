@@ -147,7 +147,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Text(
                 "We've sent a 6-digit code to\n$phoneNumber",
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -173,7 +173,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 children: [
                   Text(
                     "Didn't receive code? ",
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
                   ),
                   _canResend
                       ? TextButton(
@@ -195,13 +195,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 child: ElevatedButton(
                   onPressed: isLoading || _currentOtp.length != 6 ? null : _verify,
                   child: isLoading
-                      ? const CircularProgressIndicator(color: AppColors.backgroundPrimary)
+                      ? CircularProgressIndicator(color: Theme.of(context).scaffoldBackgroundColor)
                       : const Text(
                           'Verify & Continue',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.backgroundPrimary,
+                            color: Color(0xFF1A1A2E), // Hardcode to background color for contrast
                           ),
                         ),
                 ),

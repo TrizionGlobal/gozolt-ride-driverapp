@@ -30,7 +30,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
     final detail = ref.watch(rideDetailProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: detail == null
             ? const Center(
@@ -58,13 +58,13 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                                 width: 36,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: AppColors.backgroundPrimary
+                                  color: AppColors.backgroundDark
                                       .withOpacity(0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.arrow_back_rounded,
-                                  color: AppColors.backgroundPrimary,
+                                  color: AppColors.backgroundDark,
                                   size: 18,
                                 ),
                               ),
@@ -73,7 +73,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                             Text(
                               'Trip Details',
                               style: AppTextStyles.headlineSmall.copyWith(
-                                color: AppColors.backgroundPrimary,
+                                color: AppColors.backgroundDark,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -83,7 +83,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                         Text(
                           '\u20AC ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
                           style: AppTextStyles.displayMedium.copyWith(
-                            color: AppColors.backgroundPrimary,
+                            color: AppColors.backgroundDark,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -146,14 +146,14 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                         Text(
                           'Sub Total',
                           style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.backgroundPrimary,
+                            color: AppColors.backgroundDark,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
                           '\u20AC ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
                           style: AppTextStyles.titleLarge.copyWith(
-                            color: AppColors.backgroundPrimary,
+                            color: AppColors.backgroundDark,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -185,7 +185,7 @@ class _DurationDistanceRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -195,7 +195,7 @@ class _DurationDistanceRow extends StatelessWidget {
             Text(
               '${detail.durationMinutes ?? 0} min',
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -205,7 +205,7 @@ class _DurationDistanceRow extends StatelessWidget {
             Text(
               '${(detail.distanceKm ?? 0).toStringAsFixed(1)} km',
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -234,7 +234,7 @@ class _AddressesCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -256,7 +256,7 @@ class _AddressesCard extends StatelessWidget {
                 child: Text(
                   detail.pickupAddress,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.backgroundPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -268,7 +268,7 @@ class _AddressesCard extends StatelessWidget {
             child: Container(
               width: 2,
               height: 20,
-              color: Colors.grey.shade300,
+              color: Theme.of(context).dividerColor.withOpacity(0.1),
             ),
           ),
           // Dropoff
@@ -287,7 +287,7 @@ class _AddressesCard extends StatelessWidget {
                 child: Text(
                   detail.dropoffAddress,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.backgroundPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -324,7 +324,7 @@ class _PaymentDetailsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -333,7 +333,7 @@ class _PaymentDetailsCard extends StatelessWidget {
           Text(
             'Payment Details',
             style: AppTextStyles.titleSmall.copyWith(
-              color: AppColors.backgroundPrimary,
+              color: Theme.of(context).textTheme.titleSmall?.color,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -358,7 +358,7 @@ class _PaymentDetailsCard extends StatelessWidget {
                   Text(
                     isCash ? 'Cash' : 'Card',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -413,7 +413,7 @@ class _EarningCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -422,7 +422,7 @@ class _EarningCard extends StatelessWidget {
           Text(
             'Your Earning',
             style: AppTextStyles.titleSmall.copyWith(
-              color: AppColors.backgroundPrimary,
+              color: Theme.of(context).textTheme.titleSmall?.color,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -474,7 +474,7 @@ class _EarningCard extends StatelessWidget {
               Text(
                 'Total Price',
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.backgroundPrimary,
+                  color: Theme.of(context).textTheme.titleSmall?.color,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -512,7 +512,7 @@ class _FareRow extends StatelessWidget {
         Text(
           '\u20AC ${(value ?? 0).toStringAsFixed(2)}',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w500,
           ),
         ),
