@@ -138,6 +138,28 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           rotation: position.heading,
         ),
       );
+      );
+    }
+
+    // Ghost drivers (simulation for premium feel)
+    final driverStatus = ref.watch(driverStatusProvider);
+    if (driverStatus.isOffline) {
+      final random = Random();
+      final basePos = _driverLatLng() ?? _defaultLocation;
+      for (int i = 0; i < 5; i++) {
+        final latOffset = (random.nextDouble() - 0.5) * 0.01;
+        final lngOffset = (random.nextDouble() - 0.5) * 0.01;
+        markers.add(
+          Marker(
+            markerId: MarkerId('ghost_$i'),
+            position: LatLng(basePos.latitude + latOffset, basePos.longitude + lngOffset),
+            icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+            alpha: 0.5, // Semi-transparent
+            anchor: const Offset(0.5, 0.5),
+            rotation: random.nextDouble() * 360,
+          ),
+        );
+      }
     }
 
     // Ride markers

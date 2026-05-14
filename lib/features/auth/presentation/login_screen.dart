@@ -262,6 +262,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push(RouteNames.register),
+                      child: Text(
+                        "Register",
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.primaryGold,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               // Contact Your Supplier
               Center(
                 child: TextButton(
@@ -275,9 +299,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                   child: Text(
                     l10n.contactSupplier,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.primaryGold,
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textMuted,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
@@ -344,6 +368,15 @@ class _LoginFooter extends StatelessWidget {
               errorBuilder: (ctx, err, st) => const SizedBox.shrink(),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Gozolt Driver App • Version 1.0.0 (Build 101)',
+          style: TextStyle(
+            fontSize: 10,
+            color: AppColors.textMuted,
+            letterSpacing: 0.5,
+          ),
         ),
       ],
     );
