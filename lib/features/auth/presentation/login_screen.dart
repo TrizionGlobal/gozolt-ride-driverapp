@@ -9,9 +9,10 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gozolt_logo.dart';
-import '../domain/models/auth_state.dart';
+import '../domain/models/country_code.dart';
 import 'providers/auth_provider.dart';
 import 'providers/login_form_provider.dart';
+import 'widgets/country_code_picker.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -51,10 +52,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final formState = ref.read(loginFormProvider);
     if (!formState.isValid) return;
 
-    final success = await ref.read(authProvider.notifier).sendOtp(formState.phoneNumber);
+    final success = await ref.read(authProvider.notifier).sendOtp(formState.fullPhoneNumber);
     if (success && mounted) {
       context.push(RouteNames.otp);
     }
+  }
+
+  void _showCountryPicker() {
+    final formState = ref.read(loginFormProvider);
+    final selectedCountry = supportedCountryCodes.firstWhere(
+      (c) => c.dialCode == formState.dialCode,
+      orElse: () => supportedCountryCodes.first,
+    );
+
+    CountryCodePicker.show(
+      context,
+      selected: selectedCountry,
+      onSelected: (country) {
+        ref.read(loginFormProvider.notifier).setDialCode(country.dialCode);
+      },
+    );
   }
 
   @override
@@ -145,11 +162,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
-                decoration: const InputDecoration(
-                  hintText: '+356 0000 0000',
-                  prefixIcon: Icon(
-                    Icons.phone_rounded,
-                    color: AppColors.textMuted,
+                decoration: InputDecoration(
+                  hintText: '0000 0000',
+                  prefixIcon: GestureDetector(
+                    onTap: _showCountryPicker,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          right: BorderSide(
+                            color: Theme.of(context).dividerColor.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            supportedCountryCodes.firstWhere(
+                              (c) => c.dialCode == formState.dialCode,
+                              orElse: () => supportedCountryCodes.first,
+                            ).flag,
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            formState.dialCode,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Icon(Icons.arrow_drop_down, size: 20),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

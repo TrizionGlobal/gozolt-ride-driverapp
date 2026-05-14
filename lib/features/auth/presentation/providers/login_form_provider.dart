@@ -1,21 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LoginFormState {
+  final String dialCode;
   final String phoneNumber;
   final String verificationId;
   final bool rememberMe;
   final String? errorMessage;
 
   const LoginFormState({
+    this.dialCode = '+356',
     this.phoneNumber = '',
     this.verificationId = '',
     this.rememberMe = false,
     this.errorMessage,
   });
 
-  bool get isValid => phoneNumber.isNotEmpty && phoneNumber.length >= 8;
+  bool get isValid => phoneNumber.isNotEmpty && phoneNumber.length >= 7;
+  String get fullPhoneNumber => '$dialCode$phoneNumber';
 
   LoginFormState copyWith({
+    String? dialCode,
     String? phoneNumber,
     String? verificationId,
     bool? rememberMe,
@@ -23,6 +27,7 @@ class LoginFormState {
     bool clearError = false,
   }) {
     return LoginFormState(
+      dialCode: dialCode ?? this.dialCode,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       verificationId: verificationId ?? this.verificationId,
       rememberMe: rememberMe ?? this.rememberMe,
@@ -38,6 +43,9 @@ final loginFormProvider =
 
 class LoginFormNotifier extends StateNotifier<LoginFormState> {
   LoginFormNotifier() : super(const LoginFormState());
+
+  void setDialCode(String value) =>
+      state = state.copyWith(dialCode: value, clearError: true);
 
   void setPhoneNumber(String value) =>
       state = state.copyWith(phoneNumber: value, clearError: true);
