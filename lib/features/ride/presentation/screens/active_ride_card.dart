@@ -263,7 +263,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.primaryGold.withValues(alpha: 0.15),
+                color: AppColors.primaryGold.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -412,7 +412,9 @@ class _LiveEtaBadge extends ConsumerWidget {
         return RideEtaBadge(distanceKm: km, minutes: mins);
       },
       loading: () => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
-      error: (_, _) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
+      error: (err, stack) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
     );
   }
 }
+
+

@@ -51,7 +51,7 @@ class _CircleButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.15),
+              color: AppColors.black.withOpacity(0.15),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -62,3 +62,4 @@ class _CircleButton extends StatelessWidget {
     );
   }
 }
+

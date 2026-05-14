@@ -201,7 +201,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   backgroundColor: AppColors.primaryGold,
                   foregroundColor: AppColors.backgroundPrimary,
                   disabledBackgroundColor:
-                      AppColors.primaryGold.withValues(alpha: 0.4),
+                      AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -230,3 +230,4 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
     );
   }
 }
+

@@ -97,10 +97,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.15),
+                        color: AppColors.white.withOpacity(0.15),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.white.withValues(alpha: 0.3),
+                          color: AppColors.white.withOpacity(0.3),
                           width: 1.5,
                         ),
                       ),
@@ -144,7 +144,7 @@ class _OnboardingPage extends StatelessWidget {
                 imagePath,
                 width: MediaQuery.of(context).size.width * 0.85,
                 fit: BoxFit.contain,
-                errorBuilder: (_, _, _) {
+                errorBuilder: (context, error, stackTrace) {
                   return Container(
                     width: 280,
                     height: 200,

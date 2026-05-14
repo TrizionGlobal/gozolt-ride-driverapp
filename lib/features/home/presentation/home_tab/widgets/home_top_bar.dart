@@ -43,11 +43,11 @@ class HomeTopBar extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundPrimary,
+                    color: Theme.of(context).cardColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.black.withValues(alpha: 0.2),
+                        color: AppColors.black.withOpacity(0.2),
                         blurRadius: 6,
                       ),
                     ],
@@ -70,12 +70,12 @@ class HomeTopBar extends ConsumerWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.white.withValues(alpha: 0.3),
+                      color: AppColors.white.withOpacity(0.3),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.black.withValues(alpha: 0.2),
+                        color: AppColors.black.withOpacity(0.2),
                         blurRadius: 6,
                       ),
                     ],
@@ -87,13 +87,13 @@ class HomeTopBar extends ConsumerWidget {
                           return Image.network(
                             profile.avatarUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => _defaultAvatar(),
+                            errorBuilder: (ctx, err, stack) => _defaultAvatar(),
                           );
                         }
                         return _defaultAvatar();
                       },
                       loading: () => _defaultAvatar(),
-                      error: (_, _) => _defaultAvatar(),
+                      error: (err, stack) => _defaultAvatar(),
                     ),
                   ),
                 ),
@@ -110,18 +110,18 @@ class HomeTopBar extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).cardColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.black.withValues(alpha: 0.2),
+                          color: AppColors.black.withOpacity(0.2),
                           blurRadius: 6,
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.notifications_rounded,
-                      color: AppColors.white,
+                      color: Theme.of(context).iconTheme.color,
                       size: 22,
                     ),
                   ),
@@ -170,3 +170,5 @@ class HomeTopBar extends ConsumerWidget {
     );
   }
 }
+
+

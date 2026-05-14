@@ -142,7 +142,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: filteredRides.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (ctx, idx) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         return _RideCard(
                           ride: filteredRides[index],
@@ -249,7 +249,7 @@ class _RideCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: methodColor.withValues(alpha: 0.12),
+                      color: methodColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -363,7 +363,7 @@ class _RideCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.12),
+                        color: AppColors.error.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -391,7 +391,7 @@ class _RideCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withValues(alpha: 0.12),
+                        color: const Color(0xFF4CAF50).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -419,3 +419,5 @@ class _RideCard extends StatelessWidget {
     );
   }
 }
+
+

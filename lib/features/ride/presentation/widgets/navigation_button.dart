@@ -65,7 +65,7 @@ class NavigationButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryGold.withValues(alpha: 0.4),
+                color: AppColors.primaryGold.withOpacity(0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -94,3 +94,4 @@ class NavigationButton extends StatelessWidget {
     );
   }
 }
+

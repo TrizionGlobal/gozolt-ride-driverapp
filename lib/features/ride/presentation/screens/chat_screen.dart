@@ -77,7 +77,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 shape: BoxShape.circle,
                 color: AppColors.surfaceDark,
                 border: Border.all(
-                  color: AppColors.primaryGold.withValues(alpha: 0.3),
+                  color: AppColors.primaryGold.withOpacity(0.3),
                 ),
               ),
               child: const Icon(
@@ -109,7 +109,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         Icon(
                           Icons.chat_bubble_rounded,
                           size: 48,
-                          color: AppColors.textMuted.withValues(alpha: 0.3),
+                          color: AppColors.textMuted.withOpacity(0.3),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -122,7 +122,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         Text(
                           'Send a message to the rider',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textMuted.withValues(alpha: 0.6),
+                            color: AppColors.textMuted.withOpacity(0.6),
                           ),
                         ),
                       ],
@@ -146,7 +146,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: AppColors.surfaceDark,
               border: Border(
                 top: BorderSide(
-                  color: AppColors.primaryGold.withValues(alpha: 0.15),
+                  color: AppColors.primaryGold.withOpacity(0.15),
                 ),
               ),
             ),
@@ -154,7 +154,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: _quickMessages.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () => _sendMessage(_quickMessages[index]),
@@ -165,7 +165,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       color: AppColors.backgroundPrimary,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: AppColors.primaryGold.withValues(alpha: 0.4),
+                        color: AppColors.primaryGold.withOpacity(0.4),
                       ),
                     ),
                     child: Center(
@@ -194,7 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: AppColors.surfaceDark,
               border: Border(
                 top: BorderSide(
-                  color: AppColors.primaryGold.withValues(alpha: 0.15),
+                  color: AppColors.primaryGold.withOpacity(0.15),
                 ),
               ),
             ),
@@ -206,7 +206,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       color: AppColors.backgroundPrimary,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        color: AppColors.textMuted.withOpacity(0.3),
                       ),
                     ),
                     child: TextField(
@@ -275,7 +275,7 @@ class _ChatBubble extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: isDriver
-                ? AppColors.primaryGold.withValues(alpha: 0.2)
+                ? AppColors.primaryGold.withOpacity(0.2)
                 : AppColors.surfaceDark,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
@@ -285,7 +285,7 @@ class _ChatBubble extends StatelessWidget {
             ),
             border: isDriver
                 ? Border.all(
-                    color: AppColors.primaryGold.withValues(alpha: 0.3))
+                    color: AppColors.primaryGold.withOpacity(0.3))
                 : null,
           ),
           child: Column(
@@ -312,3 +312,5 @@ class _ChatBubble extends StatelessWidget {
     );
   }
 }
+
+

@@ -30,7 +30,7 @@ class PrivacyScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withValues(alpha: 0.2),
+                        color: AppColors.backgroundPrimary.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -194,3 +194,4 @@ class _BulletPoint extends StatelessWidget {
     );
   }
 }
+

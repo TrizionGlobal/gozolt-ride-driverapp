@@ -159,7 +159,7 @@ class _SplashFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Text('🇲🇹', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(width: 8),
@@ -173,7 +173,7 @@ class _SplashFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Text('🇪🇺', style: TextStyle(fontSize: 16)),
             ),
           ],
@@ -192,7 +192,7 @@ class _SplashFooter extends StatelessWidget {
               width: 32,
               height: 20,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
             ),
           ],
         ),

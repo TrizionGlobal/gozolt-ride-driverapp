@@ -21,31 +21,29 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _driverIdController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadRememberedDriverId();
+    _loadRememberedPhone();
   }
 
-  Future<void> _loadRememberedDriverId() async {
+  Future<void> _loadRememberedPhone() async {
     final storage = ref.read(secureStorageProvider);
     final rememberMe = await storage.getRememberMe();
     if (rememberMe) {
-      final savedId = await storage.getSavedDriverId();
-      if (savedId != null && mounted) {
-        _driverIdController.text = savedId;
-        ref.read(loginFormProvider.notifier).prefillDriverId(savedId);
+      final savedPhone = await storage.getSavedDriverId(); // Reuse the same slot for now
+      if (savedPhone != null && mounted) {
+        _phoneController.text = savedPhone;
+        ref.read(loginFormProvider.notifier).prefillPhoneNumber(savedPhone);
       }
     }
   }
 
   @override
   void dispose() {
-    _driverIdController.dispose();
-    _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -53,17 +51,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final formState = ref.read(loginFormProvider);
     if (!formState.isValid) return;
 
-    // Save or clear remembered driver ID
-    final storage = ref.read(secureStorageProvider);
-    await storage.setRememberMe(
-      formState.rememberMe,
-      driverId: formState.driverId,
-    );
-
-    await ref.read(authProvider.notifier).login(
-          driverId: formState.driverId,
-          password: formState.password,
-        );
+    final success = await ref.read(authProvider.notifier).sendOtp(formState.phoneNumber);
+    if (success && mounted) {
+      context.push(RouteNames.otp);
+    }
   }
 
   @override
@@ -84,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isLoading = authState is AuthLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -103,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.signInSubtitle,
+                "Login with your phone number to continue",
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -115,10 +106,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
+                    color: AppColors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.3),
+                      color: AppColors.error.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
@@ -139,65 +130,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-              // Driver ID field
+              // Phone field
               Text(
-                l10n.driverIdLabel,
+                "Phone Number",
                 style: AppTextStyles.titleSmall.copyWith(
                   color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               TextFormField(
-                controller: _driverIdController,
-                onChanged: ref.read(loginFormProvider.notifier).setDriverId,
-                keyboardType: TextInputType.text,
+                controller: _phoneController,
+                onChanged: ref.read(loginFormProvider.notifier).setPhoneNumber,
+                keyboardType: TextInputType.phone,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textPrimary,
                 ),
-                decoration: InputDecoration(
-                  hintText: l10n.driverIdPlaceholder,
-                  prefixIcon: const Icon(
-                    Icons.badge_rounded,
+                decoration: const InputDecoration(
+                  hintText: '+356 0000 0000',
+                  prefixIcon: Icon(
+                    Icons.phone_rounded,
                     color: AppColors.textMuted,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              // Password field
-              Text(
-                l10n.passwordLabel,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _passwordController,
-                onChanged: ref.read(loginFormProvider.notifier).setPassword,
-                obscureText: formState.obscurePassword,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: l10n.passwordPlaceholder,
-                  prefixIcon: const Icon(
-                    Icons.lock_rounded,
-                    color: AppColors.textMuted,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      formState.obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_rounded,
-                      color: AppColors.textMuted,
-                    ),
-                    onPressed: ref
-                        .read(loginFormProvider.notifier)
-                        .togglePasswordVisibility,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               // Remember me
               GestureDetector(
                 onTap:
@@ -214,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             .read(loginFormProvider.notifier)
                             .toggleRememberMe(),
                         activeColor: AppColors.primaryGold,
-                        checkColor: AppColors.backgroundPrimary,
+                        checkColor: const Color(0xFF1B2838),
                         side: const BorderSide(
                           color: AppColors.textMuted,
                           width: 1.5,
@@ -248,12 +204,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             color: AppColors.backgroundPrimary,
                           ),
                         )
-                      : Text(
-                          l10n.signIn,
-                          style: const TextStyle(
+                      : const Text(
+                          "Continue",
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.backgroundPrimary,
+                            color: Color(0xFF1B2838),
                           ),
                         ),
                 ),
@@ -305,7 +261,7 @@ class _LoginFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (ctx, err, st) =>
                   const Text('🇲🇹', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(width: 8),
@@ -319,7 +275,7 @@ class _LoginFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (ctx, err, st) =>
                   const Text('🇪🇺', style: TextStyle(fontSize: 16)),
             ),
           ],
@@ -337,7 +293,7 @@ class _LoginFooter extends StatelessWidget {
               width: 32,
               height: 20,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              errorBuilder: (ctx, err, st) => const SizedBox.shrink(),
             ),
           ],
         ),

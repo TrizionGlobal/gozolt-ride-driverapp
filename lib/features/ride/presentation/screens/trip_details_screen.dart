@@ -59,7 +59,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   color: AppColors.backgroundPrimary
-                                      .withValues(alpha: 0.2),
+                                      .withOpacity(0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -381,7 +381,7 @@ class _PaymentDetailsCard extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: (isPaid ? AppColors.success : AppColors.warning)
-                      .withValues(alpha: 0.12),
+                      .withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -520,3 +520,4 @@ class _FareRow extends StatelessWidget {
     );
   }
 }
+

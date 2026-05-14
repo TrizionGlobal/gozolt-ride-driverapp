@@ -95,10 +95,10 @@ abstract final class AppTheme {
           color: AppColors.textMutedLight,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.surfaceCardLight,
         elevation: 2,
-        shadowColor: AppColors.black.withValues(alpha: 0.1),
+        shadowColor: AppColors.black.withOpacity(0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -207,7 +207,7 @@ abstract final class AppTheme {
           color: AppColors.textSecondary,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.surfaceCard,
         elevation: 0,
         shape: RoundedRectangleBorder(

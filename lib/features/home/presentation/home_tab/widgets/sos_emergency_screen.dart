@@ -29,7 +29,7 @@ class SosEmergencyScreen extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textMuted.withValues(alpha: 0.3),
+              color: AppColors.textMuted.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -39,7 +39,7 @@ class SosEmergencyScreen extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFFE53935).withValues(alpha: 0.15),
+              color: const Color(0xFFE53935).withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -132,9 +132,9 @@ class _EmergencyButton extends StatelessWidget {
         width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
+          color: color.withOpacity(0.12),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -154,3 +154,4 @@ class _EmergencyButton extends StatelessWidget {
     );
   }
 }
+

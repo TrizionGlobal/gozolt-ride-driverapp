@@ -102,7 +102,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textMuted.withValues(alpha: 0.3),
+              color: AppColors.textMuted.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -132,7 +132,7 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
               shape: BoxShape.circle,
               color: AppColors.surfaceDark,
               border: Border.all(
-                color: AppColors.primaryGold.withValues(alpha: 0.3),
+                color: AppColors.primaryGold.withOpacity(0.3),
                 width: 3,
               ),
             ),
@@ -277,3 +277,4 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
     );
   }
 }
+

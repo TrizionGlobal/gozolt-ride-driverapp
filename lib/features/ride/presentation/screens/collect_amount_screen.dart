@@ -95,7 +95,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                           height: 36,
                           decoration: BoxDecoration(
                             color:
-                                AppColors.primaryGold.withValues(alpha: 0.2),
+                                AppColors.primaryGold.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -132,7 +132,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                             color: AppColors.surfaceDark,
                             border: Border.all(
                               color: AppColors.primaryGold
-                                  .withValues(alpha: 0.3),
+                                  .withOpacity(0.3),
                               width: 2,
                             ),
                           ),
@@ -141,7 +141,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 ? Image.network(
                                     ride.rider.avatarUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(
+                                    errorBuilder: (ctx, err, stack) => const Icon(
                                       Icons.person_rounded,
                                       color: AppColors.textSecondary,
                                       size: 22,
@@ -238,7 +238,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF4CAF50)
-                              .withValues(alpha: 0.15),
+                              .withOpacity(0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -365,3 +365,5 @@ class _ProfileRow extends StatelessWidget {
     );
   }
 }
+
+

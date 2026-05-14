@@ -26,7 +26,7 @@ class GoldActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryGold.withValues(alpha: 0.4),
+              color: AppColors.primaryGold.withOpacity(0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -54,3 +54,4 @@ class GoldActionButton extends StatelessWidget {
     );
   }
 }
+

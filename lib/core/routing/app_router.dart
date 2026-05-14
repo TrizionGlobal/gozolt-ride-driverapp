@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/otp_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/domain/models/auth_state.dart';
 import '../../features/home/presentation/home_shell.dart';
@@ -15,7 +16,7 @@ import 'route_names.dart';
 /// without recreating the entire router (which would reset to initialLocation).
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier(Ref ref) {
-    _subscription = ref.listen(authProvider, (_, _) {
+    _subscription = ref.listen(authProvider, (_, __) {
       notifyListeners();
     });
   }
@@ -43,6 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final location = state.uri.path;
       final isOnSplash = location == RouteNames.splash;
       final isOnLogin = location == RouteNames.login;
+      final isOnOtp = location == RouteNames.otp;
       final isOnOnboarding = location == RouteNames.onboarding;
 
       // Don't redirect during splash - it handles its own navigation
@@ -57,6 +59,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // If unauthenticated and trying to access protected routes
       if (authState is AuthUnauthenticated &&
           !isOnLogin &&
+          !isOnOtp &&
           !isOnOnboarding) {
         return RouteNames.login;
       }
@@ -75,6 +78,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.otp,
+        builder: (context, state) => const OtpScreen(),
       ),
       GoRoute(
         path: RouteNames.home,

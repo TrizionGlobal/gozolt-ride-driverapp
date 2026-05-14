@@ -74,9 +74,9 @@ class ProfileScreen extends ConsumerWidget {
                         radius: 44,
                         backgroundColor: AppColors.white,
                         backgroundImage: pickedImage != null
-                            ? FileImage(pickedImage)
+                            ? FileImage(pickedImage) as ImageProvider<Object>
                             : (profile?.avatarUrl != null
-                                ? NetworkImage(profile!.avatarUrl!)
+                                ? NetworkImage(profile!.avatarUrl!) as ImageProvider<Object>
                                 : null),
                         child: pickedImage == null &&
                                 profile?.avatarUrl == null
@@ -243,7 +243,7 @@ class ProfileScreen extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGold.withValues(alpha: 0.12),
+                    color: AppColors.primaryGold.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -274,7 +274,7 @@ class ProfileScreen extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGold.withValues(alpha: 0.12),
+                    color: AppColors.primaryGold.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -383,3 +383,4 @@ class _ReadOnlyField extends StatelessWidget {
     );
   }
 }
+

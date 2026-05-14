@@ -21,7 +21,7 @@ final destinationDistanceProvider = Provider<double?>((ref) {
       );
     },
     loading: () => null,
-    error: (_, _) => null,
+    error: (_, __) => null,
   );
 });
 

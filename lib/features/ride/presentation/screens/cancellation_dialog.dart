@@ -70,7 +70,7 @@ class _CancellationDialogState extends State<CancellationDialog> {
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primaryGold
-                          : AppColors.textMuted.withValues(alpha: 0.3),
+                          : AppColors.textMuted.withOpacity(0.3),
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -104,13 +104,13 @@ class _CancellationDialogState extends State<CancellationDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: AppColors.textMuted.withValues(alpha: 0.3),
+                    color: AppColors.textMuted.withOpacity(0.3),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: AppColors.textMuted.withValues(alpha: 0.3),
+                    color: AppColors.textMuted.withOpacity(0.3),
                   ),
                 ),
                 contentPadding:
@@ -192,3 +192,4 @@ class _CancellationDialogState extends State<CancellationDialog> {
   bool get _canSubmit =>
       _selectedReason != null || _otherController.text.trim().isNotEmpty;
 }
+

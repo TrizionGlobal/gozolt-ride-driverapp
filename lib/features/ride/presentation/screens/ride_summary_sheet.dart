@@ -68,7 +68,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textMuted.withValues(alpha: 0.3),
+              color: AppColors.textMuted.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -82,7 +82,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                 shape: BoxShape.circle,
                 color: AppColors.surfaceDark,
                 border: Border.all(
-                  color: AppColors.primaryGold.withValues(alpha: 0.5),
+                  color: AppColors.primaryGold.withOpacity(0.5),
                   width: 2.5,
                 ),
               ),
@@ -91,7 +91,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                     ? Image.network(
                         ride.rider.avatarUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const Icon(
+                        errorBuilder: (ctx, err, stack) => const Icon(
                           Icons.person_rounded,
                           color: AppColors.textSecondary,
                           size: 30,
@@ -144,7 +144,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE53935).withValues(alpha: 0.12),
+                      color: const Color(0xFFE53935).withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -164,7 +164,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Divider(
                 height: 1,
-                color: AppColors.primaryGold.withValues(alpha: 0.2),
+                color: AppColors.primaryGold.withOpacity(0.2),
               ),
             ),
             _FareRow(label: 'Tip', amount: summary.tipAmount),
@@ -173,7 +173,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Divider(
               height: 1,
-              color: AppColors.primaryGold.withValues(alpha: 0.2),
+              color: AppColors.primaryGold.withOpacity(0.2),
             ),
           ),
           _FareRow(
@@ -187,14 +187,14 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
-              color: AppColors.primaryGold.withValues(alpha: 0.15),
+              color: AppColors.primaryGold.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primaryGold.withValues(alpha: 0.3),
+                color: AppColors.primaryGold.withOpacity(0.3),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryGold.withValues(alpha: 0.1),
+                  color: AppColors.primaryGold.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -252,7 +252,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Divider(
               height: 1,
-              color: AppColors.primaryGold.withValues(alpha: 0.2),
+              color: AppColors.primaryGold.withOpacity(0.2),
             ),
           ),
           // Rate the rider
@@ -394,3 +394,5 @@ class _FareRow extends StatelessWidget {
     );
   }
 }
+
+

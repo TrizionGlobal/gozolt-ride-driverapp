@@ -36,7 +36,7 @@ class RideTimelineScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withValues(alpha: 0.2),
+                        color: AppColors.backgroundPrimary.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -200,7 +200,7 @@ class _TimelineItem extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: event.color.withValues(alpha: 0.15),
+                    color: event.color.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(event.icon, color: event.color, size: 18),
@@ -254,3 +254,4 @@ class _TimelineItem extends StatelessWidget {
     );
   }
 }
+

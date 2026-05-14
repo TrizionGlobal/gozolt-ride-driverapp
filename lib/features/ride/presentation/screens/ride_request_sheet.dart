@@ -18,8 +18,8 @@ class RideRequestSheet extends ConsumerWidget {
     final topPadding = MediaQuery.of(context).padding.top + 16;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
@@ -62,7 +62,7 @@ class RideRequestSheet extends ConsumerWidget {
             child: Text(
               'Other Details',
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.titleSmall?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -211,7 +211,7 @@ class _AddressListWithLine extends StatelessWidget {
                   Text(
                     allAddresses[i],
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

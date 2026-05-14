@@ -191,7 +191,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     return positionAsync.when(
       data: (p) => LatLng(p.latitude, p.longitude),
       loading: () => _defaultLocation,
-      error: (_, _) => _defaultLocation,
+      error: (err, stack) => _defaultLocation,
     );
   }
 
@@ -449,7 +449,9 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
               target: _getInitialTarget(),
               zoom: _defaultZoom,
             ),
-            style: _darkMapStyle,
+            style: Theme.of(context).brightness == Brightness.dark
+                ? _darkMapStyle
+                : null,
             myLocationEnabled: false,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
@@ -603,3 +605,4 @@ class _AnimatedRideRequestState extends State<_AnimatedRideRequest>
     );
   }
 }
+

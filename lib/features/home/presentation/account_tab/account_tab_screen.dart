@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../driver/presentation/providers/driver_provider.dart';
 import '../home_shell.dart';
@@ -20,7 +21,7 @@ class AccountTabScreen extends ConsumerWidget {
     final profile = profileAsync.valueOrNull;
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -69,10 +70,10 @@ class AccountTabScreen extends ConsumerWidget {
                         profile != null
                             ? '${profile.firstName.isNotEmpty ? profile.firstName[0] : ''}${profile.lastName.isNotEmpty ? profile.lastName[0] : ''}'
                             : 'D',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.white,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       )
                     : null,
@@ -171,6 +172,17 @@ class AccountTabScreen extends ConsumerWidget {
                 label: 'Request Deactivation',
                 iconColor: AppColors.error,
                 onTap: () => _showDeactivationDialog(context),
+              ),
+              _MenuTile(
+                icon: Icons.brightness_6_rounded,
+                label: 'Appearance',
+                trailing: Text(
+                  ref.watch(themeModeProvider) == ThemeMode.dark ? 'Dark' : 'Light',
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryGold),
+                ),
+                onTap: () {
+                  ref.read(themeModeProvider.notifier).toggleTheme();
+                },
               ),
 
               const SizedBox(height: 32),
@@ -342,12 +354,14 @@ class _MenuTile extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final Color? iconColor;
+  final Widget? trailing;
 
   const _MenuTile({
     required this.icon,
     required this.label,
     required this.onTap,
     this.iconColor,
+    this.trailing,
   });
 
   @override
@@ -368,7 +382,7 @@ class _MenuTile extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: (iconColor ?? AppColors.primaryGold).withValues(alpha: 0.12),
+                    color: (iconColor ?? AppColors.primaryGold).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -382,12 +396,12 @@ class _MenuTile extends StatelessWidget {
                   child: Text(
                     label,
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.titleSmall?.color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                Icon(
+                trailing ?? Icon(
                   Icons.chevron_right_rounded,
                   color: Colors.grey.shade400,
                   size: 22,

@@ -9,28 +9,32 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource(this._dio);
 
-  Future<LoginResponse> login(LoginRequest request) async {
+  Future<void> sendOtp(String phoneNumber) async {
+    try {
+      await _dio.post(
+        ApiConstants.sendOtp,
+        data: {'phone': phoneNumber},
+      );
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to send OTP');
+    }
+  }
+
+  Future<LoginResponse> verifyOtp(String phoneNumber, String otp) async {
     try {
       final response = await _dio.post(
-        ApiConstants.loginDriver,
-        data: request.toJson(),
+        ApiConstants.verifyOtp,
+        data: {
+          'phone': phoneNumber,
+          'otp': otp,
+        },
       );
       return LoginResponse.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
-      switch (e.response?.statusCode) {
-        case 400:
-        case 401:
-          throw const UnauthorizedException('Invalid driver ID or password');
-        default:
-          if (e.type == DioExceptionType.connectionTimeout ||
-              e.type == DioExceptionType.receiveTimeout) {
-            throw const ConnectionTimeoutException();
-          }
-          if (e.type == DioExceptionType.connectionError) {
-            throw const NetworkException();
-          }
-          throw ServerException(e.message ?? 'Server error');
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 401) {
+        throw const UnauthorizedException('Invalid OTP');
       }
+      throw ServerException(e.message ?? 'Failed to verify OTP');
     }
   }
 

@@ -10,7 +10,6 @@ abstract final class AppTextStyles {
     fontSize: 48,
     fontWeight: FontWeight.w900,
     letterSpacing: 2.0,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle displayMedium = TextStyle(
@@ -18,7 +17,6 @@ abstract final class AppTextStyles {
     fontSize: 36,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.5,
-    color: AppColors.textPrimary,
   );
 
   // Headline styles
@@ -26,21 +24,18 @@ abstract final class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle headlineMedium = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 24,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle headlineSmall = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 20,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
   );
 
   // Title styles
@@ -48,21 +43,18 @@ abstract final class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle titleMedium = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle titleSmall = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
   );
 
   // Body styles
@@ -70,14 +62,12 @@ abstract final class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle bodySmall = TextStyle(
@@ -93,7 +83,6 @@ abstract final class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle labelMedium = TextStyle(
@@ -118,7 +107,6 @@ abstract final class AppTextStyles {
     fontSize: 84,
     fontWeight: FontWeight.w900,
     letterSpacing: 3.0,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle splashSubtitle = TextStyle(
@@ -143,7 +131,6 @@ abstract final class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle footerAccent = TextStyle(

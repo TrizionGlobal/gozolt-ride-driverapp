@@ -50,7 +50,7 @@ class NotificationScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryGold),
         ),
-        error: (_, _) => Center(
+        error: (err, stack) => Center(
           child: Text(
             'Failed to load notifications',
             style: AppTextStyles.bodyMedium.copyWith(
@@ -76,7 +76,7 @@ class NotificationScreen extends ConsumerWidget {
                     background: Container(
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 24),
-                      color: const Color(0xFFE53935).withValues(alpha: 0.2),
+                      color: const Color(0xFFE53935).withOpacity(0.2),
                       child: const Icon(
                         Icons.delete_outline,
                         color: Color(0xFFE53935),
@@ -159,13 +159,13 @@ class _NotificationCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: notification.isRead
-              ? AppColors.surfaceDark.withValues(alpha: 0.5)
+              ? AppColors.surfaceDark.withOpacity(0.5)
               : AppColors.surfaceDark,
           borderRadius: BorderRadius.circular(14),
           border: notification.isRead
               ? null
               : Border.all(
-                  color: _typeColor(notification.type).withValues(alpha: 0.3),
+                  color: _typeColor(notification.type).withOpacity(0.3),
                   width: 1,
                 ),
         ),
@@ -177,7 +177,7 @@ class _NotificationCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _typeColor(notification.type).withValues(alpha: 0.15),
+                color: _typeColor(notification.type).withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(

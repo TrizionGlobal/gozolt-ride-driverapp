@@ -165,7 +165,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                           color: const Color(0xFFFFF8E1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primaryGold.withValues(alpha: 0.3),
+                            color: AppColors.primaryGold.withOpacity(0.3),
                           ),
                         ),
                         child: Row(
@@ -203,7 +203,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                                   color: _canNoShow
                                       ? const Color(0xFFE53935)
                                       : const Color(0xFFE53935)
-                                          .withValues(alpha: 0.3),
+                                          .withOpacity(0.3),
                                   width: 1.5,
                                 ),
                               ),
@@ -214,7 +214,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                                     color: _canNoShow
                                         ? const Color(0xFFE53935)
                                         : const Color(0xFFE53935)
-                                            .withValues(alpha: 0.3),
+                                            .withOpacity(0.3),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -343,7 +343,9 @@ class _LiveEtaBadge extends ConsumerWidget {
         return RideEtaBadge(distanceKm: km, minutes: mins);
       },
       loading: () => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
-      error: (_, _) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
+      error: (err, stack) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
     );
   }
 }
+
+

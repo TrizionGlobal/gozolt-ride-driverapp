@@ -31,14 +31,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = isAuth ? const AuthAuthenticated() : const AuthUnauthenticated();
   }
 
-  Future<void> login({
-    required String driverId,
-    required String password,
+  Future<bool> sendOtp(String phoneNumber) async {
+    state = const AuthLoading();
+    final result = await _repository.sendOtp(phoneNumber);
+    switch (result) {
+      case ApiSuccess():
+        state = const AuthUnauthenticated(); // Stay on login but show success
+        return true;
+      case ApiFailure(:final exception):
+        state = AuthError(exception.message);
+        return false;
+    }
+  }
+
+  Future<void> verifyOtp({
+    required String phoneNumber,
+    required String otp,
   }) async {
     state = const AuthLoading();
-    final result = await _repository.login(
-      driverId: driverId,
-      password: password,
+    final result = await _repository.verifyOtp(
+      phoneNumber,
+      otp,
     );
     switch (result) {
       case ApiSuccess():
