@@ -35,7 +35,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     Future.delayed(const Duration(seconds: 6)).then((_) {
       if (mounted && !_navigated) {
         debugPrint('SplashScreen: Hard fail-safe triggered');
-        _navigate(RouteNames.onboarding);
+        _navigate(RouteNames.welcome);
       }
     });
 
@@ -50,8 +50,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       debugPrint('SplashScreen: Found tokens, navigating to home');
       _navigate(RouteNames.home);
     } else {
-      debugPrint('SplashScreen: No tokens, navigating to onboarding');
-      _navigate(RouteNames.onboarding);
+      final hasSeenOnboarding = await storage.hasSeenOnboarding();
+      if (hasSeenOnboarding) {
+        debugPrint('SplashScreen: No tokens, navigating to welcome');
+        _navigate(RouteNames.welcome);
+      } else {
+        debugPrint('SplashScreen: No tokens, navigating to onboarding');
+        _navigate(RouteNames.onboarding);
+      }
     }
   }
 

@@ -9,7 +9,7 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gozolt_logo.dart';
-import '../domain/models/country_code.dart';
+import 'package:gozolt_driver/features/auth/domain/models/country_code.dart';
 import 'providers/auth_provider.dart';
 import 'providers/login_form_provider.dart';
 import 'widgets/country_code_picker.dart';

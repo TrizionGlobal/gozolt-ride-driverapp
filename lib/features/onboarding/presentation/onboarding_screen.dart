@@ -35,10 +35,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Last page - mark onboarding as seen and navigate to login
       await ref.read(secureStorageProvider).setOnboardingSeen();
       if (mounted) {
-        context.go(RouteNames.login);
+        context.go(RouteNames.welcome);
       }
     }
   }

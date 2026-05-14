@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../models/country_code.dart';
+import 'package:gozolt_driver/features/auth/domain/models/country_code.dart';
 
 class CountryCodePicker extends StatefulWidget {
   final CountryCode selected;

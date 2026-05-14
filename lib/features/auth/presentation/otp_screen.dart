@@ -79,7 +79,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     if (_currentOtp.length != 6) return;
     HapticFeedback.mediumImpact();
 
-    final phoneNumber = ref.read(loginFormProvider).phoneNumber;
+    final phoneNumber = ref.read(loginFormProvider).fullPhoneNumber;
     await ref.read(authProvider.notifier).verifyOtp(
           phoneNumber: phoneNumber,
           otp: _currentOtp,
@@ -89,7 +89,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   void _resendOtp() {
     if (!_canResend) return;
     HapticFeedback.lightImpact();
-    final phoneNumber = ref.read(loginFormProvider).phoneNumber;
+    final phoneNumber = ref.read(loginFormProvider).fullPhoneNumber;
     ref.read(authProvider.notifier).sendOtp(phoneNumber);
     
     _otpKey.currentState?.clear();
@@ -118,7 +118,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       }
     });
 
-    final phoneNumber = ref.watch(loginFormProvider).phoneNumber;
+    final phoneNumber = ref.watch(loginFormProvider).fullPhoneNumber;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
