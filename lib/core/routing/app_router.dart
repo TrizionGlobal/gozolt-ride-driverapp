@@ -34,6 +34,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(() => authChangeNotifier.dispose());
 
   return GoRouter(
+    restorationScopeId: 'router',
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
     refreshListenable: authChangeNotifier,

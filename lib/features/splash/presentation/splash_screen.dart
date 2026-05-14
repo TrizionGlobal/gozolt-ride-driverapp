@@ -34,6 +34,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
+    // Safety check: If the app has already restored state to a different screen, don't redirect
+    final router = GoRouter.of(context);
+    final isStillOnSplash =
+        router.routeInformationProvider.value.uri.path == RouteNames.splash;
+    if (!isStillOnSplash) return;
+
     // Check auth status
     await ref.read(authProvider.notifier).checkAuthStatus();
 
