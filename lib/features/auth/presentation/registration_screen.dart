@@ -142,24 +142,68 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   Widget _buildVehicleInfo() {
     final state = ref.watch(registrationProvider);
     final notifier = ref.read(registrationProvider.notifier);
+    final vehicles = [
+      {'type': 'Car', 'icon': Icons.directions_car_rounded},
+      {'type': 'Bike', 'icon': Icons.directions_bike_rounded},
+      {'type': 'Scooter', 'icon': Icons.moped_rounded},
+      {'type': 'Van', 'icon': Icons.airport_shuttle_rounded},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Vehicle Information', style: AppTextStyles.headlineSmall),
-        const SizedBox(height: 32),
-        const Text('Vehicle Type', style: AppTextStyles.titleSmall),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: state.request.vehicleType,
-          items: ['Car', 'Bike', 'Scooter', 'Van'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-          onChanged: (v) => notifier.setVehicleType(v!),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          ),
-        ),
+        const SizedBox(height: 24),
+        const Text('Select Vehicle Type', style: AppTextStyles.titleSmall),
         const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.5,
+          ),
+          itemCount: vehicles.length,
+          itemBuilder: (context, index) {
+            final vehicle = vehicles[index];
+            final isSelected = state.request.vehicleType == vehicle['type'];
+            return InkWell(
+              onTap: () => notifier.setVehicleType(vehicle['type'] as String),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected 
+                    ? AppColors.primaryGold.withOpacity(0.1) 
+                    : (Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryGold : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      vehicle['icon'] as IconData,
+                      color: isSelected ? AppColors.primaryGold : AppColors.textMuted,
+                      size: 32,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      vehicle['type'] as String,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: isSelected ? AppColors.primaryGold : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
         _buildTextField('Vehicle Number (Plate)', (v) => notifier.setVehicleNumber(v)),
       ],
     );
