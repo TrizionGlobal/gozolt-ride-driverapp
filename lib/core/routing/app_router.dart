@@ -39,8 +39,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
     refreshListenable: authChangeNotifier,
-    redirect: (context, state) {
-      final authState = ref.read(authProvider);
+    redirect: (context, state) async {
+      final storage = ref.read(secureStorageProvider);
+      final hasTokens = await storage.getAccessToken() != null;
+      
       final location = state.uri.path;
       final isOnSplash = location == RouteNames.splash;
       final isOnLogin = location == RouteNames.login;
@@ -50,18 +52,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Don't redirect during splash - it handles its own navigation
       if (isOnSplash) return null;
 
-      // If authenticated and on login/onboarding, redirect to home
-      if (authState is AuthAuthenticated &&
-          (isOnLogin || isOnOnboarding)) {
-        return RouteNames.home;
+      if (!hasTokens) {
+        if (!isOnLogin && !isOnOtp && !isOnOnboarding) {
+          return RouteNames.onboarding;
+        }
+        return null;
       }
 
-      // If unauthenticated and trying to access protected routes
-      if (authState is AuthUnauthenticated &&
-          !isOnLogin &&
-          !isOnOtp &&
-          !isOnOnboarding) {
-        return RouteNames.login;
+      if (hasTokens && (isOnLogin || isOnOnboarding)) {
+        return RouteNames.home;
       }
 
       return null;
@@ -69,26 +68,32 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: RouteNames.splash,
+        name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: RouteNames.onboarding,
+        name: 'onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: RouteNames.login,
+        name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: RouteNames.otp,
+        name: 'otp',
         builder: (context, state) => const OtpScreen(),
       ),
       GoRoute(
         path: RouteNames.home,
+        name: 'home',
         builder: (context, state) => const HomeShell(),
       ),
       GoRoute(
         path: RouteNames.notifications,
+        name: 'notifications',
         builder: (context, state) => const NotificationScreen(),
       ),
     ],

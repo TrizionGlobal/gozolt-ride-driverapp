@@ -22,6 +22,8 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _navigated = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,57 +31,71 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    // Wait for splash duration
+    // Hard fail-safe: Force navigation after 6 seconds no matter what
+    Future.delayed(const Duration(seconds: 6)).then((_) {
+      if (mounted && !_navigated) {
+        debugPrint('SplashScreen: Hard fail-safe triggered');
+        _navigate();
+      }
+    });
+
+    // Start auth check in parallel
+    final authCheck = _performAuthCheck();
+
+    // Guaranteed minimum delay for splash visibility
     await Future.delayed(AppConstants.splashDuration);
 
-    if (!mounted) return;
+    if (!mounted || _navigated) return;
 
+    // Wait for auth check with a strict timeout
     try {
-      // Check auth status with a timeout to prevent hanging
-      await ref.read(authProvider.notifier).checkAuthStatus().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          debugPrint('Auth check timed out');
-        },
+      await authCheck.timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => debugPrint('SplashScreen: Auth check timed out'),
       );
+    } catch (e) {
+      debugPrint('SplashScreen: Auth check error: $e');
+    }
 
-      if (!mounted) return;
+    _navigate();
+  }
 
+  Future<void> _performAuthCheck() async {
+    try {
+      debugPrint('SplashScreen: Checking auth status...');
+      await ref.read(authProvider.notifier).checkAuthStatus();
+      
       final authState = ref.read(authProvider);
-
       if (authState is AuthAuthenticated) {
         final storage = ref.read(secureStorageProvider);
-        final token = await storage.getAccessToken().timeout(
-          const Duration(seconds: 3),
-          onTimeout: () => null,
-        );
+        final token = await storage.getAccessToken();
 
-        // Clear fake dev tokens and force real login
-        if (token == null || token == 'dev_access_token') {
-          await storage.clearTokens();
-          if (!mounted) return;
-          context.go(RouteNames.onboarding);
-          return;
+        if (token != null && token != 'dev_access_token') {
+          try {
+            ref.read(socketServiceProvider).connect(token);
+            ref.read(driverProfileProvider.notifier).fetchProfile();
+          } catch (e) {
+            debugPrint('SplashScreen: Socket/Profile error: $e');
+          }
         }
-
-        try {
-          ref.read(socketServiceProvider).connect(token);
-          // Don't await profile fetch - let it happen in background or handle in Home
-          ref.read(driverProfileProvider.notifier).fetchProfile();
-        } catch (e) {
-          debugPrint('Socket/Profile error: $e');
-        }
-
-        if (!mounted) return;
-        context.go(RouteNames.home);
-      } else {
-        context.go(RouteNames.onboarding);
       }
+      debugPrint('SplashScreen: Auth check complete');
     } catch (e) {
-      debugPrint('Initialization error: $e');
-      if (mounted) {
-        context.go(RouteNames.onboarding);
-      }
+      debugPrint('SplashScreen: PerformAuthCheck failed: $e');
+    }
+  }
+
+  void _navigate() {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+    
+    final authState = ref.read(authProvider);
+    if (authState is AuthAuthenticated) {
+      debugPrint('SplashScreen: Navigating to home');
+      context.goNamed('home');
+    } else {
+      debugPrint('SplashScreen: Navigating to onboarding');
+      context.goNamed('onboarding');
     }
   }
 

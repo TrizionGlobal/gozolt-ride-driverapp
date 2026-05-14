@@ -111,7 +111,6 @@ abstract final class AppTextStyles {
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: 5.0,
-    color: AppColors.brandYellow,
   );
 
   // Onboarding styles
@@ -120,7 +119,6 @@ abstract final class AppTextStyles {
     fontSize: 22,
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.italic,
-    color: AppColors.brandYellow,
   );
 
   // Footer styles

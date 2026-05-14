@@ -14,8 +14,8 @@ abstract final class AppTheme {
         secondary: AppColors.brandYellow,
         surface: AppColors.surfaceLight,
         error: AppColors.error,
-        onPrimary: AppColors.backgroundLight,
-        onSecondary: AppColors.backgroundLight,
+        onPrimary: Color(0xFF1B2838), // Dark contrast for Gold
+        onSecondary: Color(0xFF1B2838),
         onSurface: AppColors.textPrimaryLight,
         onError: AppColors.white,
       ),
