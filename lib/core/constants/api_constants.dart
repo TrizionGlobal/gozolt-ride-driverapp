@@ -6,6 +6,7 @@ abstract final class ApiConstants {
 
   // Auth endpoints
   static const String loginDriver = '/auth/driver/login';
+  static const String registerDriver = '/auth/driver/register';
   static const String sendOtp = '/auth/driver/send-otp';
   static const String verifyOtp = '/auth/driver/verify-otp';
   static const String checkPhone = '/auth/driver/check-phone';

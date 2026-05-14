@@ -10,7 +10,10 @@ import '../home_shell.dart';
 import 'screens/help_center_screen.dart';
 import 'screens/privacy_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/ratings_screen.dart';
+import 'screens/rewards_screen.dart';
 import 'screens/terms_screen.dart';
+import 'screens/wallet_screen.dart';
 
 class AccountTabScreen extends ConsumerWidget {
   const AccountTabScreen({super.key});
@@ -129,6 +132,42 @@ class AccountTabScreen extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const ProfileScreen(),
+                    ),
+                  );
+                },
+              ),
+              _MenuTile(
+                icon: Icons.star_rounded,
+                label: 'Ratings & Reviews',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const RatingsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _MenuTile(
+                icon: Icons.account_balance_wallet_rounded,
+                label: 'My Wallet',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const WalletScreen(),
+                    ),
+                  );
+                },
+              ),
+              _MenuTile(
+                icon: Icons.card_giftcard_rounded,
+                label: 'Rewards & Incentives',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const RewardsScreen(),
                     ),
                   );
                 },

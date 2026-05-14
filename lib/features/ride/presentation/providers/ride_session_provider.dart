@@ -97,6 +97,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
           case ApiSuccess(:final data):
             if (kDebugMode) print('[RideSession] Ride details fetched OK: ${data.id}, pickup=${data.pickupAddress}, status=${data.status}');
             _showRideRequest(data, timeoutSeconds);
+            _playContinuousAlert();
             break;
           case ApiFailure(:final exception):
             if (kDebugMode) print('[RideSession] getRideDetails FAILED: $exception — trying socket data as Ride');
@@ -471,8 +472,17 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         skipRide();
       } else {
         _ref.read(rideRequestCountdownProvider.notifier).state = current - 1;
+        // Continuous alert sound simulation (vibration/ping)
+        if (current % 2 == 0) {
+          _playContinuousAlert();
+        }
       }
     });
+  }
+
+  void _playContinuousAlert() {
+    // In real device, this would trigger vibration and sound
+    if (kDebugMode) print('[RideSession] 🔔 ALERT: New ride request! Pinging driver...');
   }
 
   void _cancelCountdown() {

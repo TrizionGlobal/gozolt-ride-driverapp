@@ -8,6 +8,25 @@ class AuthRemoteDataSource {
   final Dio _dio;
 
   AuthRemoteDataSource(this._dio);
+  
+  Future<void> register(Map<String, dynamic> data) async {
+    try {
+      final formData = FormData.fromMap({
+        ...data,
+        if (data['profileImage'] != null)
+          'profileImage': await MultipartFile.fromFile(data['profileImage'] as String, filename: 'profile.jpg'),
+        if (data['drivingLicense'] != null)
+          'drivingLicense': await MultipartFile.fromFile(data['drivingLicense'] as String, filename: 'license.jpg'),
+      });
+
+      await _dio.post(
+        ApiConstants.registerDriver,
+        data: formData,
+      );
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Registration failed');
+    }
+  }
 
   Future<void> sendOtp(String phoneNumber) async {
     try {

@@ -43,6 +43,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<void>> register(Map<String, dynamic> data) async {
+    try {
+      await _remoteDataSource.register(data);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
   Future<void> logout() async {
     await _remoteDataSource.logout();
     await _storage.clearTokens();

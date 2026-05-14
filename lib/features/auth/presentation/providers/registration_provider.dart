@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models/registration_request.dart';
+import 'auth_provider.dart';
+import '../../../../core/network/api_result.dart';
 
 class RegistrationState {
   final int currentStep;
@@ -31,11 +33,14 @@ class RegistrationState {
 }
 
 final registrationProvider = StateNotifierProvider.autoDispose<RegistrationNotifier, RegistrationState>((ref) {
-  return RegistrationNotifier();
+  final repository = ref.watch(authRepositoryProvider);
+  return RegistrationNotifier(repository);
 });
 
 class RegistrationNotifier extends StateNotifier<RegistrationState> {
-  RegistrationNotifier() : super(RegistrationState(
+  final AuthRepository _repository;
+
+  RegistrationNotifier(this._repository) : super(RegistrationState(
     request: RegistrationRequest(
       fullName: '',
       phoneNumber: '',
@@ -62,9 +67,18 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
 
   Future<bool> register() async {
     state = state.copyWith(isLoading: true, clearError: true);
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-    state = state.copyWith(isLoading: false);
-    return true;
+    
+    final result = await _repository.register(state.request.toJson());
+    
+    return result.when(
+      success: (_) {
+        state = state.copyWith(isLoading: false);
+        return true;
+      },
+      failure: (exception) {
+        state = state.copyWith(isLoading: false, errorMessage: exception.message);
+        return false;
+      },
+    );
   }
 }
