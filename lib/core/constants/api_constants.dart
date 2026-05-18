@@ -1,7 +1,7 @@
 abstract final class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://gozolt-new-ride-backend-production.up.railway.app/v1',
+    defaultValue: 'http://localhost:3000/v1',
   );
 
   // Auth endpoints

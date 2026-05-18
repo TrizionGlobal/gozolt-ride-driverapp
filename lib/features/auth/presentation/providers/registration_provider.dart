@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/models/registration_request.dart';
+import '../../domain/models/registration_request.dart';
+import '../../domain/repositories/auth_repository.dart';
 import 'auth_provider.dart';
 import '../../../../core/network/api_result.dart';
 
@@ -46,7 +47,7 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
       phoneNumber: '',
       email: '',
       password: '',
-      vehicleType: 'Car',
+      vehicleType: 'Standard',
       vehicleNumber: '',
     ),
   ));
@@ -70,15 +71,13 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
     
     final result = await _repository.register(state.request.toJson());
     
-    return result.when(
-      success: (_) {
+    switch (result) {
+      case ApiSuccess():
         state = state.copyWith(isLoading: false);
         return true;
-      },
-      failure: (exception) {
+      case ApiFailure(:final exception):
         state = state.copyWith(isLoading: false, errorMessage: exception.message);
         return false;
-      },
-    );
+    }
   }
 }

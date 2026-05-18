@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/custom_marker_painter.dart';
 import '../../../driver/presentation/providers/location_provider.dart';
+import '../../../driver/presentation/providers/driver_status_provider.dart';
 import '../../../ride/data/models/ride_status.dart';
 import '../../../ride/presentation/providers/ride_session_provider.dart';
 import '../../../ride/presentation/screens/active_ride_card.dart';
@@ -137,7 +138,6 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           anchor: const Offset(0.5, 0.5),
           rotation: position.heading,
         ),
-      );
       );
     }
 

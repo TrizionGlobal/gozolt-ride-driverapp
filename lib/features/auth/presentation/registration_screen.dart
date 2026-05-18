@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gozolt_logo.dart';
-import '../providers/registration_provider.dart';
+import 'providers/registration_provider.dart';
+import 'widgets/country_code_picker.dart';
+import '../domain/models/country_code.dart';
 
 class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
@@ -17,6 +19,50 @@ class RegistrationScreen extends ConsumerStatefulWidget {
 
 class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   final _picker = ImagePicker();
+
+  late final TextEditingController _fullNameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _passwordController;
+  late final TextEditingController _vehicleNumberController;
+  late final TextEditingController _aadhaarController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fullNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _passwordController = TextEditingController();
+    _vehicleNumberController = TextEditingController();
+    _aadhaarController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _vehicleNumberController.dispose();
+    _aadhaarController.dispose();
+    super.dispose();
+  }
+
+  CountryCode _selectedCountry = supportedCountryCodes.first;
+
+  void _showCountryPicker() {
+    CountryCodePicker.show(
+      context,
+      selected: _selectedCountry,
+      onSelected: (country) {
+        setState(() {
+          _selectedCountry = country;
+        });
+        ref.read(registrationProvider.notifier).setPhoneNumber(country.dialCode + _phoneController.text);
+      },
+    );
+  }
 
   Future<void> _pickImage(String type) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -87,6 +133,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: state.isLoading ? null : () async {
+                  final error = _validateStep(state.currentStep, state);
+                  if (error != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(error),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                    return;
+                  }
+
                   if (state.currentStep < 2) {
                     notifier.setStep(state.currentStep + 1);
                   } else {
@@ -96,6 +153,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         const SnackBar(content: Text('Registration submitted for approval!')),
                       );
                       context.pop();
+                    } else if (state.errorMessage != null && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.errorMessage!),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
                     }
                   }
                 },
@@ -108,6 +172,48 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         ],
       ),
     );
+  }
+
+  String? _validateStep(int step, RegistrationState state) {
+    if (step == 0) {
+      if (state.request.fullName.trim().isEmpty) {
+        return 'Please enter your Full Name';
+      }
+      if (state.request.email.trim().isEmpty) {
+        return 'Please enter your Email Address';
+      }
+      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+      if (!emailRegex.hasMatch(state.request.email.trim())) {
+        return 'Please enter a valid Email Address';
+      }
+      if (state.request.phoneNumber.trim().isEmpty) {
+        return 'Please enter your Phone Number';
+      }
+      if (state.request.password.trim().isEmpty) {
+        return 'Please enter a Password';
+      }
+      if (state.request.password.length < 6) {
+        return 'Password must be at least 6 characters long';
+      }
+    } else if (step == 1) {
+      if (state.request.vehicleType.trim().isEmpty) {
+        return 'Please select a Vehicle Type';
+      }
+      if (state.request.vehicleNumber.trim().isEmpty) {
+        return 'Please enter your Vehicle Plate Number';
+      }
+    } else if (step == 2) {
+      if (state.request.drivingLicensePath == null || state.request.drivingLicensePath!.isEmpty) {
+        return 'Please upload your Driving License';
+      }
+      if (state.request.profileImagePath == null || state.request.profileImagePath!.isEmpty) {
+        return 'Please upload your Profile Photo';
+      }
+      if (state.request.aadhaarNumber == null || state.request.aadhaarNumber!.trim().isEmpty) {
+        return 'Please enter your Aadhaar / ID Number';
+      }
+    }
+    return null;
   }
 
   Widget _buildStep(int step) {
@@ -128,13 +234,68 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         const SizedBox(height: 8),
         const Text('Tell us a bit about yourself', style: AppTextStyles.bodyMedium),
         const SizedBox(height: 32),
-        _buildTextField('Full Name', (v) => notifier.setFullName(v)),
+        _buildTextField('Full Name', _fullNameController, (v) => notifier.setFullName(v)),
         const SizedBox(height: 16),
-        _buildTextField('Email Address', (v) => notifier.setEmail(v), keyboardType: TextInputType.emailAddress),
+        _buildTextField('Email Address', _emailController, (v) => notifier.setEmail(v), keyboardType: TextInputType.emailAddress),
         const SizedBox(height: 16),
-        _buildTextField('Phone Number', (v) => notifier.setPhoneNumber(v), keyboardType: TextInputType.phone),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Phone Number', style: AppTextStyles.titleSmall),
+            const SizedBox(height: 8),
+            TextField(
+              key: const ValueKey('Phone Number'),
+              controller: _phoneController,
+              onChanged: (v) {
+                notifier.setPhoneNumber(_selectedCountry.dialCode + v);
+              },
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: '0000 0000',
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                prefixIcon: GestureDetector(
+                  onTap: _showCountryPicker,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(
+                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _selectedCountry.flag,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _selectedCountry.dialCode,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
-        _buildTextField('Password', (v) => notifier.setPassword(v), obscureText: true),
+        _buildTextField('Password', _passwordController, (v) => notifier.setPassword(v), obscureText: true),
       ],
     );
   }
@@ -143,10 +304,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     final state = ref.watch(registrationProvider);
     final notifier = ref.read(registrationProvider.notifier);
     final vehicles = [
-      {'type': 'Car', 'icon': Icons.directions_car_rounded},
-      {'type': 'Bike', 'icon': Icons.directions_bike_rounded},
-      {'type': 'Scooter', 'icon': Icons.moped_rounded},
-      {'type': 'Van', 'icon': Icons.airport_shuttle_rounded},
+      {'type': 'Economy', 'image': 'assets/images/icon_vehicle_standard.png'},
+      {'type': 'Standard', 'image': 'assets/images/icon_vehicle_comfort.png'},
+      {'type': 'Premium', 'image': 'assets/images/icon_vehicle_luxury.png'},
+      {'type': 'XL', 'image': 'assets/images/icon_vehicle_xl.png'},
+      {'type': 'Electric', 'image': 'assets/images/icon_vehicle_accessible.png'},
     ];
 
     return Column(
@@ -163,7 +325,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1.5,
+            childAspectRatio: 1.35,
           ),
           itemCount: vehicles.length,
           itemBuilder: (context, index) {
@@ -185,10 +347,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      vehicle['icon'] as IconData,
-                      color: isSelected ? AppColors.primaryGold : AppColors.textMuted,
-                      size: 32,
+                    Image.asset(
+                      vehicle['image'] as String,
+                      width: 60,
+                      height: 40,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -204,7 +367,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           },
         ),
         const SizedBox(height: 24),
-        _buildTextField('Vehicle Number (Plate)', (v) => notifier.setVehicleNumber(v)),
+        _buildTextField('Vehicle Number (Plate)', _vehicleNumberController, (v) => notifier.setVehicleNumber(v)),
       ],
     );
   }
@@ -220,18 +383,26 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         const SizedBox(height: 16),
         _buildUploadCard('Profile Photo', state.request.profileImagePath, () => _pickImage('profile')),
         const SizedBox(height: 16),
-        _buildTextField('Aadhaar / ID Number', (v) => ref.read(registrationProvider.notifier).setAadhaar(v)),
+        _buildTextField('Aadhaar / ID Number', _aadhaarController, (v) => ref.read(registrationProvider.notifier).setAadhaar(v)),
       ],
     );
   }
 
-  Widget _buildTextField(String label, Function(String) onChanged, {TextInputType? keyboardType, bool obscureText = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    Function(String) onChanged, {
+    TextInputType? keyboardType,
+    bool obscureText = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.titleSmall),
         const SizedBox(height: 8),
         TextField(
+          key: ValueKey(label),
+          controller: controller,
           onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,

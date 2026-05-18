@@ -132,13 +132,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _buildInfoCard(
               icon: Icons.directions_car_rounded,
               label: 'Vehicle Type',
-              value: profile?.vehicleType ?? 'Car',
+              value: profile?.vehicle?.type ?? 'Car',
             ),
             const SizedBox(height: 12),
             _buildInfoCard(
               icon: Icons.numbers_rounded,
               label: 'Vehicle Plate',
-              value: profile?.vehicleNumber ?? 'XYZ 1234',
+              value: profile?.vehicle?.plate ?? 'XYZ 1234',
             ),
             const SizedBox(height: 32),
 
