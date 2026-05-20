@@ -1,12 +1,14 @@
 abstract final class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000/v1',
+    defaultValue: 'http://192.168.1.12:3000/v1',
   );
 
   // Auth endpoints
   static const String loginDriver = '/auth/driver/login';
   static const String registerDriver = '/auth/driver/register';
+  static const String sendRegisterOtp = '/auth/driver/register/send-otp';
+  static const String verifyRegisterOtp = '/auth/driver/register/verify-otp';
   static const String sendOtp = '/auth/driver/send-otp';
   static const String verifyOtp = '/auth/driver/verify-otp';
   static const String checkPhone = '/auth/driver/check-phone';

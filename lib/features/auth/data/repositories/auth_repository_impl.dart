@@ -19,6 +19,26 @@ class AuthRepositoryImpl implements AuthRepository {
         _storage = storage;
 
   @override
+  Future<ApiResult<void>> sendRegisterOtp(String phoneNumber) async {
+    try {
+      await _remoteDataSource.sendRegisterOtp(phoneNumber);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> verifyRegisterOtp(String phoneNumber, String otp) async {
+    try {
+      await _remoteDataSource.verifyRegisterOtp(phoneNumber, otp);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
   Future<ApiResult<void>> sendOtp(String phoneNumber) async {
     try {
       await _remoteDataSource.sendOtp(phoneNumber);
@@ -32,6 +52,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<ApiResult<LoginResponse>> verifyOtp(String phoneNumber, String otp) async {
     try {
       final response = await _remoteDataSource.verifyOtp(phoneNumber, otp);
+      await _storage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+      return ApiSuccess(response);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<LoginResponse>> loginWithPassword(String driverId, String password) async {
+    try {
+      final response = await _remoteDataSource.loginWithPassword(driverId, password);
       await _storage.saveTokens(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,

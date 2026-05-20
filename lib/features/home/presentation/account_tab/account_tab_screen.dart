@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -267,43 +269,87 @@ class AccountTabScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).brightness == Brightness.dark 
-            ? AppColors.surfaceDark 
+            ? AppColors.backgroundSecondary 
             : AppColors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
+        titlePadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
         title: Text(
           'Are you sure you want to Log Out?',
           style: AppTextStyles.titleMedium.copyWith(
-            color: Theme.of(context).textTheme.titleMedium?.color,
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? AppColors.textPrimary 
+                : AppColors.textPrimaryLight,
+            fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.center,
         ),
-        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'No',
-              style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.textMuted,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 90,
+                height: 38,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).brightness == Brightness.dark 
+                        ? AppColors.textSecondary 
+                        : AppColors.textSecondaryLight,
+                    side: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.surfaceCard 
+                          : Colors.grey.shade300,
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Text(
+                    'No',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(authProvider.notifier).logout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 90,
+                height: 38,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    await ref.read(authProvider.notifier).logout();
+                    if (context.mounted) {
+                      context.go(RouteNames.welcome);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Text(
+                    'Yes',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: const Text('Yes'),
+            ],
           ),
         ],
       ),
@@ -315,18 +361,23 @@ class AccountTabScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).brightness == Brightness.dark 
-            ? AppColors.surfaceDark 
+            ? AppColors.backgroundSecondary 
             : AppColors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
+        titlePadding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
         title: Text(
           'Account Deactivation',
           style: AppTextStyles.titleMedium.copyWith(
-            color: Theme.of(context).textTheme.titleMedium?.color,
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? AppColors.textPrimary 
+                : AppColors.textPrimaryLight,
+            fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.center,
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -346,13 +397,20 @@ class AccountTabScreen extends ConsumerWidget {
                     ? AppColors.backgroundDarker 
                     : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? AppColors.surfaceDark.withOpacity(0.5) 
+                      : Colors.grey.shade200,
+                ),
               ),
               child: Column(
                 children: [
                   Text(
                     'GoZolt Support',
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: Theme.of(context).textTheme.titleSmall?.color,
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.textPrimary 
+                          : AppColors.textPrimaryLight,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -361,6 +419,7 @@ class AccountTabScreen extends ConsumerWidget {
                     'support@gozolt.com',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.primaryGold,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -368,6 +427,7 @@ class AccountTabScreen extends ConsumerWidget {
                     '+356 2131 0000',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.primaryGold,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -375,18 +435,29 @@ class AccountTabScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
         actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGold,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGold,
+                foregroundColor: AppColors.backgroundPrimary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Got it',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            child: const Text('Got it'),
           ),
         ],
       ),

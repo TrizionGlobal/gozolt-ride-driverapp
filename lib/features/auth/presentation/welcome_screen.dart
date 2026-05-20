@@ -5,7 +5,7 @@ import '../../../core/constants/asset_paths.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/gozolt_logo.dart';
+import '../../../core/widgets/app_button.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -21,95 +21,95 @@ class WelcomeScreen extends ConsumerWidget {
             children: [
               const Spacer(flex: 3),
 
-              // Logo
-              const Center(child: GozoltLogo(size: 120)),
-
-              const SizedBox(height: 24),
-
-              // Title
-              Text(
-                'Gozolt Driver',
-                style: AppTextStyles.headlineLarge.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-                textAlign: TextAlign.center,
+              // ── Logo with text ─────────────────────────────
+              Image.asset(
+                AssetPaths.gozoltLogoWithText,
+                width: 240,
+                fit: BoxFit.contain,
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // Tagline
+              // ── Tagline ────────────────────────────────────
               Text(
                 'Your journey to better earnings starts here',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMuted,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
                 textAlign: TextAlign.center,
               ),
 
               const Spacer(flex: 2),
 
-              // Log In button
-              SizedBox(
+              // ── Log In button (filled gold) ────────────────
+              AppButton(
+                text: 'Log In',
                 width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () => context.push(RouteNames.login),
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                onPressed: () => context.push(RouteNames.login),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Divider
+              // ── "or" divider ─────────────────────────────────
               Row(
                 children: [
-                  const Expanded(child: Divider()),
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).dividerColor.withOpacity(0.2),
+                      thickness: 0.5,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'or',
-                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ),
-                  const Expanded(child: Divider()),
+                  Expanded(
+                    child: Divider(
+                      color: Theme.of(context).dividerColor.withOpacity(0.2),
+                      thickness: 0.5,
+                    ),
+                  ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Register button
-              SizedBox(
+              // ── Register button (outlined) ─────────────────
+              AppButton(
+                text: 'Register',
                 width: double.infinity,
-                height: 56,
-                child: OutlinedButton(
-                  onPressed: () {
-                    context.push(RouteNames.register); 
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primaryGold, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                  ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 16, 
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGold,
-                    ),
-                  ),
-                ),
+                isOutlined: true,
+                onPressed: () => context.push(RouteNames.register),
               ),
 
               const Spacer(),
 
-              // Footer
-              Text(
-                'Powered By PRIMOOO',
-                style: AppTextStyles.footerText.copyWith(color: AppColors.textMuted),
+              // ── Footer ────────────────────────────────────
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'All rights reserved \u00a9 ',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                        fontSize: 11,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'PRIMOOO 2025',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryGold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 24),

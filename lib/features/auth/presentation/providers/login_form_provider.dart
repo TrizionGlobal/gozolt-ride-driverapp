@@ -1,35 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LoginFormState {
-  final String dialCode;
-  final String phoneNumber;
-  final String verificationId;
+  final String driverId;
+  final String password;
   final bool rememberMe;
   final String? errorMessage;
 
   const LoginFormState({
-    this.dialCode = '+356',
-    this.phoneNumber = '',
-    this.verificationId = '',
+    this.driverId = '',
+    this.password = '',
     this.rememberMe = false,
     this.errorMessage,
   });
 
-  bool get isValid => phoneNumber.isNotEmpty && phoneNumber.length >= 7;
-  String get fullPhoneNumber => '$dialCode$phoneNumber';
+  bool get isValid => driverId.trim().isNotEmpty && password.trim().length >= 6;
+  String get fullPhoneNumber => '';
 
   LoginFormState copyWith({
-    String? dialCode,
-    String? phoneNumber,
-    String? verificationId,
+    String? driverId,
+    String? password,
     bool? rememberMe,
     String? errorMessage,
     bool clearError = false,
   }) {
     return LoginFormState(
-      dialCode: dialCode ?? this.dialCode,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      verificationId: verificationId ?? this.verificationId,
+      driverId: driverId ?? this.driverId,
+      password: password ?? this.password,
       rememberMe: rememberMe ?? this.rememberMe,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
@@ -44,14 +40,11 @@ final loginFormProvider =
 class LoginFormNotifier extends StateNotifier<LoginFormState> {
   LoginFormNotifier() : super(const LoginFormState());
 
-  void setDialCode(String value) =>
-      state = state.copyWith(dialCode: value, clearError: true);
+  void setDriverId(String value) =>
+      state = state.copyWith(driverId: value, clearError: true);
 
-  void setPhoneNumber(String value) =>
-      state = state.copyWith(phoneNumber: value, clearError: true);
-
-  void setVerificationId(String value) =>
-      state = state.copyWith(verificationId: value);
+  void setPassword(String value) =>
+      state = state.copyWith(password: value, clearError: true);
 
   void toggleRememberMe() =>
       state = state.copyWith(rememberMe: !state.rememberMe);
@@ -59,6 +52,6 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
   void setError(String message) =>
       state = state.copyWith(errorMessage: message);
 
-  void prefillPhoneNumber(String phoneNumber) =>
-      state = state.copyWith(phoneNumber: phoneNumber, rememberMe: true);
+  void prefillDriverId(String driverId) =>
+      state = state.copyWith(driverId: driverId, rememberMe: true);
 }

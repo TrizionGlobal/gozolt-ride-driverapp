@@ -41,6 +41,7 @@ dependencies:
 
   # Camera / Image Picker
   image_picker: ^1.1.2
+  file_picker: ^8.1.7
 
   # Audio
   just_audio: ^0.9.40

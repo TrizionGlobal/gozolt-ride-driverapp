@@ -7,4 +7,5 @@ abstract final class RouteNames {
   static const String otp = '/otp';
   static const String home = '/home';
   static const String notifications = '/notifications';
+  static const String registrationStatus = '/registration-status';
 }

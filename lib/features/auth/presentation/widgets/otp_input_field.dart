@@ -8,6 +8,7 @@ class OtpInputField extends StatefulWidget {
   final ValueChanged<String>? onCompleted;
   final ValueChanged<String>? onChanged;
   final bool hasError;
+  final bool enabled;
 
   const OtpInputField({
     super.key,
@@ -15,6 +16,7 @@ class OtpInputField extends StatefulWidget {
     this.onCompleted,
     this.onChanged,
     this.hasError = false,
+    this.enabled = true,
   });
 
   @override
@@ -104,6 +106,7 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
                   child: TextField(
                     controller: _controllers[index],
                     focusNode: _focusNodes[index],
+                    enabled: widget.enabled,
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     maxLength: 1,

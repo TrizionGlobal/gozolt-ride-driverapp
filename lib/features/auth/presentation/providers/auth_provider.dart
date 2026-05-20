@@ -31,6 +31,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = isAuth ? const AuthAuthenticated() : const AuthUnauthenticated();
   }
 
+  Future<bool> loginWithPassword({
+    required String driverId,
+    required String password,
+  }) async {
+    state = const AuthLoading();
+    final result = await _repository.loginWithPassword(driverId, password);
+    switch (result) {
+      case ApiSuccess():
+        state = const AuthAuthenticated();
+        return true;
+      case ApiFailure(:final exception):
+        state = AuthError(exception.message);
+        return false;
+    }
+  }
+
   Future<bool> sendOtp(String phoneNumber) async {
     state = const AuthLoading();
     final result = await _repository.sendOtp(phoneNumber);

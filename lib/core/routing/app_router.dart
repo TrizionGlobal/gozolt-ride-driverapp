@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/registration_screen.dart';
+import '../../features/auth/presentation/registration_status_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/otp_screen.dart';
@@ -60,6 +61,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RouteNames.notifications,
         name: 'notifications',
         builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.registrationStatus,
+        name: 'registrationStatus',
+        builder: (context, state) {
+          final isFleet = state.extra as bool? ?? false;
+          return RegistrationStatusScreen(isFleet: isFleet);
+        },
       ),
     ],
     errorBuilder: (context, state) {
