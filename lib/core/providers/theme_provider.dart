@@ -15,16 +15,30 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 
   Future<void> _loadTheme() async {
-    // Note: You can implement theme persistence in your storage provider later
-    // For now, default to dark
-    state = ThemeMode.dark;
+    try {
+      final saved = await _storage.read(key: 'theme_mode');
+      if (saved == 'light') {
+        state = ThemeMode.light;
+      } else {
+        state = ThemeMode.dark;
+      }
+    } catch (_) {
+      state = ThemeMode.dark;
+    }
   }
 
-  void setThemeMode(ThemeMode mode) {
+  void setThemeMode(ThemeMode mode) async {
     state = mode;
+    try {
+      await _storage.write(key: 'theme_mode', value: mode == ThemeMode.light ? 'light' : 'dark');
+    } catch (_) {}
   }
 
-  void toggleTheme() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+  void toggleTheme() async {
+    final next = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    state = next;
+    try {
+      await _storage.write(key: 'theme_mode', value: next == ThemeMode.light ? 'light' : 'dark');
+    } catch (_) {}
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
+import '../../../../../core/constants/api_constants.dart';
 import '../../../../driver/presentation/providers/driver_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -39,18 +40,87 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (firstName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('First Name is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (lastName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Last Name is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    
+    bool success = true;
+
+    // 1. Upload picked image if present
+    if (_pickedImage != null) {
+      final uploadSuccess = await ref.read(driverProfileProvider.notifier).uploadAvatar(_pickedImage!.path);
+      if (!uploadSuccess) {
+        success = false;
+      }
+    }
+
+    // 2. Update profile text details
+    if (success) {
+      final updateSuccess = await ref.read(driverProfileProvider.notifier).updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+      );
+      if (!updateSuccess) {
+        success = false;
+      }
+    }
+
     if (mounted) {
       setState(() {
         _isSaving = false;
-        _isEditing = false;
+        if (success) {
+          _isEditing = false;
+          _pickedImage = null; // Clear the picked image file after successful upload/save
+        }
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text(success ? 'Profile updated successfully' : 'Failed to update profile'),
+          backgroundColor: success ? Colors.green : Colors.red,
         ),
       );
     }
@@ -67,16 +137,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: AppColors.primaryGold,
         foregroundColor: AppColors.backgroundPrimary,
         actions: [
-          IconButton(
-            icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded),
-            onPressed: () {
-              if (_isEditing) {
-                _saveProfile();
-              } else {
-                setState(() => _isEditing = true);
-              }
-            },
-          ),
+          if (_isSaving)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.backgroundPrimary),
+                  ),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded),
+              onPressed: () {
+                if (_isEditing) {
+                  _saveProfile();
+                } else {
+                  setState(() => _isEditing = true);
+                }
+              },
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -92,7 +177,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   backgroundImage: _pickedImage != null
                       ? FileImage(_pickedImage!) as ImageProvider
                       : (profile?.avatarUrl != null
-                          ? NetworkImage(profile!.avatarUrl!) as ImageProvider
+                          ? NetworkImage(ApiConstants.fullUrl(profile!.avatarUrl!)) as ImageProvider
                           : null),
                   child: (_pickedImage == null && profile?.avatarUrl == null)
                       ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
@@ -146,9 +231,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _buildSectionHeader('Verification Documents'),
             _buildDocumentTile('Driving License', true),
             const SizedBox(height: 12),
-            _buildDocumentTile('Vehicle RC', true),
+            _buildDocumentTile('Vehicle Registration (RC)', true),
             const SizedBox(height: 12),
-            _buildDocumentTile('Aadhaar Card', false), // Simulated pending
+            _buildDocumentTile('CPC Certificate', true),
+            const SizedBox(height: 12),
+            _buildDocumentTile('Vehicle Insurance', true),
           ],
         ),
       ),

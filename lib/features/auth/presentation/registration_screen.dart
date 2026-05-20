@@ -27,8 +27,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   late final TextEditingController _otpController;
   final _otpKey = GlobalKey<OtpInputFieldState>();
 
-  // Step 1: Supplier Link
-  late final TextEditingController _supplierCodeController;
 
   // Step 2: Identity & Contact Info
   late final TextEditingController _fullNameController;
@@ -65,7 +63,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   void initState() {
     super.initState();
     _otpController = TextEditingController();
-    _supplierCodeController = TextEditingController();
 
     _fullNameController = TextEditingController();
     _dobController = TextEditingController();
@@ -97,7 +94,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   @override
   void dispose() {
     _otpController.dispose();
-    _supplierCodeController.dispose();
 
     _fullNameController.dispose();
     _dobController.dispose();
@@ -127,7 +123,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     super.dispose();
   }
 
-  int get _totalSteps => 4;
+  int get _totalSteps => 3;
 
   void _showCountryPicker() {
     CountryCodePicker.show(
@@ -297,10 +293,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       case 0:
         return 'OTP Verification';
       case 1:
-        return 'Link Supplier';
-      case 2:
         return 'Identity & Contact';
-      case 3:
+      case 2:
         return 'Licences & Credentials';
       default:
         return '';
@@ -321,9 +315,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         } else if (!state.isOtpVerified) {
           return _otpController.text.trim().length == 6;
         }
-      }
-      if (state.currentStep == 1) {
-        return state.request.supplierCode != null && state.request.supplierCode!.trim().isNotEmpty;
       }
       return true;
     }();
@@ -487,6 +478,15 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('OTP sent successfully!')),
           );
+        } else if (!success && mounted) {
+          final errorMsg = ref.read(registrationProvider).errorMessage ?? 'Failed to send OTP';
+          final isAlreadyRegistered = errorMsg.toLowerCase().contains('already registered') ||
+              errorMsg.toLowerCase().contains('pending approval');
+          if (isAlreadyRegistered) {
+            _showAlreadyRegisteredDialog();
+          } else {
+            _showError(errorMsg);
+          }
         }
         return;
       } else if (!state.isOtpVerified) {
@@ -501,6 +501,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             const SnackBar(content: Text('Phone number verified!')),
           );
           notifier.setStep(1);
+        } else if (!success && mounted) {
+          _showError(ref.read(registrationProvider).errorMessage ?? 'Invalid OTP');
         }
         return;
       } else {
@@ -523,9 +525,54 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     } else {
       final success = await notifier.register();
       if (success && mounted) {
-        context.go(RouteNames.registrationStatus, extra: state.request.driverType == 'FLEET');
+        context.go(
+          RouteNames.registrationStatus,
+          extra: {
+            'isFleet': state.request.driverType == 'FLEET',
+            'phone': _selectedCountry.dialCode + _phoneController.text.trim(),
+          },
+        );
+      } else if (!success && mounted) {
+        final errorMsg = ref.read(registrationProvider).errorMessage ?? 'Registration failed';
+        final isAlreadyRegistered = errorMsg.toLowerCase().contains('already registered') ||
+            errorMsg.toLowerCase().contains('pending approval');
+        if (isAlreadyRegistered) {
+          _showAlreadyRegisteredDialog();
+        }
       }
     }
+  }
+
+  void _showAlreadyRegisteredDialog() {
+    ref.read(registrationProvider.notifier).clearError();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline_rounded, color: Color(0xFFFFC107), size: 28),
+            SizedBox(width: 10),
+            Text('Already Registered', style: TextStyle(color: Colors.white, fontSize: 18)),
+          ],
+        ),
+        content: const Text(
+          'You have already registered as a driver.\n\nPlease wait for your supplier to approve your account. You will receive a notification once approved.',
+          style: TextStyle(color: Colors.white70, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.go(RouteNames.welcome);
+            },
+            child: const Text('OK', style: TextStyle(color: Color(0xFFFFC107), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showError(String message) {
@@ -545,12 +592,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       case 0:
         if (!state.isOtpVerified) return 'Please verify your phone number via OTP first';
         break;
-      case 1:
-        if (state.request.supplierCode == null || state.request.supplierCode!.trim().isEmpty) {
-          return 'Please enter your supplier invite code';
-        }
-        break;
-      case 2: // Identity & Contact Details
+      case 1: // Identity & Contact Details
         if (state.request.fullName.trim().isEmpty) return 'Please enter your full legal name';
         if (state.request.dateOfBirth == null || state.request.dateOfBirth!.isEmpty) return 'Please select your Date of Birth';
         if (state.request.nationality == null || state.request.nationality!.isEmpty) return 'Please enter your Nationality';
@@ -565,7 +607,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         if (state.request.emergencyContactName == null || state.request.emergencyContactName!.isEmpty) return 'Emergency contact name is required';
         if (state.request.emergencyContactPhone == null || state.request.emergencyContactPhone!.isEmpty) return 'Emergency contact phone number is required';
         break;
-      case 3: // Credentials
+      case 2: // Credentials
         if (state.request.licenseNumber == null || state.request.licenseNumber!.isEmpty) return 'Please enter your driver licence number';
         if (state.request.licenseCategory == null || state.request.licenseCategory!.isEmpty) return 'Please select licence category';
         if (state.request.licenseIssueDate == null || state.request.licenseIssueDate!.isEmpty) return 'Please select licence issue date';
@@ -590,9 +632,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   Widget _buildStep(int step, RegistrationState state, RegistrationNotifier notifier) {
     switch (step) {
       case 0: return _buildOtpStep(state, notifier);
-      case 1: return _buildSupplierLinkStep(state, notifier);
-      case 2: return _buildIdentityContactStep(state, notifier);
-      case 3: return _buildCredentialsStep(state, notifier);
+      case 1: return _buildIdentityContactStep(state, notifier);
+      case 2: return _buildCredentialsStep(state, notifier);
       default: return const SizedBox();
     }
   }
@@ -667,6 +708,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             length: 6,
             enabled: !state.isOtpVerified,
             hasError: state.errorMessage != null,
+            initialValue: _otpController.text,
             onChanged: (otp) {
               _otpController.text = otp;
               setState(() {});
@@ -716,27 +758,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildSupplierLinkStep(RegistrationState state, RegistrationNotifier notifier) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Link Supplier', style: AppTextStyles.headlineSmall),
-        const SizedBox(height: 8),
-        const Text(
-          'Enter the supplier code or invite code provided by your fleet/company to register as their driver.',
-          style: AppTextStyles.bodyMedium,
-        ),
-        const SizedBox(height: 24),
-        _buildTextField(
-          'Supplier Code / Invite Code',
-          _supplierCodeController,
-          (v) => notifier.setSupplierCode(v),
-          hintText: 'e.g. FLEET123',
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
 
   Widget _buildIdentityContactStep(RegistrationState state, RegistrationNotifier notifier) {
     final isFleet = state.request.driverType == 'FLEET';

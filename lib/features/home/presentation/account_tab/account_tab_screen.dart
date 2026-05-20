@@ -218,10 +218,16 @@ class AccountTabScreen extends ConsumerWidget {
               ),
               _MenuTile(
                 icon: Icons.brightness_6_rounded,
-                label: 'Appearance',
-                trailing: Text(
-                  ref.watch(themeModeProvider) == ThemeMode.dark ? 'Dark' : 'Light',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryGold),
+                label: 'Theme mode',
+                trailing: Transform.scale(
+                  scale: 0.8,
+                  child: Switch.adaptive(
+                    value: ref.watch(themeModeProvider) == ThemeMode.dark,
+                    activeColor: AppColors.primaryGold,
+                    onChanged: (value) {
+                      ref.read(themeModeProvider.notifier).toggleTheme();
+                    },
+                  ),
                 ),
                 onTap: () {
                   ref.read(themeModeProvider.notifier).toggleTheme();

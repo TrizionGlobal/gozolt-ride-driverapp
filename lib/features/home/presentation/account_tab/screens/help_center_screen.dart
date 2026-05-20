@@ -23,7 +23,7 @@ class HelpCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -165,7 +165,9 @@ class _HelpTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Material(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? AppColors.surfaceDark 
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -191,14 +193,14 @@ class _HelpTile extends StatelessWidget {
                       Text(
                         label,
                         style: AppTextStyles.titleSmall.copyWith(
-                          color: AppColors.backgroundPrimary,
+                          color: Theme.of(context).textTheme.titleSmall?.color,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMuted,
+                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7) ?? AppColors.textMuted,
                         ),
                       ),
                     ],

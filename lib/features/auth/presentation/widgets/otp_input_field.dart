@@ -9,6 +9,7 @@ class OtpInputField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool hasError;
   final bool enabled;
+  final String? initialValue;
 
   const OtpInputField({
     super.key,
@@ -17,6 +18,7 @@ class OtpInputField extends StatefulWidget {
     this.onChanged,
     this.hasError = false,
     this.enabled = true,
+    this.initialValue,
   });
 
   @override
@@ -31,12 +33,32 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(widget.length, (index) => TextEditingController());
+    _controllers = List.generate(widget.length, (index) {
+      final controller = TextEditingController();
+      if (widget.initialValue != null && widget.initialValue!.length > index) {
+        controller.text = widget.initialValue![index];
+      }
+      return controller;
+    });
     _focusNodes = List.generate(widget.length, (index) => FocusNode());
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant OtpInputField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue && widget.initialValue != null) {
+      for (int i = 0; i < widget.length; i++) {
+        if (widget.initialValue!.length > i) {
+          _controllers[i].text = widget.initialValue![i];
+        } else {
+          _controllers[i].text = '';
+        }
+      }
+    }
   }
 
   @override

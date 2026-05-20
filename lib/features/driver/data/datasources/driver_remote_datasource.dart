@@ -5,6 +5,9 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_exception.dart';
 import '../models/driver_profile.dart';
 import '../models/earnings_summary.dart';
+import '../models/daily_earnings.dart';
+import '../models/driver_earnings_balance.dart';
+import '../models/driver_ratings_response.dart';
 
 class DriverRemoteDataSource {
   final Dio _dio;
@@ -70,6 +73,29 @@ class DriverRemoteDataSource {
     }
   }
 
+  Future<List<DailyEarnings>> getWeeklyEarnings() async {
+    try {
+      final now = DateTime.now();
+      final from = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
+      final to = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+      final queryParams = <String, dynamic>{
+        'from': from.toIso8601String(),
+        'to': to.toIso8601String(),
+      };
+      
+      final response = await _dio.get(
+        ApiConstants.driverEarnings,
+        queryParameters: queryParams,
+      );
+      
+      final list = (response.data['dailyBreakdown'] as List?) ?? [];
+      return list.map((json) => DailyEarnings.fromJson(json as Map<String, dynamic>)).toList();
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -125,6 +151,91 @@ class DriverRemoteDataSource {
         data: formData,
       );
       return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverProfile> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (firstName != null) data['firstName'] = firstName;
+      if (lastName != null) data['lastName'] = lastName;
+      if (email != null) data['email'] = email;
+
+      final response = await _dio.patch(
+        ApiConstants.driverMe,
+        data: data,
+      );
+      return DriverProfile.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<void> uploadAvatar(String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(filePath),
+      });
+      await _dio.post(
+        ApiConstants.driverAvatar,
+        data: formData,
+      );
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<void> deleteAvatar() async {
+    try {
+      await _dio.delete(ApiConstants.driverAvatar);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverEarningsBalance> getEarningsBalance() async {
+    try {
+      final response = await _dio.get(ApiConstants.driverEarningsBalance);
+      return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverEarningsBalance> addMoney(double amount) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.driverWalletAddMoney,
+        data: {'amount': amount},
+      );
+      return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverEarningsBalance> withdraw(double amount) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.driverWalletWithdraw,
+        data: {'amount': amount},
+      );
+      return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverRatingsResponse> getRatings() async {
+    try {
+      final response = await _dio.get('${ApiConstants.driverMe}/ratings');
+      return DriverRatingsResponse.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);
     }

@@ -97,6 +97,8 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
   void setInsurancePolicyNumber(String value) => state = state.copyWith(request: state.request.copyWith(insurancePolicyNumber: value));
   void setInsuranceDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(insuranceDocumentPath: value));
 
+  void clearError() => state = state.copyWith(clearError: true);
+
   Future<bool> sendRegisterOtp(String phoneNumber) async {
     state = state.copyWith(isLoading: true, clearError: true);
     final result = await _repository.sendRegisterOtp(phoneNumber);

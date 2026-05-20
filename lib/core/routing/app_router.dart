@@ -66,8 +66,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RouteNames.registrationStatus,
         name: 'registrationStatus',
         builder: (context, state) {
-          final isFleet = state.extra as bool? ?? false;
-          return RegistrationStatusScreen(isFleet: isFleet);
+          bool isFleet = false;
+          String? phone;
+          if (state.extra is Map<String, dynamic>) {
+            final extra = state.extra as Map<String, dynamic>;
+            isFleet = extra['isFleet'] as bool? ?? false;
+            phone = extra['phone'] as String?;
+          } else if (state.extra is bool) {
+            isFleet = state.extra as bool;
+          }
+          return RegistrationStatusScreen(isFleet: isFleet, phone: phone);
         },
       ),
     ],

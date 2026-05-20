@@ -35,6 +35,47 @@ class DriverProfileNotifier extends StateNotifier<AsyncValue<DriverProfile>> {
     }
   }
 
+  Future<bool> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    final result = await _repository.updateProfile(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+    );
+    switch (result) {
+      case ApiSuccess(:final data):
+        state = AsyncValue.data(data);
+        return true;
+      case ApiFailure():
+        return false;
+    }
+  }
+
+  Future<bool> uploadAvatar(String filePath) async {
+    final result = await _repository.uploadAvatar(filePath);
+    switch (result) {
+      case ApiSuccess():
+        await fetchProfile();
+        return true;
+      case ApiFailure():
+        return false;
+    }
+  }
+
+  Future<bool> deleteAvatar() async {
+    final result = await _repository.deleteAvatar();
+    switch (result) {
+      case ApiSuccess():
+        await fetchProfile();
+        return true;
+      case ApiFailure():
+        return false;
+    }
+  }
+
   void clearProfile() {
     state = const AsyncValue.loading();
   }

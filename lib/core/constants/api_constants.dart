@@ -1,7 +1,7 @@
 abstract final class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.12:3000/v1',
+    defaultValue: 'http://192.168.1.7:3000/v1',
   );
 
   // Auth endpoints
@@ -15,6 +15,7 @@ abstract final class ApiConstants {
   static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
   static const String changePassword = '/auth/change-password';
+  static const String driverRegistrationStatus = '/auth/driver/registration-status';
 
   // Driver endpoints
   static const String driverMe = '/drivers/me';
@@ -58,10 +59,23 @@ abstract final class ApiConstants {
   // Data export
   static const String driverExport = '/drivers/me/export';
 
+  // Wallet actions
+  static const String driverWalletAddMoney = '/drivers/me/wallet/add-money';
+  static const String driverWalletWithdraw = '/drivers/me/wallet/withdraw';
+
   // Notification endpoints
   static const String notifications = '/users/me/notifications';
 
+  // Driver avatar
+  static const String driverAvatar = '/drivers/me/avatar';
+
+  static String fullUrl(String path) {
+    if (path.startsWith('http')) return path;
+    final base = baseUrl.replaceAll('/v1', '');
+    return '$base$path';
+  }
+
   // Timeouts
-  static const Duration connectTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectTimeout = Duration(seconds: 60);
+  static const Duration receiveTimeout = Duration(seconds: 60);
 }

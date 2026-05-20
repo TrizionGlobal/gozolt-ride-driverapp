@@ -5,6 +5,8 @@ import '../datasources/driver_remote_datasource.dart';
 import '../models/daily_earnings.dart';
 import '../models/driver_profile.dart';
 import '../models/earnings_summary.dart';
+import '../models/driver_earnings_balance.dart';
+import '../models/driver_ratings_response.dart';
 
 class DriverRepositoryImpl implements DriverRepository {
   final DriverRemoteDataSource _remoteDataSource;
@@ -149,20 +151,8 @@ class DriverRepositoryImpl implements DriverRepository {
     }
 
     try {
-      final now = DateTime.now();
-      final from = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
-      final to = DateTime(now.year, now.month, now.day, 23, 59, 59);
-      final earnings = await _remoteDataSource.getEarnings(from: from, to: to);
-      // For now, return a single-day list; backend would return daily breakdown
-      return ApiSuccess([
-        DailyEarnings(
-          date: DateTime(now.year, now.month, now.day),
-          totalEarnings: earnings.totalEarnings,
-          tripCount: earnings.tripCount,
-          cashEarnings: earnings.cashEarnings,
-          cardEarnings: earnings.cardEarnings,
-        ),
-      ]);
+      final weeklyEarnings = await _remoteDataSource.getWeeklyEarnings();
+      return ApiSuccess(weeklyEarnings);
     } on ApiException catch (e) {
       return ApiFailure(e);
     }
@@ -211,6 +201,84 @@ class DriverRepositoryImpl implements DriverRepository {
     try {
       await _remoteDataSource.endShift();
       return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<DriverProfile>> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    try {
+      final profile = await _remoteDataSource.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+      );
+      return ApiSuccess(profile);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> uploadAvatar(String filePath) async {
+    try {
+      await _remoteDataSource.uploadAvatar(filePath);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> deleteAvatar() async {
+    try {
+      await _remoteDataSource.deleteAvatar();
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<DriverEarningsBalance>> getEarningsBalance() async {
+    try {
+      final balance = await _remoteDataSource.getEarningsBalance();
+      return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<DriverEarningsBalance>> addMoney(double amount) async {
+    try {
+      final balance = await _remoteDataSource.addMoney(amount);
+      return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<DriverEarningsBalance>> withdraw(double amount) async {
+    try {
+      final balance = await _remoteDataSource.withdraw(amount);
+      return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<DriverRatingsResponse>> getRatings() async {
+    try {
+      final ratings = await _remoteDataSource.getRatings();
+      return ApiSuccess(ratings);
     } on ApiException catch (e) {
       return ApiFailure(e);
     }

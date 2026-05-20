@@ -24,14 +24,35 @@ class RideHistoryItem {
   });
 
   factory RideHistoryItem.fromJson(Map<String, dynamic> json) {
+    final pay = json['payment'] as Map<String, dynamic>?;
+    final payMethod = pay?['method'] as String? ??
+        json['paymentMethod'] as String? ??
+        json['payment_method'] as String? ??
+        'cash';
+
+    final tipsList = json['tips'] as List<dynamic>?;
+    double? calculatedTip;
+    if (tipsList != null && tipsList.isNotEmpty) {
+      double sum = 0;
+      for (final t in tipsList) {
+        if (t is Map<String, dynamic>) {
+          sum += toDouble(t['amount']) ?? 0;
+        }
+      }
+      calculatedTip = sum;
+    }
+
     return RideHistoryItem(
       id: json['id'] as String? ?? '',
       status: json['status'] as String? ?? '',
       pickupAddress: json['pickupAddress'] as String? ?? json['pickup_address'] as String? ?? '',
       dropoffAddress: json['dropoffAddress'] as String? ?? json['dropoff_address'] as String? ?? '',
-      paymentMethod: json['paymentMethod'] as String? ?? json['payment_method'] as String? ?? 'cash',
-      fare: toDouble(json['actualFare']) ?? toDouble(json['actual_fare']),
-      tipAmount: toDouble(json['tipAmount']) ?? toDouble(json['tip_amount']),
+      paymentMethod: payMethod,
+      fare: toDouble(json['actualFare']) ??
+          toDouble(json['actual_fare']) ??
+          toDouble(json['estimatedFare']) ??
+          toDouble(json['estimated_fare']),
+      tipAmount: calculatedTip ?? toDouble(json['tipAmount']) ?? toDouble(json['tip_amount']),
       completedAt: json['completedAt'] != null
           ? DateTime.tryParse(json['completedAt'] as String)
           : json['completed_at'] != null

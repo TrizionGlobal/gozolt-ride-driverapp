@@ -1,16 +1,21 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../core/network/dio_client.dart';
+import '../../../core/constants/api_constants.dart';
 
 class RegistrationStatusScreen extends StatefulWidget {
   final bool isFleet;
+  final String? phone;
 
   const RegistrationStatusScreen({
     super.key,
     required this.isFleet,
+    this.phone,
   });
 
   @override
@@ -34,6 +39,147 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   void dispose() {
     _rotationController.dispose();
     super.dispose();
+  }
+
+  bool _isChecking = false;
+
+  Future<void> _checkStatus() async {
+    if (_isChecking) return;
+    if (widget.phone == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Checking live status... Application is still under review.'),
+          backgroundColor: AppColors.primaryGold,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isChecking = true;
+    });
+
+    try {
+      final dio = createDio();
+      final response = await dio.get(
+        '${ApiConstants.driverRegistrationStatus}?phone=${Uri.encodeComponent(widget.phone!)}',
+      );
+      
+      if (mounted) {
+        final data = response.data as Map<String, dynamic>;
+        final status = data['status'] as String?;
+        final driverId = data['driverId'] as String?;
+
+        if (status == 'ACTIVE' || status == 'APPROVED') {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF1A1A2E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
+                  SizedBox(width: 10),
+                  Text('Application Approved!', style: TextStyle(color: Colors.white, fontSize: 18)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Congratulations! Your driver application has been successfully approved.',
+                    style: TextStyle(color: Colors.white70, height: 1.4),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primaryGold.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Your Driver ID:', style: TextStyle(color: Colors.white70)),
+                        Text(
+                          driverId ?? 'N/A',
+                          style: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Please check your email for your temporary password to log in.',
+                    style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    context.go(RouteNames.welcome);
+                  },
+                  child: const Text('LOG IN NOW', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Status: ${status?.replaceAll('_', ' ') ?? 'UNDER REVIEW'}. Application is still being processed.'),
+              backgroundColor: AppColors.primaryGold,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to fetch status. Application is still under review.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _contactSupport() async {
+    final emailUri = Uri(
+      scheme: 'mailto',
+      path: 'support@gozolt.com',
+      queryParameters: {
+        'subject': 'Gozolt Driver Onboarding Support Request',
+        'body': widget.phone != null ? 'My registered phone number is: ${widget.phone}' : '',
+      },
+    );
+    try {
+      if (await canLaunchUrl(emailUri)) {
+        await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch email client';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Support email: support@gozolt.com'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -184,15 +330,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
 
               // Action buttons
               ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Checking live status... Application is still under review.'),
-                      backgroundColor: AppColors.primaryGold,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
+                onPressed: _isChecking ? null : _checkStatus,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGold,
                   foregroundColor: Colors.black,
@@ -201,21 +339,23 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Check Live Status',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                child: _isChecking
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                        ),
+                      )
+                    : const Text(
+                        'Check Live Status',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Support details: support@gozolt.com'),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                },
+                onPressed: _contactSupport,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(56),
                   side: BorderSide(
@@ -311,7 +451,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
             ),
           ),
           if (isInProgress)
-            Text(
+            const Text(
               'In Progress',
               style: TextStyle(
                 fontSize: 12,
