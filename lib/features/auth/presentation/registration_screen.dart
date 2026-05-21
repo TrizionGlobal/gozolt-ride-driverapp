@@ -812,7 +812,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         _buildTextField('Emergency contact name', _emergencyContactNameController, (v) => notifier.setEmergencyContactName(v), hintText: 'e.g. Spouse/Parent Name'),
         const SizedBox(height: 16),
         
-        _buildTextField('Emergency contact phone number', _emergencyContactPhoneController, (v) => notifier.setEmergencyContactPhone(v), keyboardType: TextInputType.phone, hintText: '+356 7910 0001'),
+        _buildTextField('Emergency contact phone number', _emergencyContactPhoneController, (v) => notifier.setEmergencyContactPhone(v), keyboardType: TextInputType.phone, hintText: 'Enter Mobile Number'),
         const SizedBox(height: 16),
       ],
     );
