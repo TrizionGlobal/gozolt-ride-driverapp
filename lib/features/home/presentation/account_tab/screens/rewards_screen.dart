@@ -37,7 +37,7 @@ class RewardsScreen extends StatelessWidget {
                         color: AppColors.primaryGold.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Text('₹500 Bonus', style: TextStyle(color: AppColors.primaryGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text('€500 Bonus', style: TextStyle(color: AppColors.primaryGold, fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -63,21 +63,21 @@ class RewardsScreen extends StatelessWidget {
           
           _buildIncentiveTile(
             'Peak Hour Bonus',
-            'Get extra ₹20 on every ride between 6 PM - 9 PM',
+            'Get extra €20 on every ride between 6 PM - 9 PM',
             Icons.trending_up_rounded,
             Colors.orange,
           ),
           const SizedBox(height: 12),
           _buildIncentiveTile(
             'Long Distance Reward',
-            '₹50 extra for rides longer than 15km',
+            '€50 extra for rides longer than 15km',
             Icons.speed_rounded,
             Colors.blue,
           ),
           const SizedBox(height: 12),
           _buildIncentiveTile(
             'High Rating Bonus',
-            'Maintain 4.8+ rating this week for ₹200 bonus',
+            'Maintain 4.8+ rating this week for €200 bonus',
             Icons.star_rounded,
             Colors.green,
           ),
