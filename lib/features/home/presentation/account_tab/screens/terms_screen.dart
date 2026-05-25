@@ -8,7 +8,7 @@ class TermsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -30,7 +30,7 @@ class TermsScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withValues(alpha: 0.2),
+                        color: AppColors.backgroundPrimary.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -139,7 +139,7 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: AppTextStyles.titleMedium.copyWith(
-        color: AppColors.backgroundPrimary,
+        color: Theme.of(context).textTheme.titleLarge?.color,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -155,7 +155,7 @@ class _BodyText extends StatelessWidget {
     return Text(
       text,
       style: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textMuted,
+        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
         height: 1.6,
       ),
     );
@@ -189,7 +189,7 @@ class _BulletPoint extends StatelessWidget {
             child: Text(
               text,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
                 height: 1.5,
               ),
             ),
@@ -199,3 +199,4 @@ class _BulletPoint extends StatelessWidget {
     );
   }
 }
+

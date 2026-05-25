@@ -18,7 +18,7 @@ class RideMetricsBubbles extends ConsumerWidget {
     final speedKmh = positionAsync.when(
       data: (p) => (p.speed * 3.6).clamp(0.0, 999.0),
       loading: () => 0.0,
-      error: (_, _) => 0.0,
+      error: (err, stack) => 0.0,
     );
 
     // Use real-time remaining distance from destination proximity provider
@@ -74,12 +74,12 @@ class _MetricBubble extends StatelessWidget {
         color: AppColors.backgroundPrimary,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.primaryGold.withValues(alpha: 0.5),
+          color: AppColors.primaryGold.withOpacity(0.5),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.3),
+            color: AppColors.black.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -110,3 +110,5 @@ class _MetricBubble extends StatelessWidget {
     );
   }
 }
+
+

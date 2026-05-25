@@ -21,7 +21,7 @@ class CountdownTimer extends ConsumerWidget {
           CircularProgressIndicator(
             value: maxSeconds > 0 ? seconds / maxSeconds : 0,
             strokeWidth: 3,
-            backgroundColor: AppColors.textMuted.withValues(alpha: 0.2),
+            backgroundColor: AppColors.textMuted.withOpacity(0.2),
             color: seconds <= 5
                 ? const Color(0xFFE53935)
                 : AppColors.primaryGold,
@@ -38,3 +38,4 @@ class CountdownTimer extends ConsumerWidget {
     );
   }
 }
+

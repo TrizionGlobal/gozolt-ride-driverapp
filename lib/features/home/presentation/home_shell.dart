@@ -76,6 +76,8 @@ class _HomeShellState extends ConsumerState<HomeShell>
     final ride = ref.watch(rideSessionProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF151515),
+      extendBody: true,
       body: IndexedStack(
         index: currentIndex,
         children: _screens,

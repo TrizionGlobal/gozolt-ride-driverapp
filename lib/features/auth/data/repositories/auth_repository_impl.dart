@@ -19,31 +19,68 @@ class AuthRepositoryImpl implements AuthRepository {
         _storage = storage;
 
   @override
-  Future<ApiResult<LoginResponse>> login({
-    required String driverId,
-    required String password,
-  }) async {
-    if (_devBypassLogin) {
-      const fakeResponse = LoginResponse(
-        accessToken: 'dev_access_token',
-        refreshToken: 'dev_refresh_token',
-      );
-      await _storage.saveTokens(
-        accessToken: fakeResponse.accessToken,
-        refreshToken: fakeResponse.refreshToken,
-      );
-      return const ApiSuccess(fakeResponse);
-    }
-
+  Future<ApiResult<void>> sendRegisterOtp(String phoneNumber) async {
     try {
-      final response = await _remoteDataSource.login(
-        LoginRequest(driverId: driverId, password: password),
-      );
+      await _remoteDataSource.sendRegisterOtp(phoneNumber);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> verifyRegisterOtp(String phoneNumber, String otp) async {
+    try {
+      await _remoteDataSource.verifyRegisterOtp(phoneNumber, otp);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> sendOtp(String phoneNumber) async {
+    try {
+      await _remoteDataSource.sendOtp(phoneNumber);
+      return const ApiSuccess(null);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<LoginResponse>> verifyOtp(String phoneNumber, String otp) async {
+    try {
+      final response = await _remoteDataSource.verifyOtp(phoneNumber, otp);
       await _storage.saveTokens(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
       return ApiSuccess(response);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<LoginResponse>> loginWithPassword(String driverId, String password) async {
+    try {
+      final response = await _remoteDataSource.loginWithPassword(driverId, password);
+      await _storage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+      return ApiSuccess(response);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> register(Map<String, dynamic> data) async {
+    try {
+      await _remoteDataSource.register(data);
+      return const ApiSuccess(null);
     } on ApiException catch (e) {
       return ApiFailure(e);
     }

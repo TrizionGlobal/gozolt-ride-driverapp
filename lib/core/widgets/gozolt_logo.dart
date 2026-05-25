@@ -19,7 +19,7 @@ class GozoltLogo extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: const Color(0xFF1A2744),
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(size * 0.15),
           ),
           child: Icon(

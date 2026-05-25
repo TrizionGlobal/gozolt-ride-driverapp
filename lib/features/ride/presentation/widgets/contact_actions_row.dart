@@ -54,7 +54,7 @@ class ContactActionsRow extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppColors.textMuted.withValues(alpha: 0.3),
+                  color: AppColors.textMuted.withOpacity(0.3),
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -144,3 +144,4 @@ class ContactActionsRow extends StatelessWidget {
     );
   }
 }
+

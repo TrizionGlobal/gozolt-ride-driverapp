@@ -4,382 +4,331 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
+import '../../../../../core/constants/api_constants.dart';
 import '../../../../driver/presentation/providers/driver_provider.dart';
 
-final _profileImageProvider = StateProvider<File?>((ref) => null);
-
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _emailController;
+  File? _pickedImage;
+  bool _isEditing = false;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(driverProfileProvider).valueOrNull;
+    _firstNameController = TextEditingController(text: profile?.firstName);
+    _lastNameController = TextEditingController(text: profile?.lastName);
+    _emailController = TextEditingController(text: profile?.email);
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (firstName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('First Name is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (lastName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Last Name is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email is required'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    
+    bool success = true;
+
+    // 1. Upload picked image if present
+    if (_pickedImage != null) {
+      final uploadSuccess = await ref.read(driverProfileProvider.notifier).uploadAvatar(_pickedImage!.path);
+      if (!uploadSuccess) {
+        success = false;
+      }
+    }
+
+    // 2. Update profile text details
+    if (success) {
+      final updateSuccess = await ref.read(driverProfileProvider.notifier).updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+      );
+      if (!updateSuccess) {
+        success = false;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isSaving = false;
+        if (success) {
+          _isEditing = false;
+          _pickedImage = null; // Clear the picked image file after successful upload/save
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? 'Profile updated successfully' : 'Failed to update profile'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(driverProfileProvider).valueOrNull;
-    final pickedImage = ref.watch(_profileImageProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Driver Profile'),
+        backgroundColor: AppColors.primaryGold,
+        foregroundColor: AppColors.backgroundPrimary,
+        actions: [
+          if (_isSaving)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.backgroundPrimary),
+                  ),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded),
+              onPressed: () {
+                if (_isEditing) {
+                  _saveProfile();
+                } else {
+                  setState(() => _isEditing = true);
+                }
+              },
+            ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Gold header ───────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryGold,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(24),
+            // Avatar
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: AppColors.primaryGold.withOpacity(0.2),
+                  backgroundImage: _pickedImage != null
+                      ? FileImage(_pickedImage!) as ImageProvider
+                      : (profile?.avatarUrl != null
+                          ? NetworkImage(ApiConstants.fullUrl(profile!.avatarUrl!)) as ImageProvider
+                          : null),
+                  child: (_pickedImage == null && profile?.avatarUrl == null)
+                      ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
+                      : null,
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const Spacer(),
-                      Text(
-                        'Profile',
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          color: AppColors.backgroundPrimary,
-                          fontWeight: FontWeight.w700,
+                if (_isEditing)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryGold,
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
                       ),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                color: AppColors.error,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close_rounded,
-                                color: AppColors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  // Avatar with camera button
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 44,
-                        backgroundColor: AppColors.white,
-                        backgroundImage: pickedImage != null
-                            ? FileImage(pickedImage)
-                            : (profile?.avatarUrl != null
-                                ? NetworkImage(profile!.avatarUrl!)
-                                : null),
-                        child: pickedImage == null &&
-                                profile?.avatarUrl == null
-                            ? Text(
-                                profile != null
-                                    ? '${profile.firstName.isNotEmpty ? profile.firstName[0] : ''}${profile.lastName.isNotEmpty ? profile.lastName[0] : ''}'
-                                    : 'D',
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primaryGold,
-                                ),
-                              )
-                            : null,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: () =>
-                              _showImagePickerSheet(context, ref),
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundPrimary,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryGold,
-                                width: 2,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: AppColors.white,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
+            const SizedBox(height: 32),
+            
+            // Personal Info
+            _buildSectionHeader('Personal Information'),
+            _buildTextField('First Name', _firstNameController),
+            const SizedBox(height: 16),
+            _buildTextField('Last Name', _lastNameController),
+            const SizedBox(height: 16),
+            _buildTextField('Email', _emailController),
+            const SizedBox(height: 32),
 
-            // ── Read-only fields ─────────────────────────────────
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                child: Column(
-                  children: [
-                    _ReadOnlyField(
-                      label: 'First Name',
-                      value: profile?.firstName ?? '',
-                    ),
-                    const SizedBox(height: 16),
-                    _ReadOnlyField(
-                      label: 'Last Name',
-                      value: profile?.lastName ?? '',
-                    ),
-                    const SizedBox(height: 16),
-                    _ReadOnlyField(
-                      label: 'Number',
-                      value: profile?.phone ?? '',
-                      prefix: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(width: 12),
-                          Text(
-                            '\u{1F1F2}\u{1F1F9}',
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 1,
-                            height: 24,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _ReadOnlyField(
-                      label: 'Email',
-                      value: profile?.email ?? '',
-                    ),
-                    const SizedBox(height: 32),
-
-                    // ── Edit? Contact Supplier ─────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Edit request sent to your supplier',
-                              ),
-                              backgroundColor: AppColors.primaryGold,
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryGold,
-                          foregroundColor: AppColors.backgroundPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Edit? Contact Supplier',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // Vehicle Info (Read-only for security)
+            _buildSectionHeader('Vehicle Details'),
+            _buildInfoCard(
+              icon: Icons.directions_car_rounded,
+              label: 'Vehicle Type',
+              value: profile?.vehicle?.type ?? 'Car',
             ),
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              icon: Icons.numbers_rounded,
+              label: 'Vehicle Plate',
+              value: profile?.vehicle?.plate ?? 'XYZ 1234',
+            ),
+            const SizedBox(height: 32),
+
+            // Document Status
+            _buildSectionHeader('Verification Documents'),
+            _buildDocumentTile('Driving License', true),
+            const SizedBox(height: 12),
+            _buildDocumentTile('Vehicle Registration (RC)', true),
+            const SizedBox(height: 12),
+            _buildDocumentTile('CPC Certificate', true),
+            const SizedBox(height: 12),
+            _buildDocumentTile('Vehicle Insurance', true),
           ],
         ),
       ),
     );
   }
 
-  void _showImagePickerSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Update Profile Photo',
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.backgroundPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGold.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: AppColors.primaryGold,
-                  ),
-                ),
-                title: Text(
-                  'Take a Selfie',
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: AppColors.backgroundPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  'Use camera to take a photo',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ref, ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGold.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.photo_library_rounded,
-                    color: AppColors.primaryGold,
-                  ),
-                ),
-                title: Text(
-                  'Choose from Gallery',
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: AppColors.backgroundPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  'Select an existing photo',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ref, ImageSource.gallery);
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
-  Future<void> _pickImage(WidgetRef ref, ImageSource source) async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: source,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
-    if (picked != null) {
-      ref.read(_profileImageProvider.notifier).state = File(picked.path);
-    }
-  }
-}
-
-class _ReadOnlyField extends StatelessWidget {
-  final String label;
-  final String value;
-  final Widget? prefix;
-
-  const _ReadOnlyField({
-    required this.label,
-    required this.value,
-    this.prefix,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textMuted,
-            fontWeight: FontWeight.w500,
+        Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          enabled: _isEditing,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: prefix != null
-              ? EdgeInsets.zero
-              : const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: prefix != null
-              ? Row(
-                  children: [
-                    prefix!,
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Text(
-                          value,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.backgroundPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Text(
-                  value,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.backgroundPrimary,
-                  ),
-                ),
         ),
       ],
     );
+  }
+
+  Widget _buildInfoCard({required IconData icon, required String label, required String value}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.primaryGold),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+              Text(value, style: AppTextStyles.titleSmall),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentTile(String title, bool isVerified) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: isVerified ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(isVerified ? Icons.verified_rounded : Icons.pending_rounded, 
+               color: isVerified ? Colors.green : Colors.orange),
+          const SizedBox(width: 16),
+          Text(title, style: AppTextStyles.bodyMedium),
+          const Spacer(),
+          Text(
+            isVerified ? 'VERIFIED' : 'PENDING',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isVerified ? Colors.green : Colors.orange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _pickedImage = File(image.path));
+    }
   }
 }

@@ -2,86 +2,81 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/auth/presentation/welcome_screen.dart';
+import '../../features/auth/presentation/registration_screen.dart';
+import '../../features/auth/presentation/registration_status_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/otp_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/domain/models/auth_state.dart';
 import '../../features/home/presentation/home_shell.dart';
 import '../../features/home/presentation/notifications/notification_screen.dart';
 import '../theme/app_colors.dart';
+import '../providers/storage_provider.dart';
 import 'route_names.dart';
 
-/// Notifies GoRouter to re-evaluate redirects when auth state changes,
-/// without recreating the entire router (which would reset to initialLocation).
-class _AuthChangeNotifier extends ChangeNotifier {
-  _AuthChangeNotifier(Ref ref) {
-    _subscription = ref.listen(authProvider, (_, _) {
-      notifyListeners();
-    });
-  }
-
-  late final ProviderSubscription<AuthState> _subscription;
-
-  @override
-  void dispose() {
-    _subscription.close();
-    super.dispose();
-  }
-}
-
 final routerProvider = Provider<GoRouter>((ref) {
-  final authChangeNotifier = _AuthChangeNotifier(ref);
-  ref.onDispose(() => authChangeNotifier.dispose());
-
   return GoRouter(
+    restorationScopeId: 'router',
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
-    refreshListenable: authChangeNotifier,
-    redirect: (context, state) {
-      final authState = ref.read(authProvider);
-      final location = state.uri.path;
-      final isOnSplash = location == RouteNames.splash;
-      final isOnLogin = location == RouteNames.login;
-      final isOnOnboarding = location == RouteNames.onboarding;
-
-      // Don't redirect during splash - it handles its own navigation
-      if (isOnSplash) return null;
-
-      // If authenticated and on login/onboarding, redirect to home
-      if (authState is AuthAuthenticated &&
-          (isOnLogin || isOnOnboarding)) {
-        return RouteNames.home;
-      }
-
-      // If unauthenticated and trying to access protected routes
-      if (authState is AuthUnauthenticated &&
-          !isOnLogin &&
-          !isOnOnboarding) {
-        return RouteNames.login;
-      }
-
-      return null;
-    },
     routes: [
       GoRoute(
         path: RouteNames.splash,
+        name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: RouteNames.welcome,
+        name: 'welcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.register,
+        name: 'register',
+        builder: (context, state) => const RegistrationScreen(),
+      ),
+      GoRoute(
         path: RouteNames.onboarding,
+        name: 'onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: RouteNames.login,
+        name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
+        path: RouteNames.otp,
+        name: 'otp',
+        builder: (context, state) => const OtpScreen(),
+      ),
+      GoRoute(
         path: RouteNames.home,
+        name: 'home',
         builder: (context, state) => const HomeShell(),
       ),
       GoRoute(
         path: RouteNames.notifications,
+        name: 'notifications',
         builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.registrationStatus,
+        name: 'registrationStatus',
+        builder: (context, state) {
+          bool isFleet = false;
+          String? phone;
+          if (state.extra is Map<String, dynamic>) {
+            final extra = state.extra as Map<String, dynamic>;
+            isFleet = extra['isFleet'] as bool? ?? false;
+            phone = extra['phone'] as String?;
+          } else if (state.extra is bool) {
+            isFleet = state.extra as bool;
+          }
+          return RegistrationStatusScreen(isFleet: isFleet, phone: phone);
+        },
       ),
     ],
     errorBuilder: (context, state) {

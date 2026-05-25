@@ -72,7 +72,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
     final summary = screenState.summary;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +88,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                         Text(
                           'Earnings',
                           style: AppTextStyles.headlineSmall.copyWith(
-                            color: AppColors.white,
+                            color: Theme.of(context).textTheme.headlineSmall?.color,
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
@@ -98,7 +98,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                           Text(
                             '${DateFormat('dd MMM').format(customRange.start)} – ${DateFormat('dd MMM').format(customRange.end)}',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodySmall?.color,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -111,7 +111,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -197,7 +197,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                           Text(
                             'Total Earning',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodySmall?.color,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -215,7 +215,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceDark,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
@@ -225,10 +225,10 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                   value: '${summary.tripCount}',
                                   icon: Icons.directions_car_rounded,
                                 ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
                                   child: Divider(
-                                    color: AppColors.surfaceCard,
+                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                                     height: 1,
                                   ),
                                 ),
@@ -238,10 +238,10 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                       '€ ${summary.cashEarnings.toStringAsFixed(2)}',
                                   icon: Icons.money_rounded,
                                 ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
                                   child: Divider(
-                                    color: AppColors.surfaceCard,
+                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                                     height: 1,
                                   ),
                                 ),
@@ -251,10 +251,10 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                       '€ ${summary.cardEarnings.toStringAsFixed(2)}',
                                   icon: Icons.credit_card_rounded,
                                 ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
                                   child: Divider(
-                                    color: AppColors.surfaceCard,
+                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                                     height: 1,
                                   ),
                                 ),
@@ -277,7 +277,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                               child: Text(
                                 'Daily Breakdown',
                                 style: AppTextStyles.titleMedium.copyWith(
-                                  color: AppColors.white,
+                                  color: Theme.of(context).textTheme.titleMedium?.color,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -306,14 +306,14 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                   Text(
                     'Total Earnings',
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: AppColors.backgroundDark,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
                     '€ ${summary.totalEarnings.toStringAsFixed(2)}',
                     style: AppTextStyles.titleLarge.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: AppColors.backgroundDark,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -352,15 +352,15 @@ class _PeriodToggleButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
             border: isActive
                 ? null
-                : Border.all(color: AppColors.surfaceDark, width: 1.5),
+                : Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1), width: 1.5),
           ),
           child: Center(
             child: Text(
               label,
               style: AppTextStyles.titleSmall.copyWith(
                 color: isActive
-                    ? AppColors.backgroundPrimary
-                    : AppColors.textSecondary,
+                    ? AppColors.backgroundDark
+                    : Theme.of(context).textTheme.bodySmall?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -390,7 +390,7 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -400,7 +400,7 @@ class _StatCard extends StatelessWidget {
             Text(
               value,
               style: AppTextStyles.headlineSmall.copyWith(
-                color: AppColors.white,
+                color: Theme.of(context).textTheme.headlineSmall?.color,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -408,7 +408,7 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],
@@ -441,14 +441,14 @@ class _BreakdownRow extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.white,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ),
         Text(
           value,
           style: AppTextStyles.titleSmall.copyWith(
-            color: AppColors.white,
+            color: Theme.of(context).textTheme.titleSmall?.color,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -473,7 +473,7 @@ class _DailyRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -493,7 +493,7 @@ class _DailyRow extends StatelessWidget {
             child: Text(
               dateStr,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ),
@@ -507,7 +507,7 @@ class _DailyRow extends StatelessWidget {
           Text(
             '€ ${daily.totalEarnings.toStringAsFixed(2)}',
             style: AppTextStyles.titleSmall.copyWith(
-              color: AppColors.white,
+              color: Theme.of(context).textTheme.titleSmall?.color,
               fontWeight: FontWeight.w700,
             ),
           ),

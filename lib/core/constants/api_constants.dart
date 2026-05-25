@@ -6,9 +6,16 @@ abstract final class ApiConstants {
 
   // Auth endpoints
   static const String loginDriver = '/auth/driver/login';
+  static const String registerDriver = '/auth/driver/register';
+  static const String sendRegisterOtp = '/auth/driver/register/send-otp';
+  static const String verifyRegisterOtp = '/auth/driver/register/verify-otp';
+  static const String sendOtp = '/auth/driver/send-otp';
+  static const String verifyOtp = '/auth/driver/verify-otp';
+  static const String checkPhone = '/auth/driver/check-phone';
   static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
   static const String changePassword = '/auth/change-password';
+  static const String driverRegistrationStatus = '/auth/driver/registration-status';
 
   // Driver endpoints
   static const String driverMe = '/drivers/me';
@@ -52,10 +59,23 @@ abstract final class ApiConstants {
   // Data export
   static const String driverExport = '/drivers/me/export';
 
+  // Wallet actions
+  static const String driverWalletAddMoney = '/drivers/me/wallet/add-money';
+  static const String driverWalletWithdraw = '/drivers/me/wallet/withdraw';
+
   // Notification endpoints
   static const String notifications = '/users/me/notifications';
 
+  // Driver avatar
+  static const String driverAvatar = '/drivers/me/avatar';
+
+  static String fullUrl(String path) {
+    if (path.startsWith('http')) return path;
+    final base = baseUrl.replaceAll('/v1', '');
+    return '$base$path';
+  }
+
   // Timeouts
-  static const Duration connectTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectTimeout = Duration(seconds: 60);
+  static const Duration receiveTimeout = Duration(seconds: 60);
 }

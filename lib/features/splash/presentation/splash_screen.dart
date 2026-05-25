@@ -22,6 +22,8 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _navigated = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,46 +31,73 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    // Wait for splash duration
-    await Future.delayed(AppConstants.splashDuration);
-
-    if (!mounted) return;
-
-    // Check auth status
-    await ref.read(authProvider.notifier).checkAuthStatus();
-
-    if (!mounted) return;
-
-    final authState = ref.read(authProvider);
-
-    if (authState is AuthAuthenticated) {
-      final storage = ref.read(secureStorageProvider);
-      final token = await storage.getAccessToken();
-
-      // Clear fake dev tokens and force real login
-      if (token == null || token == 'dev_access_token') {
-        await storage.clearTokens();
-        if (!mounted) return;
-        context.go(RouteNames.onboarding);
-        return;
+    // Hard fail-safe: Force navigation after 6 seconds no matter what
+    Future.delayed(const Duration(seconds: 6)).then((_) {
+      if (mounted && !_navigated) {
+        debugPrint('SplashScreen: Hard fail-safe triggered');
+        _navigate(RouteNames.welcome);
       }
+    });
 
-      try {
-        ref.read(socketServiceProvider).connect(token);
-        await ref.read(driverProfileProvider.notifier).fetchProfile();
-      } catch (_) {}
+    // Normal flow
+    await Future.delayed(AppConstants.splashDuration);
+    if (!mounted || _navigated) return;
 
-      if (!mounted) return;
-      context.go(RouteNames.home);
+    final storage = ref.read(secureStorageProvider);
+    final hasTokens = await storage.getAccessToken() != null;
+    
+    if (hasTokens) {
+      debugPrint('SplashScreen: Found tokens, navigating to home');
+      _navigate(RouteNames.home);
     } else {
-      context.go(RouteNames.onboarding);
+      final hasSeenOnboarding = await storage.hasSeenOnboarding();
+      if (hasSeenOnboarding) {
+        debugPrint('SplashScreen: No tokens, navigating to welcome');
+        _navigate(RouteNames.welcome);
+      } else {
+        debugPrint('SplashScreen: No tokens, navigating to onboarding');
+        _navigate(RouteNames.onboarding);
+      }
     }
+  }
+
+  Future<void> _performAuthCheck() async {
+    try {
+      debugPrint('SplashScreen: Checking auth status...');
+      await ref.read(authProvider.notifier).checkAuthStatus();
+      
+      final authState = ref.read(authProvider);
+      if (authState is AuthAuthenticated) {
+        final storage = ref.read(secureStorageProvider);
+        final token = await storage.getAccessToken();
+
+        if (token != null && token != 'dev_access_token') {
+          try {
+            ref.read(socketServiceProvider).connect(token);
+            ref.read(driverProfileProvider.notifier).fetchProfile();
+          } catch (e) {
+            debugPrint('SplashScreen: Socket/Profile error: $e');
+          }
+        }
+      }
+      debugPrint('SplashScreen: Auth check complete');
+    } catch (e) {
+      debugPrint('SplashScreen: PerformAuthCheck failed: $e');
+    }
+  }
+
+  void _navigate(String route) {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+    
+    debugPrint('SplashScreen: Navigating to $route');
+    context.go(route);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -124,12 +153,14 @@ class _FallbackBranding extends StatelessWidget {
             Text(
               'ZOLT',
               style: AppTextStyles.splashTitle.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ],
         ),
-        const Text('GO PARTNER', style: AppTextStyles.splashSubtitle),
+        Text('GO PARTNER', style: AppTextStyles.splashSubtitle.copyWith(
+          color: Theme.of(context).brightness == Brightness.dark ? AppColors.brandYellow : AppColors.backgroundPrimary,
+        )),
       ],
     );
   }
@@ -153,13 +184,15 @@ class _SplashFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Text('🇲🇹', style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Born in Malta, Loved by Europe',
-              style: AppTextStyles.footerText,
+              style: AppTextStyles.footerText.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
             ),
             const SizedBox(width: 8),
             Image.asset(
@@ -167,7 +200,7 @@ class _SplashFooter extends StatelessWidget {
               width: 24,
               height: 16,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (context, error, stackTrace) =>
                   const Text('🇪🇺', style: TextStyle(fontSize: 16)),
             ),
           ],
@@ -178,15 +211,19 @@ class _SplashFooter extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Powered By ', style: AppTextStyles.footerText),
-            const Text('PRIMOOO', style: AppTextStyles.footerAccent),
+            Text('Powered By ', style: AppTextStyles.footerText.copyWith(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            )),
+            Text('PRIMOOO', style: AppTextStyles.footerAccent.copyWith(
+              color: AppColors.primaryGold,
+            )),
             const SizedBox(width: 8),
             Image.asset(
               AssetPaths.primoooLogo,
               width: 32,
               height: 20,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
             ),
           ],
         ),

@@ -58,7 +58,7 @@ class _InfoBox extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.textMuted.withValues(alpha: 0.3),
+            color: AppColors.textMuted.withOpacity(0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -84,3 +84,4 @@ class _InfoBox extends StatelessWidget {
     );
   }
 }
+

@@ -4,24 +4,22 @@ class LoginFormState {
   final String driverId;
   final String password;
   final bool rememberMe;
-  final bool obscurePassword;
   final String? errorMessage;
 
   const LoginFormState({
     this.driverId = '',
     this.password = '',
     this.rememberMe = false,
-    this.obscurePassword = true,
     this.errorMessage,
   });
 
-  bool get isValid => driverId.isNotEmpty && password.isNotEmpty;
+  bool get isValid => driverId.trim().isNotEmpty && password.trim().length >= 6;
+  String get fullPhoneNumber => '';
 
   LoginFormState copyWith({
     String? driverId,
     String? password,
     bool? rememberMe,
-    bool? obscurePassword,
     String? errorMessage,
     bool clearError = false,
   }) {
@@ -29,7 +27,6 @@ class LoginFormState {
       driverId: driverId ?? this.driverId,
       password: password ?? this.password,
       rememberMe: rememberMe ?? this.rememberMe,
-      obscurePassword: obscurePassword ?? this.obscurePassword,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
@@ -51,9 +48,6 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
 
   void toggleRememberMe() =>
       state = state.copyWith(rememberMe: !state.rememberMe);
-
-  void togglePasswordVisibility() =>
-      state = state.copyWith(obscurePassword: !state.obscurePassword);
 
   void setError(String message) =>
       state = state.copyWith(errorMessage: message);

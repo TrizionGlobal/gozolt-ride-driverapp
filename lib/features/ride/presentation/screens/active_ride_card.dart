@@ -48,8 +48,8 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
         ),
         // Bottom card
         Container(
-          decoration: const BoxDecoration(
-            color: AppColors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
@@ -120,7 +120,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(26),
                             border: Border.all(
-                              color: AppColors.backgroundPrimary,
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white,
                               width: 1.5,
                             ),
                           ),
@@ -128,7 +128,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                             child: Text(
                               isNearDestination ? 'Ride Complete' : 'End Ride',
                               style: AppTextStyles.titleMedium.copyWith(
-                                color: AppColors.backgroundPrimary,
+                               color: Theme.of(context).textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -163,7 +163,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(
-                        color: AppColors.backgroundPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         width: 1.5,
                       ),
                     ),
@@ -171,7 +171,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                       child: Text(
                         'End Ride',
                         style: AppTextStyles.titleMedium.copyWith(
-                          color: AppColors.backgroundPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -189,12 +189,12 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'End this ride?',
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
           textAlign: TextAlign.center,
         ),
@@ -224,7 +224,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGold,
-              foregroundColor: AppColors.backgroundPrimary,
+              foregroundColor: AppColors.backgroundDark,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -255,7 +255,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -263,7 +263,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.primaryGold.withValues(alpha: 0.15),
+                color: AppColors.primaryGold.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -277,7 +277,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
               child: Text(
                 'Destination Change',
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.backgroundPrimary,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -298,7 +298,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -310,7 +310,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                     child: Text(
                       newAddress,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.backgroundPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -372,7 +372,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGold,
-              foregroundColor: AppColors.backgroundPrimary,
+              foregroundColor: AppColors.backgroundDark,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -412,7 +412,9 @@ class _LiveEtaBadge extends ConsumerWidget {
         return RideEtaBadge(distanceKm: km, minutes: mins);
       },
       loading: () => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
-      error: (_, _) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
+      error: (err, stack) => RideEtaBadge(distanceKm: fallbackKm, minutes: fallbackMin),
     );
   }
 }
+
+

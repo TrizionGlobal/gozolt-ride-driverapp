@@ -19,7 +19,7 @@ class StatusConfirmationDialog extends StatelessWidget {
         : const Color(0xFFCC3333); // red
 
     return Dialog(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -31,7 +31,7 @@ class StatusConfirmationDialog extends StatelessWidget {
                   ? 'Are you sure you want to go Online?'
                   : 'Are you sure you want to go offline?',
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
               textAlign: TextAlign.center,
             ),
@@ -47,7 +47,7 @@ class StatusConfirmationDialog extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: confirmColor,
-                  foregroundColor: AppColors.white,
+                  foregroundColor: AppColors.backgroundDark,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -57,7 +57,7 @@ class StatusConfirmationDialog extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.white,
+                    color: AppColors.backgroundDark,
                   ),
                 ),
               ),
@@ -71,11 +71,11 @@ class StatusConfirmationDialog extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: goingOnline
-                      ? AppColors.backgroundPrimary
+                      ? Theme.of(context).textTheme.bodyLarge?.color
                       : confirmColor,
                   side: BorderSide(
                     color: goingOnline
-                        ? AppColors.backgroundPrimary
+                        ? Theme.of(context).textTheme.bodyLarge?.color ?? Colors.grey
                         : confirmColor,
                   ),
                   shape: RoundedRectangleBorder(
@@ -88,7 +88,7 @@ class StatusConfirmationDialog extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: goingOnline
-                        ? AppColors.backgroundPrimary
+                        ? Theme.of(context).textTheme.bodyLarge?.color
                         : confirmColor,
                   ),
                 ),

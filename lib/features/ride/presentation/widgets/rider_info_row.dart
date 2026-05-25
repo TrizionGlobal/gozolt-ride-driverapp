@@ -25,7 +25,7 @@ class RiderInfoRow extends StatelessWidget {
             shape: BoxShape.circle,
             color: AppColors.surfaceDark,
             border: Border.all(
-              color: AppColors.primaryGold.withValues(alpha: 0.3),
+              color: AppColors.primaryGold.withOpacity(0.3),
               width: 2,
             ),
           ),
@@ -34,7 +34,7 @@ class RiderInfoRow extends StatelessWidget {
                 ? Image.network(
                     rider.avatarUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _defaultAvatar(),
+                    errorBuilder: (ctx, err, stack) => _defaultAvatar(),
                   )
                 : _defaultAvatar(),
           ),
@@ -86,3 +86,5 @@ class RiderInfoRow extends StatelessWidget {
     );
   }
 }
+
+

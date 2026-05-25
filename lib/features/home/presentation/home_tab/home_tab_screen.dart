@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/custom_marker_painter.dart';
 import '../../../driver/presentation/providers/location_provider.dart';
+import '../../../driver/presentation/providers/driver_status_provider.dart';
 import '../../../ride/data/models/ride_status.dart';
 import '../../../ride/presentation/providers/ride_session_provider.dart';
 import '../../../ride/presentation/screens/active_ride_card.dart';
@@ -30,7 +31,20 @@ class HomeTabScreen extends ConsumerStatefulWidget {
 class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     with WidgetsBindingObserver {
   GoogleMapController? _mapController;
-  String? _darkMapStyle;
+
+  static const _darkMapStyle = '''[
+    {"elementType":"geometry","stylers":[{"color":"#212121"}]},
+    {"elementType":"labels.icon","stylers":[{"visibility":"off"}]},
+    {"elementType":"labels.text.fill","stylers":[{"color":"#757575"}]},
+    {"elementType":"labels.text.stroke","stylers":[{"color":"#212121"}]},
+    {"featureType":"administrative","elementType":"geometry","stylers":[{"color":"#757575"}]},
+    {"featureType":"poi","elementType":"geometry","stylers":[{"color":"#181818"}]},
+    {"featureType":"road","elementType":"geometry.fill","stylers":[{"color":"#2c2c2c"}]},
+    {"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#8a8a8a"}]},
+    {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#3c3c3c"}]},
+    {"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"}]},
+    {"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#3d3d3d"}]}
+  ]''';
 
   // Custom marker icons
   BitmapDescriptor? _driverIcon;
@@ -51,18 +65,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadMapStyle();
     _loadCustomMarkers();
-  }
-
-  Future<void> _loadMapStyle() async {
-    try {
-      final style =
-          await rootBundle.loadString('assets/map/dark_map_style.json');
-      setState(() => _darkMapStyle = style);
-    } catch (_) {
-      // If style not found, use default map style
-    }
   }
 
   Future<void> _loadCustomMarkers() async {
@@ -111,15 +114,34 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   }
 
   Future<void> _goToCurrentLocation() async {
-    final positionAsync = ref.read(currentPositionProvider);
-    positionAsync.whenData((position) {
+    try {
+      // 1. Try to use the stream provider's latest value
+      final streamPos = ref.read(locationStreamProvider).valueOrNull;
+      if (streamPos != null) {
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(streamPos.latitude, streamPos.longitude),
+            _defaultZoom,
+          ),
+        );
+        return;
+      }
+
+      // 2. Fallback: Request fresh position directly from Geolocator
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
       _mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(position.latitude, position.longitude),
           _defaultZoom,
         ),
       );
-    });
+    } catch (e) {
+      debugPrint('Error getting current location: $e');
+    }
   }
 
   Set<Marker> _buildMarkers() {
@@ -139,6 +161,8 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
         ),
       );
     }
+
+
 
     // Ride markers
     final ride = ref.watch(rideSessionProvider);
@@ -191,7 +215,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     return positionAsync.when(
       data: (p) => LatLng(p.latitude, p.longitude),
       loading: () => _defaultLocation,
-      error: (_, _) => _defaultLocation,
+      error: (err, stack) => _defaultLocation,
     );
   }
 
@@ -438,8 +462,12 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
     final ride = ref.watch(rideSessionProvider);
     final isOnRide = ride != null;
+    final driverStatus = ref.watch(driverStatusProvider);
+    final isBottomNavBarVisible = !driverStatus.isOnline && !isOnRide;
+    final bottomOffset = isBottomNavBarVisible ? 104.0 : 16.0;
 
     return Scaffold(
+      backgroundColor: const Color(0xFF151515),
       body: Stack(
         children: [
           // Full-screen Google Map
@@ -471,7 +499,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           // Bottom overlay: SOS/Location + Go Online (hidden during ride)
           if (!isOnRide)
             Positioned(
-              bottom: 16,
+              bottom: bottomOffset,
               left: 16,
               right: 16,
               child: Column(
@@ -603,3 +631,4 @@ class _AnimatedRideRequestState extends State<_AnimatedRideRequest>
     );
   }
 }
+

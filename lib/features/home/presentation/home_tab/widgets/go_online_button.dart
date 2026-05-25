@@ -108,7 +108,7 @@ class _OfflineButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryGold.withValues(alpha: 0.4),
+              color: AppColors.primaryGold.withOpacity(0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -177,11 +177,13 @@ class _OnlineSectionState extends State<_OnlineSection>
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.backgroundPrimary,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.backgroundPrimary 
+                  : AppColors.white,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.black.withValues(alpha: 0.25),
+                  color: AppColors.black.withOpacity(0.25),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -210,10 +212,9 @@ class _OnlineSectionState extends State<_OnlineSection>
               borderRadius: BorderRadius.circular(27),
               child: Stack(
                 children: [
-                  // White background
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   ),
                   // Wavy gold-green gradient animation
@@ -242,7 +243,7 @@ class _OnlineSectionState extends State<_OnlineSection>
                         Text(
                           'Finding Rides...',
                           style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.backgroundPrimary,
+                            color: Theme.of(context).textTheme.titleMedium?.color,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -277,8 +278,8 @@ class _WavePainter extends CustomPainter {
       frequency: 1.5,
       baseY: size.height * 0.55,
       colors: [
-        const Color(0xFFD4A843).withValues(alpha: 0.25),
-        const Color(0xFF4CAF50).withValues(alpha: 0.15),
+        const Color(0xFFD4A843).withOpacity(0.25),
+        const Color(0xFF4CAF50).withOpacity(0.15),
       ],
     );
 
@@ -290,8 +291,8 @@ class _WavePainter extends CustomPainter {
       frequency: 2.0,
       baseY: size.height * 0.5,
       colors: [
-        const Color(0xFF4CAF50).withValues(alpha: 0.2),
-        const Color(0xFFD4A843).withValues(alpha: 0.12),
+        const Color(0xFF4CAF50).withOpacity(0.2),
+        const Color(0xFFD4A843).withOpacity(0.12),
       ],
     );
   }
@@ -335,3 +336,4 @@ class _WavePainter extends CustomPainter {
   bool shouldRepaint(_WavePainter oldDelegate) =>
       oldDelegate.progress != progress;
 }
+

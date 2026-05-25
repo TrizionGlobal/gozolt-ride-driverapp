@@ -15,18 +15,18 @@ class NotificationScreen extends ConsumerWidget {
         notificationsAsync.valueOrNull?.where((n) => !n.isRead).length ?? 0;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.white),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).textTheme.bodyLarge?.color),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Notifications',
           style: AppTextStyles.titleLarge.copyWith(
-            color: AppColors.white,
+            color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -50,7 +50,7 @@ class NotificationScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryGold),
         ),
-        error: (_, _) => Center(
+        error: (err, stack) => Center(
           child: Text(
             'Failed to load notifications',
             style: AppTextStyles.bodyMedium.copyWith(
@@ -59,7 +59,7 @@ class NotificationScreen extends ConsumerWidget {
           ),
         ),
         data: (notifications) => notifications.isEmpty
-            ? _buildEmptyState()
+            ? _buildEmptyState(context)
             : ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: notifications.length,
@@ -76,7 +76,7 @@ class NotificationScreen extends ConsumerWidget {
                     background: Container(
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 24),
-                      color: const Color(0xFFE53935).withValues(alpha: 0.2),
+                      color: const Color(0xFFE53935).withOpacity(0.2),
                       child: const Icon(
                         Icons.delete_outline,
                         color: Color(0xFFE53935),
@@ -99,7 +99,7 @@ class NotificationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,21 +107,23 @@ class NotificationScreen extends ConsumerWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceDark,
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.surfaceDark
+                  : Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_none_rounded,
               size: 40,
-              color: AppColors.textMuted,
+              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 20),
           Text(
             'No notifications yet',
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
@@ -130,7 +132,7 @@ class NotificationScreen extends ConsumerWidget {
             child: Text(
               'Your ride alerts and updates will appear here',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
               textAlign: TextAlign.center,
             ),
@@ -159,13 +161,17 @@ class _NotificationCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: notification.isRead
-              ? AppColors.surfaceDark.withValues(alpha: 0.5)
-              : AppColors.surfaceDark,
+              ? (Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.surfaceDark.withOpacity(0.5) 
+                  : Colors.grey.shade50)
+              : (Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.surfaceDark 
+                  : Colors.white),
           borderRadius: BorderRadius.circular(14),
           border: notification.isRead
               ? null
               : Border.all(
-                  color: _typeColor(notification.type).withValues(alpha: 0.3),
+                  color: _typeColor(notification.type).withOpacity(0.3),
                   width: 1,
                 ),
         ),
@@ -177,7 +183,7 @@ class _NotificationCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _typeColor(notification.type).withValues(alpha: 0.15),
+                color: _typeColor(notification.type).withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -198,7 +204,7 @@ class _NotificationCard extends StatelessWidget {
                         child: Text(
                           notification.title,
                           style: AppTextStyles.titleSmall.copyWith(
-                            color: AppColors.white,
+                            color: Theme.of(context).textTheme.titleSmall?.color,
                             fontWeight: notification.isRead
                                 ? FontWeight.w500
                                 : FontWeight.w700,
@@ -220,7 +226,7 @@ class _NotificationCard extends StatelessWidget {
                   Text(
                     notification.message,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -229,7 +235,7 @@ class _NotificationCard extends StatelessWidget {
                   Text(
                     _timeAgo(notification.timestamp),
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.textMuted,
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
                     ),
                   ),
                 ],

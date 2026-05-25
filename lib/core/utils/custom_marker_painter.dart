@@ -132,7 +132,7 @@ class CustomMarkerPainter {
     final paint = Paint();
 
     // Green glow
-    paint.color = const Color(0xFF4CAF50).withValues(alpha: 0.25);
+    paint.color = const Color(0xFF4CAF50).withOpacity(0.25);
     paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawCircle(Offset(size / 2, size / 2), size / 2, paint);
     paint.maskFilter = null;
@@ -181,3 +181,4 @@ class CustomMarkerPainter {
     );
   }
 }
+

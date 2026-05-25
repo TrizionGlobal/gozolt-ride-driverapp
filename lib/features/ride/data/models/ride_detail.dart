@@ -56,6 +56,19 @@ class RideDetail {
 
   factory RideDetail.fromJson(Map<String, dynamic> json) {
     final payment = json['payment'] as Map<String, dynamic>?;
+
+    final tipsList = json['tips'] as List<dynamic>?;
+    double? calculatedTip;
+    if (tipsList != null && tipsList.isNotEmpty) {
+      double sum = 0;
+      for (final t in tipsList) {
+        if (t is Map<String, dynamic>) {
+          sum += toDouble(t['amount']) ?? 0;
+        }
+      }
+      calculatedTip = sum;
+    }
+
     return RideDetail(
       id: json['id'] as String? ?? '',
       status: json['status'] as String? ?? '',
@@ -69,7 +82,10 @@ class RideDetail {
       distanceFare: toDouble(json['distanceFare']) ?? toDouble(json['distance_fare']),
       timeFare: toDouble(json['timeFare']) ?? toDouble(json['time_fare']),
       waitTimeFee: toDouble(json['waitTimeFee']) ?? toDouble(json['wait_time_fee']),
-      totalFare: toDouble(json['actualFare']) ?? toDouble(json['actual_fare']),
+      totalFare: toDouble(json['actualFare']) ??
+          toDouble(json['actual_fare']) ??
+          toDouble(json['estimatedFare']) ??
+          toDouble(json['estimated_fare']),
       distanceKm: toDouble(json['distanceKm']) ?? toDouble(json['distance_km']),
       durationMinutes: toInt(json['durationMinutes'] ?? json['duration_minutes']),
       paymentMethod: payment?['method'] as String? ?? json['paymentMethod'] as String? ?? json['payment_method'] as String? ?? 'cash',
@@ -83,7 +99,7 @@ class RideDetail {
               ?.map((s) => RideStop.fromJson(s as Map<String, dynamic>))
               .toList() ??
           const [],
-      tipAmount: toDouble(json['tipAmount']) ?? toDouble(json['tip_amount']),
+      tipAmount: calculatedTip ?? toDouble(json['tipAmount']) ?? toDouble(json['tip_amount']),
     );
   }
 

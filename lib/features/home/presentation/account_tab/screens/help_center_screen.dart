@@ -23,7 +23,7 @@ class HelpCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -45,7 +45,7 @@ class HelpCenterScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withValues(alpha: 0.2),
+                        color: AppColors.backgroundPrimary.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -84,7 +84,7 @@ class HelpCenterScreen extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withValues(alpha: 0.15),
+                        color: AppColors.backgroundPrimary.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -109,7 +109,7 @@ class HelpCenterScreen extends StatelessWidget {
                           Text(
                             'Get help with your account',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.backgroundPrimary.withValues(alpha: 0.7),
+                              color: AppColors.backgroundPrimary.withOpacity(0.7),
                             ),
                           ),
                         ],
@@ -165,7 +165,9 @@ class _HelpTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Material(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? AppColors.surfaceDark 
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -178,7 +180,7 @@ class _HelpTile extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.12),
+                    color: iconColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: iconColor, size: 24),
@@ -191,14 +193,14 @@ class _HelpTile extends StatelessWidget {
                       Text(
                         label,
                         style: AppTextStyles.titleSmall.copyWith(
-                          color: AppColors.backgroundPrimary,
+                          color: Theme.of(context).textTheme.titleSmall?.color,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMuted,
+                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7) ?? AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -217,3 +219,4 @@ class _HelpTile extends StatelessWidget {
     );
   }
 }
+

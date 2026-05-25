@@ -53,7 +53,7 @@ class _EarningsPillState extends ConsumerState<EarningsPill> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryGold.withValues(alpha: 0.3),
+                  color: AppColors.primaryGold.withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -62,7 +62,7 @@ class _EarningsPillState extends ConsumerState<EarningsPill> {
             child: Text(
               '€ ${earnings.totalEarnings.toStringAsFixed(2)}',
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: const Color(0xFF1B2838),
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -93,15 +93,15 @@ class _EarningsBreakdown extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 20),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.backgroundPrimary,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primaryGold.withValues(alpha: 0.3),
+              color: AppColors.primaryGold.withOpacity(0.3),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.black.withValues(alpha: 0.4),
+                color: AppColors.black.withOpacity(0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -124,7 +124,7 @@ class _EarningsBreakdown extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.surfaceDark,
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -140,7 +140,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       ),
                       Container(
                         width: 1,
-                        color: AppColors.surfaceDark,
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                       Expanded(
                         child: _MetricColumn(
@@ -150,7 +150,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       ),
                       Container(
                         width: 1,
-                        color: AppColors.surfaceDark,
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                       Expanded(
                         child: _MetricColumn(
@@ -172,10 +172,10 @@ class _EarningsBreakdown extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    color: const Color(0xFF4CAF50).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                      color: const Color(0xFF4CAF50).withOpacity(0.2),
                     ),
                   ),
                   child: Row(
@@ -189,7 +189,7 @@ class _EarningsBreakdown extends StatelessWidget {
                       Text(
                         'Tips',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -199,7 +199,7 @@ class _EarningsBreakdown extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                          color: const Color(0xFF4CAF50).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -248,7 +248,7 @@ class _MetricColumn extends StatelessWidget {
         Text(
           value,
           style: AppTextStyles.titleMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -256,10 +256,11 @@ class _MetricColumn extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
       ],
     );
   }
 }
+

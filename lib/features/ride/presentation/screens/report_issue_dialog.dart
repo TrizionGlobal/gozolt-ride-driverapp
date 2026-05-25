@@ -51,7 +51,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -62,7 +62,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
             Text(
               'Report an Issue',
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.titleLarge?.color,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -70,7 +70,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
             Text(
               'Select the type of issue you experienced',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
             const SizedBox(height: 20),
@@ -86,15 +86,15 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                         style: TextStyle(
                           fontSize: 12,
                           color: _selectedIssue == issue
-                              ? AppColors.backgroundPrimary
-                              : AppColors.backgroundPrimary,
+                              ? AppColors.backgroundDark
+                              : Theme.of(context).textTheme.bodySmall?.color,
                         ),
                       ),
                       selected: _selectedIssue == issue,
                       onSelected: (selected) =>
                           setState(() => _selectedIssue = selected ? issue : null),
                       selectedColor: AppColors.primaryGold,
-                      backgroundColor: Colors.grey.shade100,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -113,7 +113,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                   color: AppColors.textMuted,
                 ),
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Theme.of(context).colorScheme.surface,
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -121,7 +121,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                 ),
               ),
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.backgroundPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             const SizedBox(height: 20),
@@ -135,20 +135,20 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGold,
-                  foregroundColor: AppColors.backgroundPrimary,
+                  foregroundColor: AppColors.backgroundDark,
                   disabledBackgroundColor:
-                      AppColors.primaryGold.withValues(alpha: 0.4),
+                      AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.backgroundPrimary,
+                          color: Theme.of(context).textTheme.titleLarge?.color,
                         ),
                       )
                     : const Text(
@@ -167,7 +167,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
               child: Text(
                 'Cancel',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMuted,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
             ),
@@ -177,3 +177,4 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
     );
   }
 }
+

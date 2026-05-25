@@ -25,7 +25,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppColors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -67,7 +67,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                   Text(
                     'Collect Amount',
                     style: AppTextStyles.titleLarge.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -81,7 +81,9 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundPrimary,
+                  color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.backgroundPrimary 
+                    : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -95,7 +97,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                           height: 36,
                           decoration: BoxDecoration(
                             color:
-                                AppColors.primaryGold.withValues(alpha: 0.2),
+                                AppColors.primaryGold.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -108,15 +110,15 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         Text(
                           summary.totalFare.toStringAsFixed(2),
                           style: AppTextStyles.displayMedium.copyWith(
-                            color: AppColors.white,
+                            color: Theme.of(context).brightness == Brightness.dark ? AppColors.white : AppColors.backgroundPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    const Divider(
-                      color: AppColors.surfaceDark,
+                    Divider(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1),
                       height: 1,
                     ),
                     const SizedBox(height: 20),
@@ -129,10 +131,10 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                           height: 40,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.surfaceDark,
+                            color: Theme.of(context).colorScheme.surface,
                             border: Border.all(
                               color: AppColors.primaryGold
-                                  .withValues(alpha: 0.3),
+                                  .withOpacity(0.3),
                               width: 2,
                             ),
                           ),
@@ -141,15 +143,15 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 ? Image.network(
                                     ride.rider.avatarUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(
+                                    errorBuilder: (ctx, err, stack) => Icon(
                                       Icons.person_rounded,
-                                      color: AppColors.textSecondary,
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
                                       size: 22,
                                     ),
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.person_rounded,
-                                    color: AppColors.textSecondary,
+                                    color: Colors.grey,
                                     size: 22,
                                   ),
                           ),
@@ -158,7 +160,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         Text(
                           ride.rider.fullName,
                           style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.white,
+                            color: Theme.of(context).brightness == Brightness.dark ? AppColors.white : AppColors.backgroundPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -197,7 +199,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         margin: const EdgeInsets.only(top: 12),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -238,7 +240,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF4CAF50)
-                              .withValues(alpha: 0.15),
+                              .withOpacity(0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -274,8 +276,8 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                     );
                   },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFE53935),
-                    side: const BorderSide(color: Color(0xFFE53935)),
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                    side: BorderSide(color: Theme.of(context).colorScheme.error),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -306,12 +308,12 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.check_circle_rounded,
-                          color: AppColors.backgroundPrimary, size: 20),
+                          color: AppColors.backgroundDark, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         'Received Cash',
                         style: AppTextStyles.titleMedium.copyWith(
-                          color: AppColors.backgroundPrimary,
+                          color: AppColors.backgroundDark,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -345,19 +347,19 @@ class _ProfileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textSecondary),
+        Icon(icon, size: 16, color: Theme.of(context).textTheme.bodySmall?.color),
         const SizedBox(width: 8),
         Text(
           label,
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
         const Spacer(),
         Text(
           value,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: valueColor ?? AppColors.textPrimary,
+            color: valueColor ?? Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -365,3 +367,5 @@ class _ProfileRow extends StatelessWidget {
     );
   }
 }
+
+

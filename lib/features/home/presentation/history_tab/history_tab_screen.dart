@@ -44,7 +44,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -58,7 +58,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
                     child: Text(
                       'My Rides',
                       style: AppTextStyles.headlineSmall.copyWith(
-                        color: AppColors.backgroundPrimary,
+                        color: Theme.of(context).textTheme.headlineSmall?.color,
                         fontWeight: FontWeight.w700,
                       ),
                       textAlign: TextAlign.center,
@@ -81,7 +81,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
               child: Text(
                 '\u20AC ${totalEarnings.toStringAsFixed(2)}',
                 style: AppTextStyles.titleLarge.copyWith(
-                  color: AppColors.backgroundPrimary,
+                  color: AppColors.backgroundDark,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -142,7 +142,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: filteredRides.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      separatorBuilder: (ctx, idx) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         return _RideCard(
                           ride: filteredRides[index],
@@ -196,8 +196,8 @@ class _FilterChip extends StatelessWidget {
           label,
           style: AppTextStyles.bodySmall.copyWith(
             color: isActive
-                ? AppColors.backgroundPrimary
-                : AppColors.textMuted,
+                ? AppColors.backgroundDark
+                : Theme.of(context).textTheme.bodySmall?.color,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -230,7 +230,7 @@ class _RideCard extends StatelessWidget {
     final methodIcon = isCash ? Icons.money : Icons.credit_card;
 
     return Material(
-      color: Colors.grey.shade50,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -249,7 +249,7 @@ class _RideCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: methodColor.withValues(alpha: 0.12),
+                      color: methodColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -299,7 +299,7 @@ class _RideCard extends StatelessWidget {
                           child: Text(
                             ride.pickupAddress,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.backgroundPrimary,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -313,7 +313,7 @@ class _RideCard extends StatelessWidget {
                       child: Container(
                         width: 2,
                         height: 12,
-                        color: Colors.grey.shade300,
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                     ),
                     Row(
@@ -331,7 +331,7 @@ class _RideCard extends StatelessWidget {
                           child: Text(
                             ride.dropoffAddress,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.backgroundPrimary,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -363,7 +363,7 @@ class _RideCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.12),
+                        color: AppColors.error.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -379,7 +379,7 @@ class _RideCard extends StatelessWidget {
                     Text(
                       '\u20AC ${ride.fare!.toStringAsFixed(2)}',
                       style: AppTextStyles.titleSmall.copyWith(
-                        color: AppColors.backgroundPrimary,
+                        color: Theme.of(context).textTheme.titleSmall?.color,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -391,7 +391,7 @@ class _RideCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withValues(alpha: 0.12),
+                        color: const Color(0xFF4CAF50).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -419,3 +419,5 @@ class _RideCard extends StatelessWidget {
     );
   }
 }
+
+
