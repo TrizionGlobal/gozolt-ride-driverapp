@@ -17,9 +17,9 @@ class DriverWalletNotifier extends AutoDisposeAsyncNotifier<DriverEarningsBalanc
     }
   }
 
-  Future<bool> addMoney(double amount) async {
+  Future<bool> addMoney(double amount, {String? paymentIntentId}) async {
     final repository = ref.read(driverRepositoryProvider);
-    final result = await repository.addMoney(amount);
+    final result = await repository.addMoney(amount, paymentIntentId: paymentIntentId);
     switch (result) {
       case ApiSuccess(:final data):
         state = AsyncData(data);

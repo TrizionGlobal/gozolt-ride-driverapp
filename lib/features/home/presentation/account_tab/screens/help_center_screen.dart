@@ -22,124 +22,133 @@ class HelpCenterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Gold header ───────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryGold,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(24),
-                ),
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: AppColors.backgroundPrimary,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Help Center',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.backgroundPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          // ── Gold header ───────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(16, 16 + statusBarHeight, 16, 24),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryGold,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(24),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // ── Customer Service card ────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGold,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.backgroundPrimary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.headset_mic_rounded,
-                        color: AppColors.backgroundPrimary,
-                        size: 26,
-                      ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundPrimary.withOpacity(0.2),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: AppColors.backgroundPrimary,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Help Center',
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: AppColors.backgroundPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Scrollable content ───────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // ── Customer Service card ────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGold,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            'Customer Services',
-                            style: AppTextStyles.titleMedium.copyWith(
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundPrimary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.headset_mic_rounded,
                               color: AppColors.backgroundPrimary,
-                              fontWeight: FontWeight.w700,
+                              size: 26,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Get help with your account',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.backgroundPrimary.withOpacity(0.7),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Customer Services',
+                                  style: AppTextStyles.titleMedium.copyWith(
+                                    color: AppColors.backgroundPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Get help with your account',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.backgroundPrimary.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── WhatsApp tile ────────────────────────────────────
+                  _HelpTile(
+                    icon: Icons.chat_rounded,
+                    iconColor: const Color(0xFF25D366),
+                    label: 'WhatsApp',
+                    subtitle: 'Chat with us on WhatsApp',
+                    onTap: _openWhatsApp,
+                  ),
+
+                  // ── Website tile ─────────────────────────────────────
+                  _HelpTile(
+                    icon: Icons.language_rounded,
+                    iconColor: AppColors.info,
+                    label: 'Website',
+                    subtitle: 'Visit our website',
+                    onTap: _openWebsite,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // ── WhatsApp tile ────────────────────────────────────
-            _HelpTile(
-              icon: Icons.chat_rounded,
-              iconColor: const Color(0xFF25D366),
-              label: 'WhatsApp',
-              subtitle: 'Chat with us on WhatsApp',
-              onTap: _openWhatsApp,
-            ),
-
-            // ── Website tile ─────────────────────────────────────
-            _HelpTile(
-              icon: Icons.language_rounded,
-              iconColor: AppColors.info,
-              label: 'Website',
-              subtitle: 'Visit our website',
-              onTap: _openWebsite,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

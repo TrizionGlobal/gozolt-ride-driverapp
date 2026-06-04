@@ -162,10 +162,12 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF8E1),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF2C2516)
+                              : const Color(0xFFFFF8E1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primaryGold.withOpacity(0.1),
+                            color: AppColors.primaryGold.withOpacity(0.2),
                           ),
                         ),
                         child: Row(
@@ -180,7 +182,9 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                             Text(
                               'Waiting time: $_timerText',
                               style: AppTextStyles.titleSmall.copyWith(
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.primaryGold
+                                    : const Color(0xFFB78103),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

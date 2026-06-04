@@ -20,6 +20,8 @@ import 'widgets/go_online_button.dart';
 import 'widgets/home_top_bar.dart';
 import 'widgets/map_overlay_buttons.dart';
 import '../../../ride/presentation/widgets/ride_metrics_bubbles.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class HomeTabScreen extends ConsumerStatefulWidget {
   const HomeTabScreen({super.key});
@@ -96,9 +98,8 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // Re-apply map style after returning from external app (e.g. Google Maps navigation)
-      if (_darkMapStyle != null) {
-        _mapController?.setMapStyle(_darkMapStyle!);
-      }
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      _mapController?.setMapStyle(isDark ? _darkMapStyle : null);
       // Force re-fetch of route polylines
       _lastRouteKey = null;
       _toPickupRoute = null;
@@ -384,17 +385,29 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           context: context,
           barrierDismissible: false,
           builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF1C2333),
+            backgroundColor: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Ride Cancelled', style: TextStyle(color: Colors.white)),
-            content: const Text(
+            title: Text(
+              'Ride Cancelled',
+              style: AppTextStyles.titleMedium.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.textPrimary 
+                    : AppColors.textPrimaryLight,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            content: Text(
               'The rider has cancelled this ride. You are now back online.',
-              style: TextStyle(color: Colors.white70),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.textSecondary 
+                    : AppColors.textSecondaryLight,
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK', style: TextStyle(color: Color(0xFFD4A843))),
+                child: Text('OK', style: TextStyle(color: AppColors.primaryGold)),
               ),
             ],
           ),
@@ -467,7 +480,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     final bottomOffset = isBottomNavBarVisible ? 104.0 : 16.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF151515),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Full-screen Google Map
@@ -477,7 +490,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
               target: _getInitialTarget(),
               zoom: _defaultZoom,
             ),
-            style: _darkMapStyle,
+            style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
             myLocationEnabled: false,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
@@ -545,17 +558,25 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           ),
         ],
       RideStatus.inProgress => [
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const RideMetricsBubbles(),
-                const SizedBox(height: 12),
-                const ActiveRideCard(),
-              ],
+          Positioned.fill(
+            child: Consumer(
+              builder: (context, ref, _) {
+                final showCollect = ref.watch(showCollectAmountProvider);
+                if (showCollect) {
+                  return const CollectAmountScreen();
+                }
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const RideMetricsBubbles(),
+                      const SizedBox(height: 12),
+                      const ActiveRideCard(),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],

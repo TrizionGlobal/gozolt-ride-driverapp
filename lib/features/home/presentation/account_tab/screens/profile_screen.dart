@@ -19,7 +19,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
   File? _pickedImage;
-  bool _isEditing = false;
   bool _isSaving = false;
 
   @override
@@ -45,43 +44,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final email = _emailController.text.trim();
 
     if (firstName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('First Name is required'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar('First Name is required', isError: true);
       return;
     }
 
     if (lastName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Last Name is required'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar('Last Name is required', isError: true);
       return;
     }
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email is required'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar('Email is required', isError: true);
       return;
     }
 
     final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegExp.hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email address'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar('Please enter a valid email address', isError: true);
       return;
     }
 
@@ -113,138 +92,204 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       setState(() {
         _isSaving = false;
         if (success) {
-          _isEditing = false;
           _pickedImage = null; // Clear the picked image file after successful upload/save
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Profile updated successfully' : 'Failed to update profile'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
+      _showSnackBar(
+        success ? 'Profile updated successfully' : 'Failed to update profile',
+        isError: !success,
       );
     }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(driverProfileProvider).valueOrNull;
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Driver Profile'),
-        backgroundColor: AppColors.primaryGold,
-        foregroundColor: AppColors.backgroundPrimary,
-        actions: [
-          if (_isSaving)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.backgroundPrimary),
-                  ),
-                ),
+      body: Column(
+        children: [
+          // ── Gold header (covers status bar completely) ──────────────────
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(16, 16 + statusBarHeight, 16, 24),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryGold,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(24),
               ),
-            )
-          else
-            IconButton(
-              icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded),
-              onPressed: () {
-                if (_isEditing) {
-                  _saveProfile();
-                } else {
-                  setState(() => _isEditing = true);
-                }
-              },
             ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Avatar
-            Stack(
+            child: Row(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppColors.primaryGold.withOpacity(0.2),
-                  backgroundImage: _pickedImage != null
-                      ? FileImage(_pickedImage!) as ImageProvider
-                      : (profile?.avatarUrl != null
-                          ? NetworkImage(ApiConstants.fullUrl(profile!.avatarUrl!)) as ImageProvider
-                          : null),
-                  child: (_pickedImage == null && profile?.avatarUrl == null)
-                      ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
-                      : null,
-                ),
-                if (_isEditing)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryGold,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
-                      ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundPrimary.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: AppColors.backgroundPrimary,
+                      size: 18,
                     ),
                   ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Driver Profile',
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: AppColors.backgroundPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 32),
-            
-            // Personal Info
-            _buildSectionHeader('Personal Information'),
-            _buildTextField('First Name', _firstNameController),
-            const SizedBox(height: 16),
-            _buildTextField('Last Name', _lastNameController),
-            const SizedBox(height: 16),
-            _buildTextField('Email', _emailController),
-            const SizedBox(height: 32),
+          ),
 
-            // Vehicle Info (Read-only for security)
-            _buildSectionHeader('Vehicle Details'),
-            _buildInfoCard(
-              icon: Icons.directions_car_rounded,
-              label: 'Vehicle Type',
-              value: profile?.vehicle?.type ?? 'Car',
-            ),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              icon: Icons.numbers_rounded,
-              label: 'Vehicle Plate',
-              value: profile?.vehicle?.plate ?? 'XYZ 1234',
-            ),
-            const SizedBox(height: 32),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Column(
+                children: [
+                  // Avatar with camera icon
+                  Center(
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: AppColors.primaryGold.withOpacity(0.2),
+                          backgroundImage: _pickedImage != null
+                              ? FileImage(_pickedImage!) as ImageProvider
+                              : (profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+                                  ? NetworkImage(ApiConstants.fullUrl(profile.avatarUrl!)) as ImageProvider
+                                  : null),
+                          child: (_pickedImage == null && (profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty))
+                              ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGold,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(Icons.camera_alt, size: 16, color: AppColors.backgroundPrimary),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  
+                  // Personal Info Form
+                  _buildSectionHeader('Personal Information'),
+                  _buildTextField('First Name', _firstNameController),
+                  const SizedBox(height: 12),
+                  _buildTextField('Last Name', _lastNameController),
+                  const SizedBox(height: 12),
+                  _buildTextField('Email', _emailController),
+                  const SizedBox(height: 20),
 
-            // Document Status
-            _buildSectionHeader('Verification Documents'),
-            _buildDocumentTile('Driving License', true),
-            const SizedBox(height: 12),
-            _buildDocumentTile('Vehicle Registration (RC)', true),
-            const SizedBox(height: 12),
-            _buildDocumentTile('CPC Certificate', true),
-            const SizedBox(height: 12),
-            _buildDocumentTile('Vehicle Insurance', true),
-          ],
-        ),
+                  // Save button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGold,
+                        foregroundColor: AppColors.backgroundPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.backgroundPrimary,
+                              ),
+                            )
+                          : const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Vehicle Info (Read-only for security)
+                  _buildSectionHeader('Vehicle Details'),
+                  _buildInfoCard(
+                    icon: Icons.directions_car_rounded,
+                    label: 'Vehicle Type',
+                    value: profile?.vehicle?.type ?? 'Car',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    icon: Icons.numbers_rounded,
+                    label: 'Vehicle Plate',
+                    value: profile?.vehicle?.plate ?? 'XYZ 1234',
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Document Status
+                  _buildSectionHeader('Verification Documents'),
+                  _buildDocumentTile('Driving License', true),
+                  const SizedBox(height: 12),
+                  _buildDocumentTile('Vehicle Registration (RC)', true),
+                  const SizedBox(height: 12),
+                  _buildDocumentTile('CPC Certificate', true),
+                  const SizedBox(height: 12),
+                  _buildDocumentTile('Vehicle Insurance', true),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -256,18 +301,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
-        const SizedBox(height: 8),
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
         TextField(
           controller: controller,
-          enabled: _isEditing,
+          enabled: true,
+          style: AppTextStyles.bodyMedium.copyWith(fontSize: 14),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: AppColors.primaryGold,
+                width: 1.5,
+              ),
+            ),
           ),
         ),
       ],
@@ -275,11 +347,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildInfoCard({required IconData icon, required String label, required String value}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
+        ),
       ),
       child: Row(
         children: [

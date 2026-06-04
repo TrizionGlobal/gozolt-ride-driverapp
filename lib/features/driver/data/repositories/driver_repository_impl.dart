@@ -255,10 +255,20 @@ class DriverRepositoryImpl implements DriverRepository {
   }
 
   @override
-  Future<ApiResult<DriverEarningsBalance>> addMoney(double amount) async {
+  Future<ApiResult<DriverEarningsBalance>> addMoney(double amount, {String? paymentIntentId}) async {
     try {
-      final balance = await _remoteDataSource.addMoney(amount);
+      final balance = await _remoteDataSource.addMoney(amount, paymentIntentId: paymentIntentId);
       return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<Map<String, dynamic>>> createWalletPaymentIntent(double amount) async {
+    try {
+      final data = await _remoteDataSource.createWalletPaymentIntent(amount);
+      return ApiSuccess(data);
     } on ApiException catch (e) {
       return ApiFailure(e);
     }

@@ -88,6 +88,15 @@ class RideRemoteDataSource {
     }
   }
 
+  Future<RideSummary> getFarePreview(String rideId) async {
+    try {
+      final response = await _dio.get(ApiConstants.rideFarePreview(rideId));
+      return RideSummary.fromJson(_unwrap(response.data));
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<void> respondToRide(String rideId, {required bool accepted}) async {
     try {
       await _dio.post(

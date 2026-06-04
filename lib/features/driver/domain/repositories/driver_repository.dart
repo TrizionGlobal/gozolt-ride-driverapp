@@ -31,7 +31,8 @@ abstract class DriverRepository {
   Future<ApiResult<void>> uploadAvatar(String filePath);
   Future<ApiResult<void>> deleteAvatar();
   Future<ApiResult<DriverEarningsBalance>> getEarningsBalance();
-  Future<ApiResult<DriverEarningsBalance>> addMoney(double amount);
+  Future<ApiResult<DriverEarningsBalance>> addMoney(double amount, {String? paymentIntentId});
+  Future<ApiResult<Map<String, dynamic>>> createWalletPaymentIntent(double amount);
   Future<ApiResult<DriverEarningsBalance>> withdraw(double amount);
   Future<ApiResult<DriverRatingsResponse>> getRatings();
 }

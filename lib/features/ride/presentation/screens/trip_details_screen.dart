@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/ride_detail.dart';
 import '../providers/ride_detail_provider.dart';
 import 'ride_timeline_screen.dart';
@@ -28,24 +28,35 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final detail = ref.watch(rideDetailProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: detail == null
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: detail == null
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.primaryGold),
               )
             : Column(
                 children: [
-                  // ── Gold header ───────────────────────────────
+                  // ── Gold Header (Covers status bar cleanly) ─────────────────
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    padding: EdgeInsets.fromLTRB(16, 12 + statusBarHeight, 16, 24),
                     decoration: const BoxDecoration(
-                      color: AppColors.primaryGold,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFD4A843), Color(0xFFF5C518)],
+                      ),
                       borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(24),
+                        bottom: Radius.circular(28),
                       ),
                     ),
                     child: Column(
@@ -58,61 +69,79 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                                 width: 36,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: AppColors.backgroundDark
-                                      .withOpacity(0.2),
+                                  color: AppColors.backgroundPrimary.withOpacity(0.15),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.arrow_back_rounded,
-                                  color: AppColors.backgroundDark,
+                                  color: AppColors.backgroundPrimary,
                                   size: 18,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Text(
+                            const Text(
                               'Trip Details',
-                              style: AppTextStyles.headlineSmall.copyWith(
-                                color: AppColors.backgroundDark,
-                                fontWeight: FontWeight.w700,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.backgroundPrimary,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
                         Text(
-                          '\u20AC ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
-                          style: AppTextStyles.displayMedium.copyWith(
-                            color: AppColors.backgroundDark,
-                            fontWeight: FontWeight.w800,
+                          '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.backgroundPrimary,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundPrimary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Ride ID: ${detail.id.length > 8 ? detail.id.substring(0, 8) : detail.id}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.backgroundPrimary.withOpacity(0.7),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  // ── Scrollable content ────────────────────────
+                  // ── Scrollable Content ────────────────────────
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          // Duration + Distance row
+                          // Duration + Distance + Timeline Card
                           _DurationDistanceRow(
                             detail: detail,
                             onTimelineTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      RideTimelineScreen(detail: detail),
+                                  builder: (_) => RideTimelineScreen(detail: detail),
                                 ),
                               );
                             },
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
-                          // Addresses
+                          // Route/Addresses Timeline
                           _AddressesCard(detail: detail),
                           const SizedBox(height: 16),
 
@@ -120,41 +149,56 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                           _PaymentDetailsCard(detail: detail),
                           const SizedBox(height: 16),
 
-                          // Your Earning
+                          // Invoice Earning Card
                           _EarningCard(detail: detail),
-                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
                   ),
 
-                  // ── Sub Total bar ─────────────────────────────
+                  // ── Sub Total Bar ─────────────────────────────
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      16,
+                      20,
+                      16 + MediaQuery.of(context).padding.bottom,
                     ),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryGold,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      boxShadow: isDark
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, -4),
+                              ),
+                            ],
+                      border: Border.all(
+                        color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Sub Total',
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: AppColors.backgroundDark,
-                            fontWeight: FontWeight.w700,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
                           ),
                         ),
                         Text(
-                          '\u20AC ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
-                          style: AppTextStyles.titleLarge.copyWith(
-                            color: AppColors.backgroundDark,
-                            fontWeight: FontWeight.w800,
+                          '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
                           ),
                         ),
                       ],
@@ -180,37 +224,69 @@ class _DurationDistanceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTimelineTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
+          color: isDark ? AppColors.surfaceDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+          ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.timer_rounded, color: AppColors.primaryGold, size: 22),
+            const Icon(Icons.timer_rounded, color: AppColors.primaryGold, size: 20),
             const SizedBox(width: 8),
             Text(
               '${detail.durationMinutes ?? 0} min',
-              style: AppTextStyles.titleSmall.copyWith(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.w600,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
             ),
             const SizedBox(width: 20),
-            const Icon(Icons.straighten_rounded, color: AppColors.primaryGold, size: 22),
+            const Icon(Icons.straighten_rounded, color: AppColors.primaryGold, size: 20),
             const SizedBox(width: 8),
             Text(
               '${(detail.distanceKm ?? 0).toStringAsFixed(1)} km',
-              style: AppTextStyles.titleSmall.copyWith(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.w600,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
             ),
             const Spacer(),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 22),
+            Row(
+              children: [
+                Text(
+                  'Timeline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGold,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                const Icon(
+                  Icons.keyboard_arrow_right_rounded,
+                  color: AppColors.primaryGold,
+                  size: 16,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -226,39 +302,71 @@ class _AddressesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateStr = detail.startedAt != null
         ? DateFormat('dd MMM yyyy, hh:mm a').format(detail.startedAt!)
         : '';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Pickup
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
+                margin: const EdgeInsets.only(top: 3),
                 width: 10,
                 height: 10,
-                decoration: const BoxDecoration(
-                  color: AppColors.error,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.error, width: 2.5),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  detail.pickupAddress,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pickup Address',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail.pickupAddress,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -266,15 +374,17 @@ class _AddressesCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4),
             child: Container(
-              width: 2,
+              width: 1.5,
               height: 20,
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: isDark ? Colors.white10 : Colors.grey.shade200,
             ),
           ),
           // Dropoff
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
+                margin: const EdgeInsets.only(top: 3),
                 width: 10,
                 height: 10,
                 decoration: const BoxDecoration(
@@ -282,25 +392,58 @@ class _AddressesCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  detail.dropoffAddress,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Destination Address',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail.dropoffAddress,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           if (dateStr.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              height: 1,
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
+            ),
             const SizedBox(height: 10),
-            Text(
-              dateStr,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMuted,
-              ),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 12,
+                  color: isDark ? AppColors.textMuted : AppColors.textMutedLight,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  dateStr,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.textMuted : AppColors.textMutedLight,
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -317,80 +460,114 @@ class _PaymentDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isCash = detail.paymentMethod.toLowerCase() == 'cash';
     final isPaid = detail.paymentStatus.toUpperCase() == 'PAID';
+    final methodColor = isCash ? const Color(0xFF4CAF50) : const Color(0xFF2196F3);
+    final methodIcon = isCash ? Icons.money : Icons.credit_card;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Payment Details',
-            style: AppTextStyles.titleSmall.copyWith(
-              color: Theme.of(context).textTheme.titleSmall?.color,
-              fontWeight: FontWeight.w700,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Via',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMuted,
+                'Method',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
                 ),
               ),
-              Row(
-                children: [
-                  Icon(
-                    isCash ? Icons.money : Icons.credit_card_rounded,
-                    color: isCash ? AppColors.success : AppColors.info,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isCash ? 'Cash' : 'Card',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                      fontWeight: FontWeight.w600,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: methodColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(methodIcon, color: methodColor, size: 12),
+                    const SizedBox(width: 6),
+                    Text(
+                      isCash ? 'Cash' : 'Card',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: methodColor,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Status',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMuted,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: (isPaid ? AppColors.success : AppColors.warning)
-                      .withOpacity(0.12),
+                  color: (isPaid ? AppColors.success : AppColors.warning).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  isPaid ? 'Paid' : 'Pending',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isPaid ? AppColors.success : AppColors.warning,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isPaid ? Icons.check_circle_rounded : Icons.pending_rounded,
+                      color: isPaid ? AppColors.success : AppColors.warning,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isPaid ? 'Paid' : 'Pending',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isPaid ? AppColors.success : AppColors.warning,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -409,63 +586,79 @@ class _EarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Your Earning',
-            style: AppTextStyles.titleSmall.copyWith(
-              color: Theme.of(context).textTheme.titleSmall?.color,
-              fontWeight: FontWeight.w700,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _FareRow('Base Price', detail.baseFare),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _FareRow('Distance Price', detail.distanceFare),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _FareRow('Time Price', detail.timeFare),
           if (detail.waitTimeFee != null && detail.waitTimeFee! > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             _FareRow('Wait Time Fee', detail.waitTimeFee),
           ],
           if (detail.tipAmount != null && detail.tipAmount! > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     const Icon(Icons.volunteer_activism_rounded,
-                        color: Color(0xFF4CAF50), size: 16),
+                        color: Color(0xFF4CAF50), size: 14),
                     const SizedBox(width: 6),
                     Text(
                       'Tip',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textMuted,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
                       ),
                     ),
                   ],
                 ),
                 Text(
-                  '\u20AC ${detail.tipAmount!.toStringAsFixed(2)}',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF4CAF50),
-                    fontWeight: FontWeight.w600,
+                  '€ ${detail.tipAmount!.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF4CAF50),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ],
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1),
           ),
           Row(
@@ -473,16 +666,18 @@ class _EarningCard extends StatelessWidget {
             children: [
               Text(
                 'Total Price',
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: Theme.of(context).textTheme.titleSmall?.color,
-                  fontWeight: FontWeight.w700,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
                 ),
               ),
               Text(
-                '\u20AC ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
-                style: AppTextStyles.titleSmall.copyWith(
+                '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 16,
                   color: AppColors.primaryGold,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
@@ -500,24 +695,26 @@ class _FareRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textMuted,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
           ),
         ),
         Text(
-          '\u20AC ${(value ?? 0).toStringAsFixed(2)}',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-            fontWeight: FontWeight.w500,
+          '€ ${(value ?? 0).toStringAsFixed(2)}',
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
     );
   }
 }
-

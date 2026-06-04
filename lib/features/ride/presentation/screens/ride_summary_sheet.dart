@@ -114,12 +114,48 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
           ],
           // Title
           Text(
-            'Ride Summary',
+            'Ride Completed',
             style: AppTextStyles.headlineMedium.copyWith(
               color: AppColors.primaryGold,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+          // Green badge if CARD payment
+          if (summary.paymentMethod.toLowerCase() == 'card') ...[
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.success,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Payment Received',
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          const SizedBox(height: 8),
           // Fare breakdown
           _FareRow(label: 'Base Fare', amount: summary.baseFare),
           _FareRow(label: 'Distance Fare', amount: summary.distanceFare),
@@ -239,7 +275,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
               ),
               const SizedBox(width: 16),
               Text(
-                summary.paymentMethod == 'cash' ? 'Cash' : 'Card',
+                summary.paymentMethod.toLowerCase() == 'cash' ? 'Cash' : 'Credit/Debit Card',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
@@ -337,7 +373,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
           const SizedBox(height: 24),
           // Done button
           GoldActionButton(
-            label: 'Done',
+            label: 'Finish Ride',
             onTap: () =>
                 ref.read(rideSessionProvider.notifier).finishRide(),
           ),

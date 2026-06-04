@@ -19,6 +19,12 @@ import 'ride_provider.dart';
 /// Holds the ride summary after completion so the summary sheet can read it.
 final rideSummaryProvider = StateProvider<RideSummary?>((ref) => null);
 
+/// Holds the fare preview details before completion for cash rides.
+final farePreviewProvider = StateProvider<RideSummary?>((ref) => null);
+
+/// Whether the driver has confirmed cash payment for the active ride.
+final cashPaymentConfirmedProvider = StateProvider<bool>((ref) => false);
+
 /// Countdown seconds remaining for ride request.
 final rideRequestCountdownProvider = StateProvider<int>((ref) => 0);
 
@@ -353,12 +359,45 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
   Future<bool> endRide() async {
     final ride = state;
     if (ride == null) return false;
+
+    final paymentMethod = (ride.paymentMethod ?? 'cash').toLowerCase();
+
+    if (paymentMethod == 'card') {
+      final result = await _repository.completeRide(ride.id);
+      return switch (result) {
+        ApiSuccess(:final data) => () {
+            _ref.read(rideSummaryProvider.notifier).state = data;
+            state = ride.copyWith(status: RideStatus.completed);
+            return true;
+          }(),
+        ApiFailure() => false,
+      };
+    } else {
+      // CASH payment method: get fare preview first
+      final result = await _repository.getFarePreview(ride.id);
+      return switch (result) {
+        ApiSuccess(:final data) => () {
+            _ref.read(farePreviewProvider.notifier).state = data;
+            _ref.read(showCollectAmountProvider.notifier).state = true;
+            // Note: We do NOT change status to completed here to prevent fraud.
+            // Status remains inProgress so that it's still inProgress in DB.
+            return true;
+          }(),
+        ApiFailure() => false,
+      };
+    }
+  }
+
+  /// Confirm cash collection and complete the ride on the backend.
+  Future<bool> confirmCashReceived() async {
+    final ride = state;
+    if (ride == null) return false;
+
     final result = await _repository.completeRide(ride.id);
     return switch (result) {
       ApiSuccess(:final data) => () {
           _ref.read(rideSummaryProvider.notifier).state = data;
-          _ref.read(showCollectAmountProvider.notifier).state =
-              data.paymentMethod.toLowerCase() == 'cash';
+          _ref.read(cashPaymentConfirmedProvider.notifier).state = true;
           state = ride.copyWith(status: RideStatus.completed);
           return true;
         }(),
@@ -453,6 +492,8 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     }
     state = null;
     _ref.read(rideSummaryProvider.notifier).state = null;
+    _ref.read(farePreviewProvider.notifier).state = null;
+    _ref.read(cashPaymentConfirmedProvider.notifier).state = false;
     _ref.read(showCollectAmountProvider.notifier).state = false;
     _driverStatusNotifier.goOnline();
     // Reconnect socket to ensure driver is visible for new ride requests

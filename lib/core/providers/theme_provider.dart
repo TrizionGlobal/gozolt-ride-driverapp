@@ -10,20 +10,20 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((r
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   final dynamic _storage;
 
-  ThemeModeNotifier(this._storage) : super(ThemeMode.dark) {
+  ThemeModeNotifier(this._storage) : super(ThemeMode.light) {
     _loadTheme();
   }
 
   Future<void> _loadTheme() async {
     try {
       final saved = await _storage.read(key: 'theme_mode');
-      if (saved == 'light') {
-        state = ThemeMode.light;
-      } else {
+      if (saved == 'dark') {
         state = ThemeMode.dark;
+      } else {
+        state = ThemeMode.light;
       }
     } catch (_) {
-      state = ThemeMode.dark;
+      state = ThemeMode.light;
     }
   }
 

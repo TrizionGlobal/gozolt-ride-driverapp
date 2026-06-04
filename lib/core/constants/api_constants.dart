@@ -1,8 +1,18 @@
 abstract final class ApiConstants {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://gozolt-new-ride-backend-production.up.railway.app/v1',
-  );
+  static const bool useLocal = false;
+
+  // Change this depending on where you run the app:
+  // - iOS Simulator: '127.0.0.1' or 'localhost'
+  // - Android Emulator: '10.0.2.2'
+  // - Physical Device: '10.183.39.107' (Your current local network IP)
+  static const String localIp = '127.0.0.1'; // Or '10.0.2.2' or '10.183.39.107'
+
+  static const String baseUrl = useLocal
+      ? 'http://$localIp:3000/v1'
+      : String.fromEnvironment(
+          'API_BASE_URL',
+          defaultValue: 'https://gozolt-new-ride-backend-production.up.railway.app/v1',
+        );
 
   // Auth endpoints
   static const String loginDriver = '/auth/driver/login';
@@ -44,6 +54,7 @@ abstract final class ApiConstants {
   static String rideVerifyOtp(String id) => '/rides/$id/verify-otp';
   static String rideStart(String id) => '/rides/$id/start';
   static String rideComplete(String id) => '/rides/$id/complete';
+  static String rideFarePreview(String id) => '/rides/$id/fare-preview';
   static String rideCancel(String id) => '/rides/$id/cancel';
   static String rideNextStop(String id) => '/rides/$id/next-stop';
   static String rideNoShow(String id) => '/rides/$id/no-show';

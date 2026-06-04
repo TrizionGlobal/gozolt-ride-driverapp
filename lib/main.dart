@@ -28,6 +28,7 @@ Future<void> main() async {
     // Initialize Stripe
     try {
       Stripe.publishableKey = AppConstants.stripePublishableKey;
+      Stripe.urlScheme = 'com.gozolt';
       await Stripe.instance.applySettings().timeout(
         const Duration(seconds: 3),
       );

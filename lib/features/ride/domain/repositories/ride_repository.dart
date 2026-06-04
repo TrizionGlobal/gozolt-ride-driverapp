@@ -12,6 +12,7 @@ abstract class RideRepository {
   Future<ApiResult<Ride>> arriveAtPickup(String rideId);
   Future<ApiResult<Ride>> startRide(String rideId, {required String otp});
   Future<ApiResult<RideSummary>> completeRide(String rideId);
+  Future<ApiResult<RideSummary>> getFarePreview(String rideId);
   Future<ApiResult<void>> respondToRide(String rideId, {required bool accepted});
   Future<ApiResult<void>> cancelRide(String rideId, {required String reason});
   Future<ApiResult<Ride>> nextStop(String rideId);

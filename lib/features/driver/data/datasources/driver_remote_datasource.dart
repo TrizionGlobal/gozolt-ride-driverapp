@@ -208,11 +208,26 @@ class DriverRemoteDataSource {
     }
   }
 
-  Future<DriverEarningsBalance> addMoney(double amount) async {
+  Future<Map<String, dynamic>> createWalletPaymentIntent(double amount) async {
+    try {
+      final response = await _dio.post(
+        '/drivers/me/wallet/payment-intent',
+        data: {'amount': amount},
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DriverEarningsBalance> addMoney(double amount, {String? paymentIntentId}) async {
     try {
       final response = await _dio.post(
         ApiConstants.driverWalletAddMoney,
-        data: {'amount': amount},
+        data: {
+          'amount': amount,
+          if (paymentIntentId != null) 'paymentIntentId': paymentIntentId,
+        },
       );
       return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {

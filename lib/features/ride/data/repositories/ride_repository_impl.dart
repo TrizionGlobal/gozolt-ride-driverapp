@@ -256,6 +256,18 @@ class RideRepositoryImpl implements RideRepository {
   }
 
   @override
+  Future<ApiResult<RideSummary>> getFarePreview(String rideId) async {
+    if (_devBypass) return const ApiSuccess(_dummySummary);
+
+    try {
+      final summary = await _remoteDataSource.getFarePreview(rideId);
+      return ApiSuccess(summary);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
   Future<ApiResult<void>> respondToRide(String rideId,
       {required bool accepted}) async {
     if (_devBypass) return const ApiSuccess(null);
