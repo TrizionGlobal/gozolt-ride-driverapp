@@ -30,15 +30,25 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
       lastDate: now,
       initialDateRange: ref.read(customDateRangeProvider),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primaryGold,
-              onPrimary: AppColors.backgroundPrimary,
-              surface: AppColors.backgroundPrimary,
-              onSurface: AppColors.white,
-            ),
-          ),
+          data: isDark
+              ? ThemeData.dark().copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: AppColors.primaryGold,
+                    onPrimary: AppColors.backgroundPrimary,
+                    surface: AppColors.backgroundPrimary,
+                    onSurface: AppColors.white,
+                  ),
+                )
+              : ThemeData.light().copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: AppColors.primaryGold,
+                    onPrimary: AppColors.white,
+                    surface: AppColors.white,
+                    onSurface: AppColors.textPrimaryLight,
+                  ),
+                ),
           child: child!,
         );
       },
@@ -70,6 +80,15 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
     final period = ref.watch(selectedEarningsPeriodProvider);
     final customRange = ref.watch(customDateRangeProvider);
     final summary = screenState.summary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Calculate maximum daily earnings to normalize visual progress bar representation
+    double maxDailyEarnings = 1.0;
+    for (final day in screenState.dailyBreakdown) {
+      if (day.totalEarnings > maxDailyEarnings) {
+        maxDailyEarnings = day.totalEarnings;
+      }
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -81,38 +100,53 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 children: [
-                  const SizedBox(width: 40),
+                  const SizedBox(width: 44), // Balanced width to offset calendar icon
                   Expanded(
                     child: Column(
                       children: [
                         Text(
                           'Earnings',
                           style: AppTextStyles.headlineSmall.copyWith(
-                            color: Theme.of(context).textTheme.headlineSmall?.color,
-                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         if (period == EarningsPeriod.custom &&
-                            customRange != null)
+                            customRange != null) ...[
+                          const SizedBox(height: 4),
                           Text(
                             '${DateFormat('dd MMM').format(customRange.start)} – ${DateFormat('dd MMM').format(customRange.end)}',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context).textTheme.bodySmall?.color,
+                              color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                              fontWeight: FontWeight.w600,
                             ),
                             textAlign: TextAlign.center,
                           ),
+                        ]
                       ],
                     ),
                   ),
                   GestureDetector(
                     onTap: _pickDateRange,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: isDark ? AppColors.surfaceCard : AppColors.white,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.black.withOpacity(0.02),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.calendar_today_rounded,
@@ -129,20 +163,30 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
             // ── Period toggle ────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _PeriodToggleButton(
-                    label: 'Today',
-                    isActive: period == EarningsPeriod.today,
-                    onTap: () => _onPeriodChanged(EarningsPeriod.today),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceCard : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(
+                    color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+                    width: 1,
                   ),
-                  const SizedBox(width: 12),
-                  _PeriodToggleButton(
-                    label: 'Weekly',
-                    isActive: period == EarningsPeriod.weekly,
-                    onTap: () => _onPeriodChanged(EarningsPeriod.weekly),
-                  ),
-                ],
+                ),
+                child: Row(
+                  children: [
+                    _PeriodToggleButton(
+                      label: 'Today',
+                      isActive: period == EarningsPeriod.today,
+                      onTap: () => _onPeriodChanged(EarningsPeriod.today),
+                    ),
+                    _PeriodToggleButton(
+                      label: 'Weekly',
+                      isActive: period == EarningsPeriod.weekly,
+                      onTap: () => _onPeriodChanged(EarningsPeriod.weekly),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -159,6 +203,113 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         children: [
+                          // ── Hero Earnings Card ───────────────────────
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 24),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [const Color(0xFF1B2838), const Color(0xFF0F1923)]
+                                    : [Colors.white, const Color(0xFFF8F9FA)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: -20,
+                                  bottom: -20,
+                                  child: Icon(
+                                    Icons.trending_up_rounded,
+                                    size: 140,
+                                    color: AppColors.primaryGold.withOpacity(0.04),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'TOTAL EARNINGS',
+                                            style: AppTextStyles.labelSmall.copyWith(
+                                              color: AppColors.primaryGold,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 1.2,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.success.withOpacity(0.12),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.arrow_upward_rounded,
+                                                  color: AppColors.success,
+                                                  size: 12,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Active',
+                                                  style: AppTextStyles.labelSmall.copyWith(
+                                                    color: AppColors.success,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        '€ ${summary.totalEarnings.toStringAsFixed(2)}',
+                                        style: AppTextStyles.displayMedium.copyWith(
+                                          color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 38,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        period == EarningsPeriod.today
+                                            ? 'Earnings gathered today'
+                                            : period == EarningsPeriod.weekly
+                                                ? 'Earnings gathered this week'
+                                                : 'Earnings for selected range',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
                           // Stats row
                           Row(
                             children: [
@@ -166,12 +317,14 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                 label: 'Trips',
                                 value: '${summary.tripCount}',
                                 icon: Icons.directions_car_rounded,
+                                color: Colors.blue,
                               ),
                               const SizedBox(width: 12),
                               _StatCard(
                                 label: 'Card Trip',
                                 value: '${summary.cardTripCount}',
                                 icon: Icons.credit_card_rounded,
+                                color: Colors.orange,
                               ),
                             ],
                           ),
@@ -182,41 +335,37 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                 label: 'Cash Trip',
                                 value: '${summary.cashTripCount}',
                                 icon: Icons.money_rounded,
+                                color: Colors.green,
                               ),
                               const SizedBox(width: 12),
                               _StatCard(
                                 label: 'Tips',
                                 value: '${summary.tipCount}',
                                 icon: Icons.volunteer_activism_rounded,
+                                color: Colors.purple,
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Total Earning
-                          Text(
-                            'Total Earning',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Theme.of(context).textTheme.bodySmall?.color,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '€ ${summary.totalEarnings.toStringAsFixed(2)}',
-                            style: AppTextStyles.displayMedium.copyWith(
-                              color: AppColors.primaryGold,
-                              fontWeight: FontWeight.w800,
-                            ),
                           ),
                           const SizedBox(height: 24),
 
                           // Breakdown card
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
+                              color: isDark ? AppColors.surfaceCard : AppColors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.black.withOpacity(0.02),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Column(
                               children: [
@@ -224,50 +373,51 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                   label: 'Rides',
                                   value: '${summary.tripCount}',
                                   icon: Icons.directions_car_rounded,
+                                  badgeColor: Colors.blue,
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
                                   child: Divider(
-                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                                    color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
                                     height: 1,
                                   ),
                                 ),
                                 _BreakdownRow(
                                   label: 'Cash',
-                                  value:
-                                      '€ ${summary.cashEarnings.toStringAsFixed(2)}',
+                                  value: '€ ${summary.cashEarnings.toStringAsFixed(2)}',
                                   icon: Icons.money_rounded,
+                                  badgeColor: Colors.green,
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
                                   child: Divider(
-                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                                    color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
                                     height: 1,
                                   ),
                                 ),
                                 _BreakdownRow(
                                   label: 'Card',
-                                  value:
-                                      '€ ${summary.cardEarnings.toStringAsFixed(2)}',
+                                  value: '€ ${summary.cardEarnings.toStringAsFixed(2)}',
                                   icon: Icons.credit_card_rounded,
+                                  badgeColor: Colors.orange,
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
                                   child: Divider(
-                                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                                    color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
                                     height: 1,
                                   ),
                                 ),
                                 _BreakdownRow(
                                   label: 'Tips',
-                                  value:
-                                      '€ ${summary.tipEarnings.toStringAsFixed(2)}',
+                                  value: '€ ${summary.tipEarnings.toStringAsFixed(2)}',
                                   icon: Icons.volunteer_activism_rounded,
+                                  badgeColor: Colors.purple,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 28),
 
                           // Weekly daily breakdown
                           if (period == EarningsPeriod.weekly &&
@@ -277,44 +427,63 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                               child: Text(
                                 'Daily Breakdown',
                                 style: AppTextStyles.titleMedium.copyWith(
-                                  color: Theme.of(context).textTheme.titleMedium?.color,
-                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            ...screenState.dailyBreakdown
-                                .map((d) => _DailyRow(daily: d)),
+                            const SizedBox(height: 16),
+                            ...screenState.dailyBreakdown.map(
+                              (d) => _DailyRow(
+                                daily: d,
+                                maxDailyEarnings: maxDailyEarnings,
+                              ),
+                            ),
                           ],
                           const SizedBox(height: 16),
                         ],
                       ),
                     ),
             ),
+            const SizedBox(height: 12),
 
-            // ── Bottom total bar ─────────────────────────────────────
+            // ── Bottom total bar (floating card layout) ───────────────
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryGold,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.primaryGold,
+                    Color(0xFFE5B20D),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryGold.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total Earnings',
+                    'Total Balance',
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.backgroundDark,
-                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F1923),
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
                     '€ ${summary.totalEarnings.toStringAsFixed(2)}',
                     style: AppTextStyles.titleLarge.copyWith(
-                      color: AppColors.backgroundDark,
-                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF0F1923),
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ],
@@ -342,26 +511,35 @@ class _PeriodToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           height: 44,
           decoration: BoxDecoration(
             color: isActive ? AppColors.primaryGold : Colors.transparent,
             borderRadius: BorderRadius.circular(22),
-            border: isActive
-                ? null
-                : Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1), width: 1.5),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryGold.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
             child: Text(
               label,
               style: AppTextStyles.titleSmall.copyWith(
                 color: isActive
-                    ? AppColors.backgroundDark
-                    : Theme.of(context).textTheme.bodySmall?.color,
-                fontWeight: FontWeight.w600,
+                    ? const Color(0xFF0F1923)
+                    : (isDark ? AppColors.textSecondary : AppColors.textSecondaryLight),
+                fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
           ),
@@ -377,38 +555,62 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+  final Color color;
 
   const _StatCard({
     required this.label,
     required this.value,
     required this.icon,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          color: isDark ? AppColors.surfaceCard : AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.primaryGold, size: 24),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 16),
             Text(
               value,
-              style: AppTextStyles.headlineSmall.copyWith(
-                color: Theme.of(context).textTheme.headlineSmall?.color,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.headlineMedium.copyWith(
+                color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                fontWeight: FontWeight.w900,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
+                color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -424,35 +626,62 @@ class _BreakdownRow extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+  final Color badgeColor;
 
   const _BreakdownRow({
     required this.label,
     required this.value,
     required this.icon,
+    required this.badgeColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.primaryGold, size: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: badgeColor.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: badgeColor, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label == 'Rides' ? 'Completed rides count' : 'Collected balance',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        Text(
-          value,
-          style: AppTextStyles.titleSmall.copyWith(
-            color: Theme.of(context).textTheme.titleSmall?.color,
-            fontWeight: FontWeight.w600,
+          Text(
+            value,
+            style: AppTextStyles.titleLarge.copyWith(
+              color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -461,54 +690,103 @@ class _BreakdownRow extends StatelessWidget {
 
 class _DailyRow extends StatelessWidget {
   final DailyEarnings daily;
+  final double maxDailyEarnings;
 
-  const _DailyRow({required this.daily});
+  const _DailyRow({
+    required this.daily,
+    required this.maxDailyEarnings,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dayName = DateFormat('EEE').format(daily.date);
     final dateStr = DateFormat('dd MMM').format(daily.date);
 
+    final percentage = maxDailyEarnings > 0 ? (daily.totalEarnings / maxDailyEarnings) : 0.0;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: isDark ? AppColors.surfaceCard : AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          SizedBox(
-            width: 36,
-            child: Text(
-              dayName,
-              style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.primaryGold,
-                fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGold.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    dayName,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: AppColors.primaryGold,
+                      fontWeight: FontWeight.w800,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              dateStr,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dateStr,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${daily.tripCount} completed trips',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '€ ${daily.totalEarnings.toStringAsFixed(2)}',
+                style: AppTextStyles.titleLarge.copyWith(
+                  color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
-          Text(
-            '${daily.tripCount} trips',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            '€ ${daily.totalEarnings.toStringAsFixed(2)}',
-            style: AppTextStyles.titleSmall.copyWith(
-              color: Theme.of(context).textTheme.titleSmall?.color,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: percentage,
+              backgroundColor: isDark ? AppColors.surfaceDark : Colors.grey.shade100,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                percentage > 0.8
+                    ? AppColors.primaryGold
+                    : AppColors.primaryGold.withOpacity(0.6),
+              ),
+              minHeight: 6,
             ),
           ),
         ],

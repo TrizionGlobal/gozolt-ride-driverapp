@@ -72,7 +72,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
   Future<void> _loadCustomMarkers() async {
     final results = await Future.wait([
-      CustomMarkerPainter.driverMarker(),
+      CustomMarkerPainter.carAssetMarker(),
       CustomMarkerPainter.pickupMarker(),
       CustomMarkerPainter.dropoffMarker(),
       CustomMarkerPainter.stopMarker(),
@@ -128,7 +128,60 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
         return;
       }
 
-      // 2. Fallback: Request fresh position directly from Geolocator
+      // 2. Try to use the current position provider's cached value
+      final cachedPos = ref.read(currentPositionProvider).valueOrNull;
+      if (cachedPos != null) {
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(cachedPos.latitude, cachedPos.longitude),
+            _defaultZoom,
+          ),
+        );
+        return;
+      }
+
+      // 3. Fallback: Request fresh position directly from Geolocator after checks
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location services are disabled. Please enable them in your device settings.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Location permission denied.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location permissions are permanently denied. Please enable them in app settings.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
@@ -142,14 +195,24 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       );
     } catch (e) {
       debugPrint('Error getting current location: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error getting location: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Set<Marker> _buildMarkers() {
     final markers = <Marker>{};
 
-    // Driver marker — use synchronous value from the watched stream
-    final position = ref.watch(locationStreamProvider).valueOrNull;
+    // Driver marker — use stream position, fallback to current position provider
+    final streamPosition = ref.watch(locationStreamProvider).valueOrNull;
+    final fallbackPosition = ref.watch(currentPositionProvider).valueOrNull;
+    final position = streamPosition ?? fallbackPosition;
     if (position != null) {
       markers.add(
         Marker(
@@ -357,17 +420,16 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
     // When GPS resolves, animate map to current location
     ref.listen(currentPositionProvider, (prev, next) {
-      if (prev is AsyncLoading && next is AsyncData<Position>) {
-        final pos = next.value;
-        if (pos != null) {
+      next.whenOrNull(
+        data: (pos) {
           _mapController?.animateCamera(
             CameraUpdate.newLatLngZoom(
               LatLng(pos.latitude, pos.longitude),
               _defaultZoom,
             ),
           );
-        }
-      }
+        },
+      );
     });
 
     // Zoom map to show driver + pickup/dropoff when ride status or destination changes

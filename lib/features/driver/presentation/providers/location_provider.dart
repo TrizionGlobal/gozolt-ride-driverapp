@@ -55,11 +55,23 @@ final locationStreamProvider = StreamProvider<Position>((ref) {
     return Stream.periodic(const Duration(seconds: 5), (_) => _dummyPosition());
   }
 
-  return Geolocator.getPositionStream(
-    locationSettings: const LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
-    ),
+  final permissionAsync = ref.watch(locationPermissionProvider);
+
+  return permissionAsync.when(
+    data: (permission) {
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        return Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 0,
+          ),
+        );
+      }
+      return Stream.error(Exception('Location permission not granted: $permission'));
+    },
+    loading: () => const Stream.empty(),
+    error: (err, stack) => Stream.error(err),
   );
 });
 
