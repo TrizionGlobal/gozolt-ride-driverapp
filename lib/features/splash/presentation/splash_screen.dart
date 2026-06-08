@@ -7,6 +7,7 @@ import '../../../core/constants/asset_paths.dart';
 import '../../../core/network/socket_service.dart';
 import '../../../core/providers/storage_provider.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/gozolt_logo.dart';
@@ -31,16 +32,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
+    // Initialize notification service
+    try {
+      ref.read(notificationServiceProvider).initialize();
+    } catch (e) {
+      debugPrint('SplashScreen: Notification init error: $e');
+    }
+
     // Hard fail-safe: Force navigation after 6 seconds no matter what
-    Future.delayed(const Duration(seconds: 6)).then((_) {
+    Future.delayed(const Duration(seconds: 6)).then((_) async {
       if (mounted && !_navigated) {
         debugPrint('SplashScreen: Hard fail-safe triggered');
-        _navigate(RouteNames.welcome);
+        final hasTokens = await ref.read(secureStorageProvider).getAccessToken() != null;
+        if (hasTokens) {
+          _navigate(RouteNames.home);
+        } else {
+          _navigate(RouteNames.onboarding);
+        }
       }
     });
 
     // Normal flow
     await Future.delayed(AppConstants.splashDuration);
+    if (!mounted || _navigated) return;
+
+    await _performAuthCheck();
     if (!mounted || _navigated) return;
 
     final storage = ref.read(secureStorageProvider);
@@ -50,14 +66,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       debugPrint('SplashScreen: Found tokens, navigating to home');
       _navigate(RouteNames.home);
     } else {
-      final hasSeenOnboarding = await storage.hasSeenOnboarding();
-      if (hasSeenOnboarding) {
-        debugPrint('SplashScreen: No tokens, navigating to welcome');
-        _navigate(RouteNames.welcome);
-      } else {
-        debugPrint('SplashScreen: No tokens, navigating to onboarding');
-        _navigate(RouteNames.onboarding);
-      }
+      debugPrint('SplashScreen: No tokens, navigating to onboarding');
+      _navigate(RouteNames.onboarding);
     }
   }
 
@@ -116,9 +126,12 @@ class _SplashContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logoPath = isDark ? AssetPaths.gozoltLogoWithText : AssetPaths.lightGozoltLogoWithText;
+
     return Center(
       child: Image.asset(
-        AssetPaths.gozoltLogoWithText,
+        logoPath,
         width: MediaQuery.of(context).size.width * 0.8,
         height: 400,
         fit: BoxFit.contain,

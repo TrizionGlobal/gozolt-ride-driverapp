@@ -6,6 +6,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/providers/dio_provider.dart';
 import '../../../../core/providers/storage_provider.dart';
 import '../../../../core/network/api_result.dart';
+import '../../../../core/services/notification_service.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dio = ref.watch(dioProvider);
@@ -18,17 +19,21 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+  return AuthNotifier(repository, ref);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final Ref _ref;
 
-  AuthNotifier(this._repository) : super(const AuthInitial());
+  AuthNotifier(this._repository, this._ref) : super(const AuthInitial());
 
   Future<void> checkAuthStatus() async {
     final isAuth = await _repository.isAuthenticated();
     state = isAuth ? const AuthAuthenticated() : const AuthUnauthenticated();
+    if (isAuth) {
+      _ref.read(notificationServiceProvider).updateToken().ignore();
+    }
   }
 
   Future<bool> loginWithPassword({
@@ -40,6 +45,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     switch (result) {
       case ApiSuccess():
         state = const AuthAuthenticated();
+        _ref.read(notificationServiceProvider).updateToken().ignore();
         return true;
       case ApiFailure(:final exception):
         state = AuthError(exception.message);
@@ -72,6 +78,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     switch (result) {
       case ApiSuccess():
         state = const AuthAuthenticated();
+        _ref.read(notificationServiceProvider).updateToken().ignore();
       case ApiFailure(:final exception):
         state = AuthError(exception.message);
     }

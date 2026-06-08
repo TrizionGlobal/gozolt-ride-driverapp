@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 import 'app.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/notification_service.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   try {
@@ -18,9 +21,13 @@ Future<void> main() async {
 
     // Initialize Firebase with timeout
     try {
-      await Firebase.initializeApp().timeout(
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ).timeout(
         const Duration(seconds: 5),
       );
+      // Set the background messaging handler early on, as a named top-level function
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     } catch (e) {
       debugPrint('Main: Firebase init error or timeout: $e');
     }

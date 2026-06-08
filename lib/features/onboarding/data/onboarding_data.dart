@@ -2,21 +2,29 @@ import '../../../core/constants/asset_paths.dart';
 
 class OnboardingPageData {
   final String imagePath;
-  final String Function(dynamic l10n) getTitle;
+  final String titlePre;
+  final String titleHighlight;
+  final String titlePost;
 
   const OnboardingPageData({
     required this.imagePath,
-    required this.getTitle,
+    required this.titlePre,
+    required this.titleHighlight,
+    required this.titlePost,
   });
 }
 
 final onboardingPages = [
   OnboardingPageData(
-    imagePath: AssetPaths.onboarding1Car,
-    getTitle: (l10n) => "Let's get you on the road",
+    imagePath: AssetPaths.onboarding2Car,
+    titlePre: '"Let\'s get you on the ',
+    titleHighlight: 'ROAD',
+    titlePost: '"',
   ),
   OnboardingPageData(
-    imagePath: AssetPaths.onboarding2Car,
-    getTitle: (l10n) => "Start earning now",
+    imagePath: AssetPaths.onboarding1Car,
+    titlePre: '"Start ',
+    titleHighlight: 'EARNING',
+    titlePost: ' now"',
   ),
 ];

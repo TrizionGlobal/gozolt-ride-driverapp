@@ -1,5 +1,5 @@
 abstract final class ApiConstants {
-  static const bool useLocal = false;
+  static const bool useLocal = true;
 
   // Change this depending on where you run the app:
   // - iOS Simulator: '127.0.0.1' or 'localhost'
@@ -76,6 +76,7 @@ abstract final class ApiConstants {
 
   // Notification endpoints
   static const String notifications = '/users/me/notifications';
+  static const String driverFcmToken = '/drivers/me/fcm-token';
 
   // Driver avatar
   static const String driverAvatar = '/drivers/me/avatar';

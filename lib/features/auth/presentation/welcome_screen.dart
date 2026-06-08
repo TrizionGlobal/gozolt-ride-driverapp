@@ -12,6 +12,9 @@ class WelcomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logoPath = isDark ? AssetPaths.gozoltLogoWithText : AssetPaths.lightGozoltLogoWithText;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -23,7 +26,7 @@ class WelcomeScreen extends ConsumerWidget {
 
               // ── Logo with text ─────────────────────────────
               Image.asset(
-                AssetPaths.gozoltLogoWithText,
+                logoPath,
                 width: 240,
                 fit: BoxFit.contain,
               ),

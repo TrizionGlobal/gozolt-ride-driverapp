@@ -59,6 +59,9 @@ class SecureStorageService {
   Future<void> setOnboardingSeen() =>
       _storage.write(key: StorageKeys.hasSeenOnboarding, value: 'true');
 
+  Future<void> clearOnboardingSeen() =>
+      _storage.delete(key: StorageKeys.hasSeenOnboarding);
+
   Future<bool> hasSeenOnboarding() async {
     final value = await _storage.read(key: StorageKeys.hasSeenOnboarding);
     return value == 'true';
