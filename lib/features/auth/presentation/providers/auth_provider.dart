@@ -12,6 +12,7 @@ import '../../../driver/presentation/providers/driver_provider.dart';
 import '../../../driver/presentation/providers/earnings_provider.dart';
 import '../../../home/presentation/home_shell.dart';
 import '../../../ride/presentation/providers/ride_session_provider.dart';
+import '../../../driver/data/models/driver_status.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dio = ref.watch(dioProvider);
@@ -91,7 +92,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     // Before actually logging out, set driver to offline if possible to stop location tracking gracefully
-    _ref.read(driverStatusProvider.notifier).state = const DriverStatus(isOnline: false, isOnRide: false);
+    _ref.read(driverStatusProvider.notifier).state = DriverStatus.offline;
 
     await _repository.logout();
     state = const AuthUnauthenticated();

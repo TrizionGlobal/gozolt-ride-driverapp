@@ -21,6 +21,10 @@ val localProperties = Properties().apply {
     }
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 android {
     namespace = "com.gozolt.gozolt_driver"
     compileSdk = flutter.compileSdkVersion
@@ -31,9 +35,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
+    // Removed kotlinOptions
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
