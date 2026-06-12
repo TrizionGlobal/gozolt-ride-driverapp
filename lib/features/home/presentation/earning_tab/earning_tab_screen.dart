@@ -164,10 +164,10 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.surfaceCard : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(26),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
                     width: 1,
@@ -235,12 +235,12 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                   bottom: -20,
                                   child: Icon(
                                     Icons.trending_up_rounded,
-                                    size: 140,
+                                    size: 100,
                                     color: AppColors.primaryGold.withOpacity(0.04),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(24),
+                                  padding: const EdgeInsets.all(20),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -288,7 +288,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                         style: AppTextStyles.displayMedium.copyWith(
                                           color: isDark ? AppColors.white : AppColors.textPrimaryLight,
                                           fontWeight: FontWeight.w900,
-                                          fontSize: 38,
+                                          fontSize: 32,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -450,7 +450,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
             // ── Bottom total bar (floating card layout) ───────────────
             Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
@@ -460,12 +460,12 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryGold.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -474,16 +474,18 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                 children: [
                   Text(
                     'Total Balance',
-                    style: AppTextStyles.titleMedium.copyWith(
+                    style: AppTextStyles.titleSmall.copyWith(
                       color: const Color(0xFF0F1923),
                       fontWeight: FontWeight.w800,
+                      fontSize: 15,
                     ),
                   ),
                   Text(
                     '€ ${summary.totalEarnings.toStringAsFixed(2)}',
-                    style: AppTextStyles.titleLarge.copyWith(
+                    style: AppTextStyles.titleMedium.copyWith(
                       color: const Color(0xFF0F1923),
                       fontWeight: FontWeight.w900,
+                      fontSize: 18,
                     ),
                   ),
                 ],
@@ -518,16 +520,16 @@ class _PeriodToggleButton extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          height: 44,
+          height: 38,
           decoration: BoxDecoration(
             color: isActive ? AppColors.primaryGold : Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: isActive
                 ? [
                     BoxShadow(
                       color: AppColors.primaryGold.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
                   ]
                 : [],
@@ -540,6 +542,7 @@ class _PeriodToggleButton extends StatelessWidget {
                     ? const Color(0xFF0F1923)
                     : (isDark ? AppColors.textSecondary : AppColors.textSecondaryLight),
                 fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 13,
               ),
             ),
           ),
@@ -570,10 +573,10 @@ class _StatCard extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceCard : AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark ? AppColors.surfaceDark : Colors.grey.shade200,
             width: 1,
@@ -581,8 +584,8 @@ class _StatCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: AppColors.black.withOpacity(0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -590,22 +593,23 @@ class _StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: color, size: 20),
+              child: Icon(icon, color: color, size: 18),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               value,
               style: AppTextStyles.headlineMedium.copyWith(
                 color: isDark ? AppColors.white : AppColors.textPrimaryLight,
                 fontWeight: FontWeight.w900,
+                fontSize: 24,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
@@ -640,18 +644,18 @@ class _BreakdownRow extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: badgeColor.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: badgeColor, size: 20),
+            child: Icon(icon, color: badgeColor, size: 16),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,6 +665,7 @@ class _BreakdownRow extends StatelessWidget {
                   style: AppTextStyles.titleMedium.copyWith(
                     color: isDark ? AppColors.white : AppColors.textPrimaryLight,
                     fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -668,6 +673,7 @@ class _BreakdownRow extends StatelessWidget {
                   label == 'Rides' ? 'Completed rides count' : 'Collected balance',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -678,6 +684,7 @@ class _BreakdownRow extends StatelessWidget {
             style: AppTextStyles.titleLarge.copyWith(
               color: isDark ? AppColors.white : AppColors.textPrimaryLight,
               fontWeight: FontWeight.w800,
+              fontSize: 16,
             ),
           ),
         ],

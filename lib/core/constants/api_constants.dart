@@ -8,7 +8,7 @@ abstract final class ApiConstants {
   static const String localIp = '127.0.0.1'; // Or '10.0.2.2' or '10.183.39.107'
 
   static const String baseUrl = useLocal
-      ? 'http://$localIp:3000/v1'
+      ? 'http://$localIp:4000/v1'
       : String.fromEnvironment(
           'API_BASE_URL',
           defaultValue: 'https://gozolt-new-ride-backend-production.up.railway.app/v1',

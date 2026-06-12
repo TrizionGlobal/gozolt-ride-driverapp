@@ -7,6 +7,11 @@ import '../../../../core/providers/dio_provider.dart';
 import '../../../../core/providers/storage_provider.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../driver/presentation/providers/driver_status_provider.dart';
+import '../../../driver/presentation/providers/driver_provider.dart';
+import '../../../driver/presentation/providers/earnings_provider.dart';
+import '../../../home/presentation/home_shell.dart';
+import '../../../ride/presentation/providers/ride_session_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dio = ref.watch(dioProvider);
@@ -85,7 +90,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    // Before actually logging out, set driver to offline if possible to stop location tracking gracefully
+    _ref.read(driverStatusProvider.notifier).state = const DriverStatus(isOnline: false, isOnRide: false);
+
     await _repository.logout();
     state = const AuthUnauthenticated();
+
+    // Invalidate state to prevent data leaking to next session or crashing background services
+    _ref.invalidate(homeTabIndexProvider);
+    _ref.invalidate(driverStatusProvider);
+    _ref.invalidate(driverProfileProvider);
+    _ref.invalidate(todayEarningsProvider);
+    _ref.invalidate(earningsScreenProvider);
+    _ref.invalidate(rideSessionProvider);
   }
 }

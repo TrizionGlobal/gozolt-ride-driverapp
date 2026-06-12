@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/constants/api_constants.dart';
 import '../../../../driver/presentation/providers/driver_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../../core/utils/snackbar_utils.dart';
+import '../../../../auth/domain/models/country_code.dart';
+import '../../../../auth/presentation/widgets/country_code_picker.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -18,8 +23,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
+  late TextEditingController _phoneController;
   File? _pickedImage;
   bool _isSaving = false;
+  String? _emailError;
+  CountryCode _selectedCountry = supportedCountryCodes.first;
 
   @override
   void initState() {
@@ -28,6 +36,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _firstNameController = TextEditingController(text: profile?.firstName);
     _lastNameController = TextEditingController(text: profile?.lastName);
     _emailController = TextEditingController(text: profile?.email);
+    
+    // Parse phone to find matching country code
+    String rawPhone = profile?.phone ?? '';
+    if (rawPhone.startsWith('+')) {
+      for (final code in supportedCountryCodes) {
+        if (rawPhone.startsWith(code.dialCode)) {
+          _selectedCountry = code;
+          rawPhone = rawPhone.substring(code.dialCode.length);
+          break;
+        }
+      }
+    }
+    _phoneController = TextEditingController(text: rawPhone);
   }
 
   @override
@@ -35,6 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -42,6 +64,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
     final email = _emailController.text.trim();
+    final phoneLocal = _phoneController.text.trim();
+    final fullPhone = phoneLocal.isEmpty ? '' : '${_selectedCountry.dialCode}$phoneLocal';
 
     if (firstName.isEmpty) {
       _showSnackBar('First Name is required', isError: true);
@@ -54,13 +78,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     if (email.isEmpty) {
+      setState(() => _emailError = 'Email is required');
       _showSnackBar('Email is required', isError: true);
       return;
     }
 
     final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegExp.hasMatch(email)) {
+      setState(() => _emailError = 'Please enter a valid email address');
       _showSnackBar('Please enter a valid email address', isError: true);
+      return;
+    }
+
+    if (email.endsWith('@gmai.com') || email.endsWith('@gmail.co')) {
+      setState(() => _emailError = 'Did you mean @gmail.com?');
+      _showSnackBar('Please enter a valid email address', isError: true);
+      return;
+    }
+    
+    setState(() => _emailError = null);
+
+    if (phoneLocal.isEmpty) {
+      _showSnackBar('Mobile Number is required', isError: true);
       return;
     }
 
@@ -77,13 +116,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     // 2. Update profile text details
+    String? updateError;
     if (success) {
-      final updateSuccess = await ref.read(driverProfileProvider.notifier).updateProfile(
+      updateError = await ref.read(driverProfileProvider.notifier).updateProfile(
         firstName: firstName,
         lastName: lastName,
         email: email,
+        phone: fullPhone,
       );
-      if (!updateSuccess) {
+      if (updateError != null) {
         success = false;
       }
     }
@@ -96,25 +137,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
       });
       _showSnackBar(
-        success ? 'Profile updated successfully' : 'Failed to update profile',
+        success ? 'Profile updated successfully' : (updateError ?? 'Failed to update profile'),
         isError: !success,
       );
     }
   }
 
+  void _showCountryPicker() {
+    CountryCodePicker.show(
+      context,
+      selected: _selectedCountry,
+      onSelected: (country) {
+        setState(() {
+          _selectedCountry = country;
+        });
+      },
+    );
+  }
+
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: isError ? Colors.red : Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+    if (isError) {
+      SnackbarUtils.showError(context, message);
+    } else {
+      SnackbarUtils.showSuccess(context, message);
+    }
   }
 
   @override
@@ -217,7 +264,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 12),
                   _buildTextField('Last Name', _lastNameController),
                   const SizedBox(height: 12),
-                  _buildTextField('Email', _emailController),
+                  _buildTextField(
+                    'Email', 
+                    _emailController,
+                    errorText: _emailError,
+                    onChanged: (val) {
+                      final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      setState(() {
+                        if (val.isEmpty) {
+                          _emailError = 'Email is required';
+                        } else if (!emailRegExp.hasMatch(val)) {
+                          _emailError = 'Please enter a valid email address';
+                        } else if (val.endsWith('@gmai.com') || val.endsWith('@gmail.co')) {
+                          _emailError = 'Did you mean @gmail.com?';
+                        } else {
+                          _emailError = null;
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    'Mobile Number', 
+                    _phoneController,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    prefixIcon: GestureDetector(
+                      onTap: _showCountryPicker,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            right: BorderSide(
+                              color: Theme.of(context).dividerColor.withOpacity(0.1),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
+                            const SizedBox(width: 4),
+                            Text(_selectedCountry.dialCode, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+                            const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
 
                   // Save button
@@ -256,28 +351,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   // Vehicle Info (Read-only for security)
                   _buildSectionHeader('Vehicle Details'),
-                  _buildInfoCard(
-                    icon: Icons.directions_car_rounded,
-                    label: 'Vehicle Type',
-                    value: profile?.vehicle?.type ?? 'Car',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoCard(
-                    icon: Icons.numbers_rounded,
-                    label: 'Vehicle Plate',
-                    value: profile?.vehicle?.plate ?? 'XYZ 1234',
-                  ),
+                  if (profile?.vehicle != null) ...[
+                    _buildInfoCard(
+                      icon: Icons.directions_car_rounded,
+                      label: 'Vehicle Type',
+                      value: profile!.vehicle!.type.isNotEmpty ? profile.vehicle!.type : 'N/A',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.numbers_rounded,
+                      label: 'Vehicle Plate',
+                      value: profile.vehicle!.plate.isNotEmpty ? profile.vehicle!.plate : 'N/A',
+                    ),
+                  ] else ...[
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Text('No vehicle assigned yet.', style: TextStyle(color: Colors.grey)),
+                    ),
+                  ],
                   const SizedBox(height: 32),
 
                   // Document Status
                   _buildSectionHeader('Verification Documents'),
-                  _buildDocumentTile('Driving License', true),
-                  const SizedBox(height: 12),
-                  _buildDocumentTile('Vehicle Registration (RC)', true),
-                  const SizedBox(height: 12),
-                  _buildDocumentTile('CPC Certificate', true),
-                  const SizedBox(height: 12),
-                  _buildDocumentTile('Vehicle Insurance', true),
+                  if (profile != null && profile.documents.isNotEmpty)
+                    ...profile.documents.map((doc) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildDocumentTile(
+                            doc.uploadedName ?? doc.type.replaceAll('_', ' '),
+                            doc.status == 'APPROVED',
+                            doc.fileUrl,
+                          ),
+                        ))
+                  else
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Text('No documents uploaded yet.', style: TextStyle(color: Colors.grey)),
+                    ),
                 ],
               ),
             ),
@@ -300,8 +409,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(
+    String label, 
+    TextEditingController controller, {
+    Widget? prefixIcon,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? errorText,
+    Function(String)? onChanged,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark ? Colors.white.withOpacity(0.05) : Theme.of(context).cardColor;
+    final borderColor = Theme.of(context).dividerColor.withOpacity(0.1);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -316,22 +436,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         TextField(
           controller: controller,
           enabled: true,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          onChanged: onChanged,
           style: AppTextStyles.bodyMedium.copyWith(fontSize: 14),
           decoration: InputDecoration(
             filled: true,
-            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+            fillColor: fillColor,
+            errorText: errorText,
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            prefixIcon: prefixIcon,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300,
-              ),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300,
-              ),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -348,14 +477,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildInfoCard({required IconData icon, required String label, required String value}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark ? Colors.white.withOpacity(0.05) : Theme.of(context).cardColor;
+    final borderColor = Theme.of(context).dividerColor.withOpacity(0.1);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        color: fillColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -373,29 +503,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildDocumentTile(String title, bool isVerified) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: isVerified ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(isVerified ? Icons.verified_rounded : Icons.pending_rounded, 
-               color: isVerified ? Colors.green : Colors.orange),
-          const SizedBox(width: 16),
-          Text(title, style: AppTextStyles.bodyMedium),
-          const Spacer(),
-          Text(
-            isVerified ? 'VERIFIED' : 'PENDING',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: isVerified ? Colors.green : Colors.orange,
+  Widget _buildDocumentTile(String title, bool isVerified, String url) {
+    return GestureDetector(
+      onTap: () async {
+        if (url.isNotEmpty) {
+          final uri = Uri.parse(ApiConstants.fullUrl(url));
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          } else {
+            _showSnackBar('Could not open document', isError: true);
+          }
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          border: Border.all(color: isVerified ? AppColors.success.withOpacity(0.3) : AppColors.warning.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(isVerified ? Icons.verified_rounded : Icons.pending_rounded, 
+                 color: isVerified ? AppColors.success : AppColors.warning),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title, 
+                style: AppTextStyles.bodyMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-        ],
+            Text(
+              isVerified ? 'VERIFIED' : 'PENDING',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: isVerified ? AppColors.success : AppColors.warning,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

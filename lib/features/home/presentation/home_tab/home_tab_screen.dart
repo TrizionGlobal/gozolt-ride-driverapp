@@ -22,6 +22,7 @@ import 'widgets/map_overlay_buttons.dart';
 import '../../../ride/presentation/widgets/ride_metrics_bubbles.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 
 class HomeTabScreen extends ConsumerStatefulWidget {
   const HomeTabScreen({super.key});
@@ -144,12 +145,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location services are disabled. Please enable them in your device settings.'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          SnackbarUtils.showError(context, 'Location services are disabled. Please enable them in your device settings.');
         }
         return;
       }
@@ -159,12 +155,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Location permission denied.'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            SnackbarUtils.showError(context, 'Location permission denied.');
           }
           return;
         }
@@ -172,12 +163,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location permissions are permanently denied. Please enable them in app settings.'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          SnackbarUtils.showError(context, 'Location permissions are permanently denied. Please enable them in app settings.');
         }
         return;
       }
@@ -185,6 +171,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
         ),
       );
       _mapController?.animateCamera(
@@ -196,12 +183,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     } catch (e) {
       debugPrint('Error getting current location: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error getting location: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error getting location: $e');
       }
     }
   }
@@ -305,7 +287,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   }
 
   Future<void> _fetchDirectionsRoute(LatLng origin, LatLng destination, {required bool isPickupRoute}) async {
-    final routeKey = '${isPickupRoute ? 'pickup' : 'dropoff'}_${origin.latitude.toStringAsFixed(3)},${origin.longitude.toStringAsFixed(3)}_${destination.latitude.toStringAsFixed(3)},${destination.longitude.toStringAsFixed(3)}';
+    final routeKey = '${isPickupRoute ? 'pickup' : 'dropoff'}_${origin.latitude.toStringAsFixed(2)},${origin.longitude.toStringAsFixed(2)}_${destination.latitude.toStringAsFixed(2)},${destination.longitude.toStringAsFixed(2)}';
     if (_lastRouteKey == routeKey) return;
     _lastRouteKey = routeKey;
 

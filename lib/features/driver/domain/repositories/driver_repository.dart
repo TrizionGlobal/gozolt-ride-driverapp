@@ -27,6 +27,11 @@ abstract class DriverRepository {
     String? firstName,
     String? lastName,
     String? email,
+    String? phone,
+    String? payoutBankName,
+    String? payoutAccountNumber,
+    String? payoutAccountHolder,
+    String? payoutSwiftCode,
   });
   Future<ApiResult<void>> uploadAvatar(String filePath);
   Future<ApiResult<void>> deleteAvatar();

@@ -133,7 +133,9 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
                     keyboardType: TextInputType.number,
                     maxLength: 1,
                     style: AppTextStyles.headlineMedium.copyWith(
-                      color: widget.hasError ? AppColors.error : AppColors.primaryGold,
+                      color: widget.hasError 
+                          ? AppColors.error 
+                          : (Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
                       fontWeight: FontWeight.w700,
                     ),
                     inputFormatters: [

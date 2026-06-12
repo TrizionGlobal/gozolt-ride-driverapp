@@ -7,6 +7,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/utils/snackbar_utils.dart';
 
 class RegistrationStatusScreen extends StatefulWidget {
   final bool isFleet;
@@ -46,12 +47,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   Future<void> _checkStatus() async {
     if (_isChecking) return;
     if (widget.phone == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Checking live status... Application is still under review.'),
-          backgroundColor: AppColors.primaryGold,
-        ),
-      );
+      SnackbarUtils.showInfo(context, 'Checking live status... Application is still under review.');
       return;
     }
 
@@ -130,22 +126,12 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Status: ${status?.replaceAll('_', ' ') ?? 'UNDER REVIEW'}. Application is still being processed.'),
-              backgroundColor: AppColors.primaryGold,
-            ),
-          );
+          SnackbarUtils.showInfo(context, 'Status: ${status?.replaceAll('_', ' ') ?? 'UNDER REVIEW'}. Application is still being processed.');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to fetch status. Application is still under review.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Unable to fetch status. Application is still under review.');
       }
     } finally {
       if (mounted) {
@@ -157,27 +143,19 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   }
 
   Future<void> _contactSupport() async {
-    final emailUri = Uri(
+    final bodyText = widget.phone != null ? 'My registered phone number is: ${widget.phone}' : '';
+    final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'support@gozolt.com',
-      queryParameters: {
-        'subject': 'Gozolt Driver Onboarding Support Request',
-        'body': widget.phone != null ? 'My registered phone number is: ${widget.phone}' : '',
-      },
+      query: 'subject=Gozolt Driver Onboarding Support Request&body=${Uri.encodeComponent(bodyText)}',
     );
     try {
-      if (await canLaunchUrl(emailUri)) {
-        await launchUrl(emailUri, mode: LaunchMode.externalApplication);
-      } else {
+      if (!await launchUrl(emailLaunchUri)) {
         throw 'Could not launch email client';
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Support email: support@gozolt.com'),
-          ),
-        );
+        SnackbarUtils.showInfo(context, 'Support email: support@gozolt.com');
       }
     }
   }
@@ -186,209 +164,181 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? AppColors.backgroundPrimary : Colors.white;
-    final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50;
+    final cardColor = isDark ? Colors.white.withOpacity(0.05) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(flex: 1),
-
-              // Animated Shield/Clock Header
-              Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _rotationController,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotationController.value * 2 * math.pi,
-                          child: child,
-                        );
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primaryGold.withOpacity(0.2),
-                            width: 3,
-                          ),
-                        ),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryGold,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Shield Header
+                Center(
+                  child: Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold.withOpacity(0.12),
+                      shape: BoxShape.circle,
                     ),
-                    Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryGold.withOpacity(0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.shield_outlined,
-                        color: AppColors.primaryGold,
-                        size: 40,
-                      ),
+                    child: const Icon(
+                      Icons.shield_outlined,
+                      color: AppColors.primaryGold,
+                      size: 40,
                     ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Title
-              Text(
-                'Application Under Review',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 12),
-
-              // Subtitle/Info Text
-              Text(
-                widget.isFleet
-                    ? 'We have received your application. Your fleet manager is reviewing your driver credentials. Once approved, you will receive an email with your new Driver ID and Password to log in.'
-                    : 'We have received your application. Our team is reviewing your driver credentials. Once approved, you will receive an email with your new Driver ID and Password to log in.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMuted,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const Spacer(flex: 1),
-
-              // Status Steps visualizer card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.grey.shade200,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    _buildStepRow(
-                      context,
-                      title: 'Phone OTP Verified',
-                      isCompleted: true,
-                      isPending: false,
-                    ),
-                    _buildStepDivider(),
-                    _buildStepRow(
-                      context,
-                      title: 'Application Documents Received',
-                      isCompleted: true,
-                      isPending: false,
-                    ),
-                    _buildStepDivider(),
-                    _buildStepRow(
-                      context,
-                      title: widget.isFleet
-                          ? 'Supplier Approval & Verification'
-                          : 'Document Verification',
-                      isCompleted: false,
-                      isPending: false,
-                      isInProgress: true,
-                    ),
-                    _buildStepDivider(),
-                    _buildStepRow(
-                      context,
-                      title: 'Login Credentials Emailed',
-                      isCompleted: false,
-                      isPending: true,
-                    ),
-                  ],
-                ),
-              ),
 
-              const Spacer(flex: 2),
+                const SizedBox(height: 32),
 
-              // Action buttons
-              ElevatedButton(
-                onPressed: _isChecking ? null : _checkStatus,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGold,
-                  foregroundColor: Colors.black,
-                  minimumSize: const Size.fromHeight(56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: _isChecking
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      )
-                    : const Text(
-                        'Check Live Status',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _contactSupport,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(56),
-                  side: BorderSide(
-                    color: isDark ? Colors.white30 : Colors.grey.shade400,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(
-                  'Contact Support',
-                  style: TextStyle(
-                    color: textColor,
+                // Title
+                Text(
+                  'Application Under Review',
+                  style: AppTextStyles.headlineMedium.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    color: textColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Subtitle/Info Text
+                Text(
+                  'Your application is being reviewed. Once approved, you will receive an email with your login details.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textMuted,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 40),
+
+                // Status Steps visualizer card
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey.shade100,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildStepRow(
+                        context,
+                        title: 'Phone OTP Verified',
+                        isCompleted: true,
+                        isPending: false,
+                      ),
+                      _buildStepDivider(),
+                      _buildStepRow(
+                        context,
+                        title: 'Application Documents Received',
+                        isCompleted: true,
+                        isPending: false,
+                      ),
+                      _buildStepDivider(),
+                      _buildStepRow(
+                        context,
+                        title: widget.isFleet
+                            ? 'Supplier Approval & Verification'
+                            : 'Document Verification',
+                        isCompleted: false,
+                        isPending: false,
+                        isInProgress: true,
+                      ),
+                      _buildStepDivider(),
+                      _buildStepRow(
+                        context,
+                        title: 'Login Credentials Emailed',
+                        isCompleted: false,
+                        isPending: true,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  // Pop back to welcome/login screen
-                  context.go(RouteNames.welcome);
-                },
-                child: const Text(
-                  'Back to Welcome Screen',
-                  style: TextStyle(
-                    color: AppColors.primaryGold,
-                    fontWeight: FontWeight.w600,
+
+                const SizedBox(height: 48),
+
+                // Action buttons
+                ElevatedButton(
+                  onPressed: _isChecking ? null : _checkStatus,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryGold,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isChecking
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : const Text(
+                          'Check Live Status',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _contactSupport,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    side: BorderSide(
+                      color: isDark ? Colors.white30 : Colors.grey.shade300,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Contact Support',
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    // Pop back to welcome/login screen
+                    context.go(RouteNames.welcome);
+                  },
+                  child: const Text(
+                    'Back to Welcome Screen',
+                    style: TextStyle(
+                      color: AppColors.primaryGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -412,13 +362,10 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
         size: 24,
       );
     } else if (isInProgress) {
-      statusIcon = const SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGold),
-        ),
+      statusIcon = const Icon(
+        Icons.hourglass_empty_rounded,
+        color: AppColors.primaryGold,
+        size: 22,
       );
     } else {
       statusIcon = Icon(

@@ -35,22 +35,32 @@ class DriverProfileNotifier extends StateNotifier<AsyncValue<DriverProfile>> {
     }
   }
 
-  Future<bool> updateProfile({
+  Future<String?> updateProfile({
     String? firstName,
     String? lastName,
     String? email,
+    String? phone,
+    String? payoutBankName,
+    String? payoutAccountNumber,
+    String? payoutAccountHolder,
+    String? payoutSwiftCode,
   }) async {
     final result = await _repository.updateProfile(
       firstName: firstName,
       lastName: lastName,
       email: email,
+      phone: phone,
+      payoutBankName: payoutBankName,
+      payoutAccountNumber: payoutAccountNumber,
+      payoutAccountHolder: payoutAccountHolder,
+      payoutSwiftCode: payoutSwiftCode,
     );
     switch (result) {
       case ApiSuccess(:final data):
         state = AsyncValue.data(data);
-        return true;
-      case ApiFailure():
-        return false;
+        return null;
+      case ApiFailure(:final exception):
+        return exception.message;
     }
   }
 

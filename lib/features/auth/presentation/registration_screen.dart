@@ -11,6 +11,7 @@ import 'providers/registration_provider.dart';
 import 'widgets/country_code_picker.dart';
 import 'widgets/otp_input_field.dart';
 import '../../../core/routing/route_names.dart';
+import '../../../core/utils/snackbar_utils.dart';
 import '../domain/models/country_code.dart';
 
 class RegistrationScreen extends ConsumerStatefulWidget {
@@ -58,6 +59,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   late final TextEditingController _insurancePolicyNumberController;
 
   CountryCode _selectedCountry = supportedCountryCodes.first;
+  CountryCode _selectedEmergencyCountry = supportedCountryCodes.first;
 
   @override
   void initState() {
@@ -138,6 +140,19 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
+  void _showEmergencyCountryPicker() {
+    CountryCodePicker.show(
+      context,
+      selected: _selectedEmergencyCountry,
+      onSelected: (country) {
+        setState(() {
+          _selectedEmergencyCountry = country;
+        });
+        ref.read(registrationProvider.notifier).setEmergencyContactPhone(country.dialCode + _emergencyContactPhoneController.text);
+      },
+    );
+  }
+
   void _showUploadSourceSheet({
     required String title,
     required Function(String path) onPicked,
@@ -185,7 +200,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   if (photo != null) onPicked(photo.path);
                 },
               ),
-              const Divider(),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -204,7 +218,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 },
               ),
               if (allowFiles) ...[
-                const Divider(),
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
@@ -241,11 +254,23 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, String fieldType) async {
+    String currentValue = '';
+    if (fieldType == 'dob') currentValue = _dobController.text;
+    else if (fieldType == 'licenseIssue') currentValue = _licenseIssueDateController.text;
+    else if (fieldType == 'licenseExpiry') currentValue = _licenseExpiryDateController.text;
+
+    DateTime initialDate = DateTime.now();
+    if (currentValue.isNotEmpty) {
+      try {
+        initialDate = DateTime.parse(currentValue);
+      } catch (e) {
+        // Fallback to now
+      }
+    }
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: fieldType == 'dob' 
-          ? DateTime.now().subtract(const Duration(days: 365 * 25))
-          : DateTime.now(),
+      initialDate: initialDate,
       firstDate: DateTime(1940),
       lastDate: DateTime(2040),
       builder: (context, child) {
@@ -301,6 +326,30 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     }
   }
 
+  Future<void> _handleBack(RegistrationState state, RegistrationNotifier notifier) async {
+    if (state.currentStep > 0) {
+      notifier.setStep(state.currentStep - 1);
+    } else {
+      if (state.isOtpSent) {
+        final shouldExit = await _showExitConfirmationDialog();
+        if (shouldExit == true) {
+          notifier.resetOtp();
+          if (mounted) {
+            context.go(RouteNames.welcome);
+          }
+        }
+      } else {
+        if (mounted) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(RouteNames.welcome);
+          }
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(registrationProvider);
@@ -327,7 +376,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       }
     });
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        await _handleBack(state, notifier);
+      },
+      child: Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
@@ -339,17 +394,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () {
-            if (state.currentStep > 0) {
-              notifier.setStep(state.currentStep - 1);
-            } else {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(RouteNames.welcome);
-              }
-            }
-          },
+          onPressed: () => _handleBack(state, notifier),
         ),
       ),
       body: Column(
@@ -431,7 +476,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ),
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -452,7 +497,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   String _getButtonText(RegistrationState state, int totalSteps) {
@@ -475,9 +520,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         final phone = _selectedCountry.dialCode + _phoneController.text.trim();
         final success = await notifier.sendRegisterOtp(phone);
         if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent successfully!')),
-          );
+          SnackbarUtils.showSuccess(context, 'OTP sent successfully!');
         } else if (!success && mounted) {
           final errorMsg = ref.read(registrationProvider).errorMessage ?? 'Failed to send OTP';
           final isAlreadyRegistered = errorMsg.toLowerCase().contains('already registered') ||
@@ -497,9 +540,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         final phone = _selectedCountry.dialCode + _phoneController.text.trim();
         final success = await notifier.verifyRegisterOtp(phone, _otpController.text.trim());
         if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Phone number verified!')),
-          );
+          SnackbarUtils.showSuccess(context, 'Phone number verified!');
           notifier.setStep(1);
         } else if (!success && mounted) {
           _showError(ref.read(registrationProvider).errorMessage ?? 'Invalid OTP');
@@ -575,15 +616,31 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Future<bool?> _showExitConfirmationDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Exit Registration?'),
+        content: const Text(
+          'Are you sure you want to go back? Your OTP verification code will expire and you will need to request a new one.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Exit', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
+  }
+
+  void _showError(String message) {
+    SnackbarUtils.showError(context, message);
   }
 
   String? _validateStep(int step, RegistrationState state) {
@@ -699,7 +756,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         
         if (state.isOtpSent) ...[
           const SizedBox(height: 24),
-          const Divider(),
           const SizedBox(height: 16),
           const Text('Enter 6-Digit Verification Code', style: AppTextStyles.titleSmall),
           const SizedBox(height: 8),
@@ -718,16 +774,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               setState(() {});
             },
           ),
-          const SizedBox(height: 12),
-          Center(
-            child: TextButton(
-              onPressed: state.isLoading ? null : () async {
-                final phone = _selectedCountry.dialCode + _phoneController.text.trim();
-                await notifier.sendRegisterOtp(phone);
-              },
-              child: const Text('Resend Code', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
-            ),
-          ),
+
         ],
 
         if (state.isOtpVerified) ...[
@@ -812,7 +859,37 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         _buildTextField('Emergency contact name', _emergencyContactNameController, (v) => notifier.setEmergencyContactName(v), hintText: 'e.g. Spouse/Parent Name'),
         const SizedBox(height: 16),
         
-        _buildTextField('Emergency contact phone number', _emergencyContactPhoneController, (v) => notifier.setEmergencyContactPhone(v), keyboardType: TextInputType.phone, hintText: 'Enter Mobile Number'),
+        _buildTextField(
+          'Emergency contact phone number',
+          _emergencyContactPhoneController,
+          (v) => notifier.setEmergencyContactPhone(_selectedEmergencyCountry.dialCode + v),
+          keyboardType: TextInputType.phone,
+          hintText: 'Enter Mobile Number',
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          prefixIcon: GestureDetector(
+            onTap: _showEmergencyCountryPicker,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_selectedEmergencyCountry.flag, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 4),
+                  Text(_selectedEmergencyCountry.dialCode, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
       ],
     );
@@ -845,29 +922,117 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         _buildTextField("Licence issuing country", _licenseIssuingCountryController, (v) => notifier.setLicenseIssuingCountry(v), hintText: 'e.g. Malta'),
         const SizedBox(height: 24),
         
-        const Divider(),
         const SizedBox(height: 12),
         
         _buildTextField("Professional Competence Certificate (CPC)", _cpcNumberController, (v) => notifier.setCpcCertificateNumber(v), hintText: 'CPC Card Cardholder Number'),
         const SizedBox(height: 16),
         
-        _buildTextField("Taxi/PHV licence number (if applicable)", _taxiPhvLicenseController, (v) => notifier.setTaxiPhvLicenseNumber(v), hintText: 'e.g. PHV-MT-9042'),
+        _buildTextField("Taxi/PHV licence number (if applicable)", _taxiPhvLicenseController, (v) => notifier.setTaxiPhvLicenseNumber(v), hintText: 'e.g. PHV-MT-9042', isRequired: false),
         const SizedBox(height: 24),
         
-        _buildUploadCard('Upload scan of CPC card', state.request.cpcDocumentPath, () {
+        _buildUploadCard('Passport / National ID Card', state.request.idCardDocumentPath, () {
           _showUploadSourceSheet(
-            title: 'Upload CPC Certificate',
+            title: 'Upload Passport / ID Card',
+            onPicked: (path) => notifier.setIdCardDocumentPath(path),
+          );
+        }),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard("Driving License (Front & Back)", state.request.drivingLicensePath, () {
+          _showUploadSourceSheet(
+            title: "Upload Driving License",
+            onPicked: (path) => notifier.setLicensePath(path),
+          );
+        }),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard('Passenger Transport Driver Permit / Taxi Driver Permit', state.request.cpcDocumentPath, () {
+          _showUploadSourceSheet(
+            title: 'Upload Transport/Taxi Permit',
             onPicked: (path) => notifier.setCpcDocumentPath(path),
           );
         }),
         const SizedBox(height: 16),
         
-        _buildUploadCard("Upload scan of Driver's Licence", state.request.drivingLicensePath, () {
+        _buildUploadCard('Police Conduct Certificate', state.request.policeConductDocumentPath, () {
           _showUploadSourceSheet(
-            title: "Upload Driver's Licence Document",
-            onPicked: (path) => notifier.setLicensePath(path),
+            title: 'Upload Police Conduct',
+            onPicked: (path) => notifier.setPoliceConductDocumentPath(path),
           );
         }),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard('Proof of Address (Utility Bill / Bank Statement)', state.request.proofOfAddressDocumentPath, () {
+          _showUploadSourceSheet(
+            title: 'Upload Proof of Address',
+            onPicked: (path) => notifier.setProofOfAddressDocumentPath(path),
+          );
+        }),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard('Medical Fitness Certificate', state.request.medicalCertificateDocumentPath, () {
+          _showUploadSourceSheet(
+            title: 'Upload Medical Certificate',
+            onPicked: (path) => notifier.setMedicalCertificateDocumentPath(path),
+          );
+        }),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard('Work Permit / Residence Permit (Only for Non-EU Drivers)', state.request.workPermitDocumentPath, () {
+          _showUploadSourceSheet(
+            title: 'Upload Work/Residence Permit',
+            onPicked: (path) => notifier.setWorkPermitDocumentPath(path),
+          );
+        }, isRequired: false),
+        const SizedBox(height: 16),
+        // --- Extra Documents ---
+        const Text('Additional Documents (Optional)', style: AppTextStyles.titleMedium),
+        const SizedBox(height: 8),
+        ...state.request.extraDocuments.asMap().entries.map((entry) {
+          final int idx = entry.key;
+          final Map<String, String> doc = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: doc['name'],
+                        onChanged: (v) => notifier.updateExtraDocumentName(idx, v),
+                        decoration: InputDecoration(
+                          hintText: 'Document Name',
+                          filled: true,
+                          fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                      onPressed: () => notifier.removeExtraDocument(idx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildUploadCard('Upload scan', doc['path']?.isEmpty == true ? null : doc['path'], () {
+                  _showUploadSourceSheet(
+                    title: 'Upload ${doc['name']?.isEmpty == true ? "Document" : doc['name']}',
+                    onPicked: (path) => notifier.updateExtraDocumentPath(idx, path),
+                  );
+                }, isRequired: false),
+              ],
+            ),
+          );
+        }),
+        TextButton.icon(
+          onPressed: () => notifier.addExtraDocument(),
+          icon: const Icon(Icons.add_circle_outline, color: AppColors.primaryGold),
+          label: const Text('Add Document', style: TextStyle(color: AppColors.primaryGold)),
+        ),
         const SizedBox(height: 16),
       ],
     );
@@ -883,12 +1048,23 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     bool obscureText = false,
     String? hintText,
     int maxLines = 1,
+    bool isRequired = true,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? prefixIcon,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.titleSmall),
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            children: [
+              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           key: ValueKey(label),
@@ -897,30 +1073,42 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           keyboardType: keyboardType,
           obscureText: obscureText,
           maxLines: maxLines,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hintText,
             filled: true,
             fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            prefixIcon: prefixIcon,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDatePickerField(String label, TextEditingController controller, VoidCallback onTap) {
+  Widget _buildDatePickerField(String label, TextEditingController controller, VoidCallback onTap, {bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.titleSmall),
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            children: [
+              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           readOnly: true,
           onTap: onTap,
+          style: const TextStyle(fontSize: 13),
           decoration: InputDecoration(
             hintText: 'YYYY-MM-DD',
+            hintStyle: TextStyle(fontSize: 13, color: isDark ? Colors.white38 : Colors.black38),
             filled: true,
             fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -936,20 +1124,28 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     return ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.webp') || ext.endsWith('.gif');
   }
 
-  Widget _buildSelfieUploadCard(String label, String? path, VoidCallback onTap) {
+  Widget _buildSelfieUploadCard(String label, String? path, VoidCallback onTap, {bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.titleSmall),
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            children: [
+              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         Center(
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(60),
+            borderRadius: BorderRadius.circular(55),
             child: Container(
-              height: 120,
-              width: 120,
+              height: 110,
+              width: 110,
               decoration: BoxDecoration(
                 color: isDark ? Colors.white10 : Colors.grey.shade100,
                 shape: BoxShape.circle,
@@ -959,13 +1155,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.face_retouching_natural_rounded, color: AppColors.primaryGold, size: 36),
+                        Icon(Icons.face_retouching_natural_rounded, color: AppColors.primaryGold, size: 32),
                         SizedBox(height: 4),
                         Text('Selfie', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       ],
                     )
                   : ClipOval(
-                      child: Image.file(File(path), width: 120, height: 120, fit: BoxFit.cover),
+                      child: Image.file(File(path), width: 110, height: 110, fit: BoxFit.cover),
                     ),
             ),
           ),
@@ -974,12 +1170,20 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildUploadCard(String label, String? path, VoidCallback onTap) {
+  Widget _buildUploadCard(String label, String? path, VoidCallback onTap, {bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.titleSmall),
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            children: [
+              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: path == null ? onTap : null,

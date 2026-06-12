@@ -16,6 +16,7 @@ import 'screens/profile_screen.dart';
 import 'screens/ratings_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/wallet_screen.dart';
+import 'screens/payout_details_screen.dart';
 
 class AccountTabScreen extends ConsumerWidget {
   const AccountTabScreen({super.key});
@@ -178,6 +179,19 @@ class AccountTabScreen extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const WalletScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _menuItem(
+                  context,
+                  icon: Icons.account_balance,
+                  label: 'Payout Details',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PayoutDetailsScreen(),
                       ),
                     );
                   },

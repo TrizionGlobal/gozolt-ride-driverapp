@@ -211,16 +211,28 @@ class DriverRepositoryImpl implements DriverRepository {
     String? firstName,
     String? lastName,
     String? email,
+    String? phone,
+    String? payoutBankName,
+    String? payoutAccountNumber,
+    String? payoutAccountHolder,
+    String? payoutSwiftCode,
   }) async {
     try {
       final profile = await _remoteDataSource.updateProfile(
         firstName: firstName,
         lastName: lastName,
         email: email,
+        phone: phone,
+        payoutBankName: payoutBankName,
+        payoutAccountNumber: payoutAccountNumber,
+        payoutAccountHolder: payoutAccountHolder,
+        payoutSwiftCode: payoutSwiftCode,
       );
       return ApiSuccess(profile);
     } on ApiException catch (e) {
       return ApiFailure(e);
+    } catch (e) {
+      return ApiFailure(ServerException(e.toString()));
     }
   }
 

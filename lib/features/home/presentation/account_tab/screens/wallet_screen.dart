@@ -5,7 +5,11 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../providers/account_providers.dart';
 import '../widgets/stripe_add_money_sheet.dart';
+import 'payout_details_screen.dart';
 
+
+import '../../../../driver/data/models/driver_profile.dart';
+import '../../../../driver/presentation/providers/driver_provider.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -122,7 +126,10 @@ class WalletScreen extends ConsumerWidget {
                               context,
                               Icons.account_balance_wallet_rounded,
                               'Withdraw',
-                              () => _showWithdrawDialog(context, ref, balance.availableBalance, balance.payoutDestination),
+                              () {
+                                final profile = ref.read(driverProfileProvider).valueOrNull;
+                                _showWithdrawDialog(context, ref, balance.availableBalance, profile);
+                              },
                             ),
                           ],
                         ),
@@ -245,12 +252,63 @@ class WalletScreen extends ConsumerWidget {
     );
   }
 
-  void _showWithdrawDialog(BuildContext context, WidgetRef ref, double availableBalance, String? payoutDestination) {
+  void _showWithdrawDialog(BuildContext context, WidgetRef ref, double availableBalance, DriverProfile? profile) {
+    if (profile == null || (profile.payoutAccountNumber ?? '').isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return AlertDialog(
+            backgroundColor: Theme.of(context).cardTheme.color ?? (isDark ? AppColors.surfaceDark : Colors.white),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+                SizedBox(width: 8),
+                Text('Missing Payout Details'),
+              ],
+            ),
+            content: const Text(
+              'Please add your Bank / Card details in your Profile before withdrawing funds.',
+              style: TextStyle(fontSize: 16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PayoutDetailsScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Add Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _WithdrawSheet(ref: ref, availableBalance: availableBalance, payoutDestination: payoutDestination),
+      builder: (context) => _WithdrawSheet(
+        ref: ref,
+        availableBalance: availableBalance,
+        profile: profile,
+      ),
     );
   }
 }
@@ -353,91 +411,158 @@ class _AddMoneySheetState extends State<_AddMoneySheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? (isDark ? AppColors.surfaceDark : Colors.white),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGold.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.add_rounded, color: AppColors.primaryGold, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Text('Add Money', style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w800)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Top up your wallet balance instantly using Stripe.',
+              style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.textMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 24),
+            
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
+              ),
+              
+            // Amount Input Field
+            Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(Icons.add_rounded, color: AppColors.primaryGold, size: 28),
-              const SizedBox(width: 8),
-              Text('Add Money to Wallet', style: AppTextStyles.titleLarge),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(_error!, style: const TextStyle(color: AppColors.error)),
-            ),
-          TextField(
-            controller: _amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              prefixText: '€ ',
-              hintText: '0.00',
-              labelText: 'Enter Amount',
-              labelStyle: const TextStyle(fontSize: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(
+                border: Border.all(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.2),
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primaryGold, width: 2),
+                color: isDark ? AppColors.surfaceInput : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark ? Colors.black26 : Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Text(
+                    '€',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        hintText: '0.00',
+                        hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 18),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _amountChip(10),
-              _amountChip(20),
-              _amountChip(50),
-              _amountChip(100),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _processPayment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGold,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            
+            const SizedBox(height: 20),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _amountChip(10),
+                  const SizedBox(width: 10),
+                  _amountChip(20),
+                  const SizedBox(width: 10),
+                  _amountChip(50),
+                  const SizedBox(width: 10),
+                  _amountChip(100),
+                ],
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('Pay with Stripe', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
             ),
-          ),
-        ],
+            
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _processPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                  disabledBackgroundColor: isDark ? Colors.white10 : Colors.grey[300],
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                      )
+                    : const Text('Proceed to Payment', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _amountChip(double amount) {
     return ActionChip(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       label: Text('+€${amount.toInt()}'),
       onPressed: () => _selectAmount(amount),
       backgroundColor: AppColors.primaryGold.withOpacity(0.1),
-      labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Colors.transparent),
+      ),
+      labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 13),
     );
   }
 }
@@ -445,9 +570,9 @@ class _AddMoneySheetState extends State<_AddMoneySheet> {
 class _WithdrawSheet extends StatefulWidget {
   final WidgetRef ref;
   final double availableBalance;
-  final String? payoutDestination;
+  final DriverProfile profile;
 
-  const _WithdrawSheet({required this.ref, required this.availableBalance, this.payoutDestination});
+  const _WithdrawSheet({required this.ref, required this.availableBalance, required this.profile});
 
   @override
   State<_WithdrawSheet> createState() => _WithdrawSheetState();
@@ -457,7 +582,6 @@ class _WithdrawSheetState extends State<_WithdrawSheet> {
   final _amountController = TextEditingController();
   bool _isLoading = false;
   String? _error;
-  bool _success = false;
 
   void _selectAmount(double amount) {
     if (amount > widget.availableBalance) {
@@ -558,134 +682,239 @@ class _WithdrawSheetState extends State<_WithdrawSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? (isDark ? AppColors.surfaceDark : Colors.white),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryGold, size: 28),
-              const SizedBox(width: 8),
-              Text('Withdraw Funds', style: AppTextStyles.titleLarge),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Available: €${widget.availableBalance.toStringAsFixed(2)}',
-            style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryGold),
-          ),
-          const SizedBox(height: 16),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(_error!, style: const TextStyle(color: AppColors.error)),
-            ),
-          TextField(
-            controller: _amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              prefixText: '€ ',
-              hintText: '0.00',
-              labelText: 'Withdrawal Amount',
-              labelStyle: const TextStyle(fontSize: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primaryGold, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _amountChip(20),
-              _amountChip(50),
-              _amountChip(100),
-              ActionChip(
-                label: const Text('All Available'),
-                onPressed: () => _selectAmount(widget.availableBalance),
-                backgroundColor: AppColors.primaryGold.withOpacity(0.1),
-                labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.account_balance_rounded, color: AppColors.primaryGold),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Payout Destination',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                      Text(
-                        widget.payoutDestination ?? 'No Bank Account Linked',
-                        style: TextStyle(color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight, fontSize: 12),
-                      ),
-                    ],
-                  ),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
                 ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGold.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryGold, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Text('Withdraw Funds', style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w800)),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _processWithdraw,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGold,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('Initiate Payout', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            Text(
+              'Available Balance: €${widget.availableBalance.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryGold, fontSize: 14),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
+              ),
+            
+            // Amount Input Field
+            Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border.all(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.2),
+                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppColors.surfaceInput : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark ? Colors.black26 : Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Text(
+                    '€',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        hintText: '0.00',
+                        hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 18),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _amountChip(20),
+                  const SizedBox(width: 10),
+                  _amountChip(50),
+                  const SizedBox(width: 10),
+                  _amountChip(100),
+                  const SizedBox(width: 10),
+                  ActionChip(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    label: const Text('All Available'),
+                    onPressed: () => _selectAmount(widget.availableBalance),
+                    backgroundColor: AppColors.primaryGold.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(color: Colors.transparent),
+                    ),
+                    labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            
+            // Payout Destination Card
+            Text(
+              'PAYOUT DESTINATION',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                borderRadius: BorderRadius.circular(16),
+                color: isDark ? AppColors.backgroundSecondary : const Color(0xFFF9FAFB),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white10 : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        if (!isDark)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                    child: const Icon(Icons.account_balance_rounded, color: AppColors.primaryGold, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.profile.payoutBankName != null && widget.profile.payoutBankName!.isNotEmpty 
+                            ? widget.profile.payoutBankName! 
+                            : 'Bank Account',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.profile.payoutAccountNumber ?? 'No account number linked',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _processWithdraw,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                  disabledBackgroundColor: isDark ? Colors.white10 : Colors.grey[300],
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                      )
+                    : const Text('Initiate Payout', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _amountChip(double amount) {
     return ActionChip(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       label: Text('€${amount.toInt()}'),
       onPressed: () => _selectAmount(amount),
       backgroundColor: AppColors.primaryGold.withOpacity(0.1),
-      labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Colors.transparent),
+      ),
+      labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 13),
     );
   }
 }

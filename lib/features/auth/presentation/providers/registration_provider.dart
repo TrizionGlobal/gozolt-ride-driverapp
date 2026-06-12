@@ -92,12 +92,46 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
   void setCpcCertificateNumber(String value) => state = state.copyWith(request: state.request.copyWith(cpcCertificateNumber: value));
   void setTaxiPhvLicenseNumber(String value) => state = state.copyWith(request: state.request.copyWith(taxiPhvLicenseNumber: value));
   void setCpcDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(cpcDocumentPath: value));
+  void setIdCardDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(idCardDocumentPath: value));
+  void setPoliceConductDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(policeConductDocumentPath: value));
+  void setProofOfAddressDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(proofOfAddressDocumentPath: value));
+  void setMedicalCertificateDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(medicalCertificateDocumentPath: value));
+  void setWorkPermitDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(workPermitDocumentPath: value));
 
   // Vehicle & Insurance Setters
   void setInsurancePolicyNumber(String value) => state = state.copyWith(request: state.request.copyWith(insurancePolicyNumber: value));
   void setInsuranceDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(insuranceDocumentPath: value));
 
+  // Extra Documents Setters
+  void addExtraDocument() {
+    final docs = List<Map<String, String>>.from(state.request.extraDocuments);
+    docs.add({'name': '', 'path': ''});
+    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+  }
+
+  void updateExtraDocumentName(int index, String name) {
+    final docs = List<Map<String, String>>.from(state.request.extraDocuments);
+    docs[index] = {'name': name, 'path': docs[index]['path']!};
+    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+  }
+
+  void updateExtraDocumentPath(int index, String path) {
+    final docs = List<Map<String, String>>.from(state.request.extraDocuments);
+    docs[index] = {'name': docs[index]['name']!, 'path': path};
+    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+  }
+
+  void removeExtraDocument(int index) {
+    final docs = List<Map<String, String>>.from(state.request.extraDocuments);
+    docs.removeAt(index);
+    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+  }
+
   void clearError() => state = state.copyWith(clearError: true);
+
+  void resetOtp() {
+    state = state.copyWith(isOtpSent: false, isOtpVerified: false, errorMessage: null, clearError: true);
+  }
 
   Future<bool> sendRegisterOtp(String phoneNumber) async {
     state = state.copyWith(isLoading: true, clearError: true);

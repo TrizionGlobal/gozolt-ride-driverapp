@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class RegistrationRequest {
   final String fullName;
   final String phoneNumber;
@@ -30,9 +32,19 @@ class RegistrationRequest {
   final String? taxiPhvLicenseNumber;
   final String? cpcDocumentPath;
 
+  // New specific documents
+  final String? idCardDocumentPath;
+  final String? policeConductDocumentPath;
+  final String? proofOfAddressDocumentPath;
+  final String? medicalCertificateDocumentPath;
+  final String? workPermitDocumentPath;
+
   // Vehicle & Insurance
   final String? insurancePolicyNumber;
   final String? insuranceDocumentPath;
+
+  // Extra dynamic documents
+  final List<Map<String, String>> extraDocuments;
 
   RegistrationRequest({
     required this.fullName,
@@ -61,8 +73,14 @@ class RegistrationRequest {
     this.cpcCertificateNumber,
     this.taxiPhvLicenseNumber,
     this.cpcDocumentPath,
+    this.idCardDocumentPath,
+    this.policeConductDocumentPath,
+    this.proofOfAddressDocumentPath,
+    this.medicalCertificateDocumentPath,
+    this.workPermitDocumentPath,
     this.insurancePolicyNumber,
     this.insuranceDocumentPath,
+    this.extraDocuments = const [],
   });
 
   Map<String, dynamic> toJson() {
@@ -82,8 +100,13 @@ class RegistrationRequest {
       'nationality': nationality,
       'countryOfResidence': countryOfResidence,
       'nationalId': nationalId,
-      'emergencyContactName': emergencyContactName,
-      'emergencyContactPhone': emergencyContactPhone,
+      if (emergencyContactName != null && emergencyContactPhone != null)
+        'emergencyContacts': jsonEncode([
+          {
+            'name': emergencyContactName,
+            'phone': emergencyContactPhone,
+          }
+        ]),
       'homeAddress': homeAddress,
       'licenseNumber': licenseNumber,
       'licenseCategory': licenseCategory,
@@ -93,8 +116,14 @@ class RegistrationRequest {
       'cpcCertificateNumber': cpcCertificateNumber,
       'taxiPhvLicenseNumber': taxiPhvLicenseNumber,
       'cpcDocument': cpcDocumentPath,
+      'idCardDocument': idCardDocumentPath,
+      'policeConductDocument': policeConductDocumentPath,
+      'proofOfAddressDocument': proofOfAddressDocumentPath,
+      'medicalCertificateDocument': medicalCertificateDocumentPath,
+      'workPermitDocument': workPermitDocumentPath,
       'insurancePolicyNumber': insurancePolicyNumber,
       'insuranceDocument': insuranceDocumentPath,
+      'extraDocuments': extraDocuments,
     };
   }
 
@@ -125,8 +154,14 @@ class RegistrationRequest {
     String? cpcCertificateNumber,
     String? taxiPhvLicenseNumber,
     String? cpcDocumentPath,
+    String? idCardDocumentPath,
+    String? policeConductDocumentPath,
+    String? proofOfAddressDocumentPath,
+    String? medicalCertificateDocumentPath,
+    String? workPermitDocumentPath,
     String? insurancePolicyNumber,
     String? insuranceDocumentPath,
+    List<Map<String, String>>? extraDocuments,
   }) {
     return RegistrationRequest(
       fullName: fullName ?? this.fullName,
@@ -155,8 +190,14 @@ class RegistrationRequest {
       cpcCertificateNumber: cpcCertificateNumber ?? this.cpcCertificateNumber,
       taxiPhvLicenseNumber: taxiPhvLicenseNumber ?? this.taxiPhvLicenseNumber,
       cpcDocumentPath: cpcDocumentPath ?? this.cpcDocumentPath,
+      idCardDocumentPath: idCardDocumentPath ?? this.idCardDocumentPath,
+      policeConductDocumentPath: policeConductDocumentPath ?? this.policeConductDocumentPath,
+      proofOfAddressDocumentPath: proofOfAddressDocumentPath ?? this.proofOfAddressDocumentPath,
+      medicalCertificateDocumentPath: medicalCertificateDocumentPath ?? this.medicalCertificateDocumentPath,
+      workPermitDocumentPath: workPermitDocumentPath ?? this.workPermitDocumentPath,
       insurancePolicyNumber: insurancePolicyNumber ?? this.insurancePolicyNumber,
       insuranceDocumentPath: insuranceDocumentPath ?? this.insuranceDocumentPath,
+      extraDocuments: extraDocuments ?? this.extraDocuments,
     );
   }
 }

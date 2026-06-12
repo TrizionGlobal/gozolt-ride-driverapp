@@ -24,6 +24,8 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell>
     with WidgetsBindingObserver {
+  final List<int> _tabHistory = [];
+  bool _isPopping = false;
   @override
   void initState() {
     super.initState();
@@ -66,6 +68,27 @@ class _HomeShellState extends ConsumerState<HomeShell>
     AccountTabScreen(),
   ];
 
+  void _handlePop() {
+    if (_tabHistory.isNotEmpty) {
+      final prevTab = _tabHistory.removeLast();
+      setState(() {
+        _isPopping = true;
+      });
+      ref.read(homeTabIndexProvider.notifier).state = prevTab;
+      setState(() {
+        _isPopping = false;
+      });
+    } else {
+      setState(() {
+        _isPopping = true;
+      });
+      ref.read(homeTabIndexProvider.notifier).state = 0;
+      setState(() {
+        _isPopping = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch location provider so it rebuilds on status changes
@@ -75,7 +98,24 @@ class _HomeShellState extends ConsumerState<HomeShell>
     final isOnline = driverStatus.isOnline;
     final ride = ref.watch(rideSessionProvider);
 
-    return Scaffold(
+    // Listen to tab changes to build history
+    ref.listen<int>(homeTabIndexProvider, (previous, next) {
+      if (_isPopping) return;
+      if (previous != null && previous != next) {
+        setState(() {
+          _tabHistory.remove(next);
+          _tabHistory.add(previous);
+        });
+      }
+    });
+
+    return PopScope(
+      canPop: currentIndex == 0 && _tabHistory.isEmpty,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _handlePop();
+      },
+      child: Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBody: true,
       body: IndexedStack(
@@ -90,6 +130,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
                 ref.read(homeTabIndexProvider.notifier).state = index;
               },
             ),
+      ),
     );
   }
 }

@@ -26,6 +26,32 @@ class DriverVehicle {
   }
 }
 
+class DriverDocument {
+  final String id;
+  final String type;
+  final String status;
+  final String fileUrl;
+  final String? uploadedName;
+
+  const DriverDocument({
+    required this.id,
+    required this.type,
+    required this.status,
+    required this.fileUrl,
+    this.uploadedName,
+  });
+
+  factory DriverDocument.fromJson(Map<String, dynamic> json) {
+    return DriverDocument(
+      id: json['id'] as String? ?? '',
+      type: json['type'] as String? ?? 'UNKNOWN',
+      status: json['status'] as String? ?? 'PENDING',
+      fileUrl: json['fileUrl'] as String? ?? '',
+      uploadedName: json['uploadedName'] as String?,
+    );
+  }
+}
+
 class DriverProfile {
   final String id;
   final String driverId;
@@ -38,6 +64,11 @@ class DriverProfile {
   final double acceptanceRate;
   final String status;
   final DriverVehicle? vehicle;
+  final List<DriverDocument> documents;
+  final String? payoutBankName;
+  final String? payoutAccountNumber;
+  final String? payoutAccountHolder;
+  final String? payoutSwiftCode;
 
   const DriverProfile({
     required this.id,
@@ -51,6 +82,11 @@ class DriverProfile {
     required this.acceptanceRate,
     required this.status,
     this.vehicle,
+    this.documents = const [],
+    this.payoutBankName,
+    this.payoutAccountNumber,
+    this.payoutAccountHolder,
+    this.payoutSwiftCode,
   });
 
   String get fullName => '$firstName $lastName';
@@ -70,10 +106,16 @@ class DriverProfile {
       avatarUrl: json['avatarUrl'] as String?,
       rating: toDouble(json['avgRating']) ?? toDouble(json['rating']) ?? 0.0,
       acceptanceRate: toDouble(json['acceptanceRate']) ?? 0.0,
-      status: json['status'] as String? ?? 'active',
-      vehicle: vehicleJson != null
-          ? DriverVehicle.fromJson(vehicleJson)
-          : null,
+      status: json['status'] as String? ?? 'ACTIVE',
+      vehicle: vehicleJson != null ? DriverVehicle.fromJson(vehicleJson) : null,
+      documents: (json['documents'] as List<dynamic>?)
+              ?.map((e) => DriverDocument.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      payoutBankName: json['payoutBankName'] as String?,
+      payoutAccountNumber: json['payoutAccountNumber'] as String?,
+      payoutAccountHolder: json['payoutAccountHolder'] as String?,
+      payoutSwiftCode: json['payoutSwiftCode'] as String?,
     );
   }
 }

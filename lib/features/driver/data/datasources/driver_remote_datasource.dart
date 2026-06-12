@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 
 import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
@@ -160,12 +162,22 @@ class DriverRemoteDataSource {
     String? firstName,
     String? lastName,
     String? email,
+    String? phone,
+    String? payoutBankName,
+    String? payoutAccountNumber,
+    String? payoutAccountHolder,
+    String? payoutSwiftCode,
   }) async {
     try {
       final data = <String, dynamic>{};
       if (firstName != null) data['firstName'] = firstName;
       if (lastName != null) data['lastName'] = lastName;
       if (email != null) data['email'] = email;
+      if (phone != null) data['phone'] = phone;
+      if (payoutBankName != null) data['payoutBankName'] = payoutBankName;
+      if (payoutAccountNumber != null) data['payoutAccountNumber'] = payoutAccountNumber;
+      if (payoutAccountHolder != null) data['payoutAccountHolder'] = payoutAccountHolder;
+      if (payoutSwiftCode != null) data['payoutSwiftCode'] = payoutSwiftCode;
 
       final response = await _dio.patch(
         ApiConstants.driverMe,
@@ -177,10 +189,16 @@ class DriverRemoteDataSource {
     }
   }
 
+
+
   Future<void> uploadAvatar(String filePath) async {
     try {
+      final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(filePath),
+        'avatar': await MultipartFile.fromFile(
+          filePath,
+          contentType: MediaType.parse(mimeType),
+        ),
       });
       await _dio.post(
         ApiConstants.driverAvatar,
