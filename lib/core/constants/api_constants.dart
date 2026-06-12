@@ -1,5 +1,5 @@
 abstract final class ApiConstants {
-  static const bool useLocal = true;
+  static const bool useLocal = false;
 
   // Change this depending on where you run the app:
   // - iOS Simulator: '127.0.0.1' or 'localhost'
