@@ -103,4 +103,24 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await _storage.getAccessToken();
     return token != null;
   }
+
+  @override
+  Future<ApiResult<void>> forgotPassword(String driverId) async {
+    try {
+      await _remoteDataSource.forgotPassword(driverId);
+      return const ApiSuccess(null);
+    } on ServerException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> resetPassword(String driverId, String newPassword) async {
+    try {
+      await _remoteDataSource.resetPassword(driverId, newPassword);
+      return const ApiSuccess(null);
+    } on ServerException catch (e) {
+      return ApiFailure(e);
+    }
+  }
 }

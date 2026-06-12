@@ -285,7 +285,12 @@ class DriverRemoteDataSource {
             e.type == DioExceptionType.receiveTimeout) {
           return const ConnectionTimeoutException();
         }
-        if (e.type == DioExceptionType.connectionError) {
+        if (e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.sendTimeout ||
+            (e.type == DioExceptionType.unknown && 
+             (e.message?.contains('Failed host lookup') == true || 
+              e.message?.contains('SocketException') == true ||
+              e.message?.contains('Connection refused') == true))) {
           return const NetworkException();
         }
         return ServerException(e.message ?? 'Server error');

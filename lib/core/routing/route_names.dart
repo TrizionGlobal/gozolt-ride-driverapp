@@ -8,4 +8,8 @@ abstract final class RouteNames {
   static const String home = '/home';
   static const String notifications = '/notifications';
   static const String registrationStatus = '/registration-status';
+  static const String forgotPassword = '/forgot-password';
+  static const String forgotPasswordOtp = '/forgot-password-otp';
+  static const String resetPassword = '/reset-password';
+  static const String resetSuccess = '/reset-success';
 }

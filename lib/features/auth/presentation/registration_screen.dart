@@ -658,7 +658,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           if (state.request.password == null || state.request.password!.trim().isEmpty) return 'Please enter a Password';
           if (state.request.password!.length < 6) return 'Password must be at least 6 characters';
         }
-        if (state.request.profileImagePath == null) return 'Please upload your verification Profile Photo (Selfie)';
+        if (state.request.profileImagePath?.isEmpty ?? true) return 'Please upload your verification Profile Photo (Selfie)';
         if (state.request.email.trim().isEmpty) return 'Please enter your email address';
         if (state.request.homeAddress == null || state.request.homeAddress!.isEmpty) return 'Please enter your home address';
         if (state.request.emergencyContactName == null || state.request.emergencyContactName!.isEmpty) return 'Emergency contact name is required';
@@ -671,15 +671,16 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         if (state.request.licenseExpiryDate == null || state.request.licenseExpiryDate!.isEmpty) return 'Please select licence expiry date';
         if (state.request.licenseIssuingCountry == null || state.request.licenseIssuingCountry!.isEmpty) return 'Please enter licence issuing country';
         if (state.request.cpcCertificateNumber == null || state.request.cpcCertificateNumber!.isEmpty) return 'CPC Certificate number is required';
-        if (state.request.cpcDocumentPath == null) return 'Please upload scan of your CPC Certificate card';
-        if (state.request.drivingLicensePath == null) return 'Please upload your primary Driving License scan';
+        if (state.request.cpcDocumentPath?.isEmpty ?? true) return 'Please upload scan of your CPC Certificate card';
+        if (state.request.drivingLicensePath?.isEmpty ?? true) return 'Please upload your primary Driving License scan';
+        if (state.request.drivingLicenseBackPath?.isEmpty ?? true) return 'Please upload your Driving License (Back) scan';
         break;
       case 4: // Vehicle details (Self-Owned only)
         if (!isFleet) {
           if (state.request.vehicleType == null || state.request.vehicleType!.trim().isEmpty) return 'Please select a Vehicle Type';
           if (state.request.vehicleNumber == null || state.request.vehicleNumber!.trim().isEmpty) return 'Please enter your vehicle plate number';
           if (state.request.insurancePolicyNumber == null || state.request.insurancePolicyNumber!.isEmpty) return 'Insurance policy number is required';
-          if (state.request.insuranceDocumentPath == null) return 'Please upload your third-party vehicle insurance document';
+          if (state.request.insuranceDocumentPath?.isEmpty ?? true) return 'Please upload your third-party vehicle insurance document';
         }
         break;
     }
@@ -935,15 +936,23 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Passport / ID Card',
             onPicked: (path) => notifier.setIdCardDocumentPath(path),
           );
-        }),
+        }, onRemove: () => notifier.setIdCardDocumentPath("")),
         const SizedBox(height: 16),
         
-        _buildUploadCard("Driving License (Front & Back)", state.request.drivingLicensePath, () {
+        _buildUploadCard("Driving License (Front)", state.request.drivingLicensePath, () {
           _showUploadSourceSheet(
-            title: "Upload Driving License",
+            title: "Upload Driving License (Front)",
             onPicked: (path) => notifier.setLicensePath(path),
           );
-        }),
+        }, onRemove: () => notifier.setLicensePath("")),
+        const SizedBox(height: 16),
+        
+        _buildUploadCard("Driving License (Back)", state.request.drivingLicenseBackPath, () {
+          _showUploadSourceSheet(
+            title: "Upload Driving License (Back)",
+            onPicked: (path) => notifier.setLicenseBackPath(path),
+          );
+        }, onRemove: () => notifier.setLicenseBackPath("")),
         const SizedBox(height: 16),
         
         _buildUploadCard('Passenger Transport Driver Permit / Taxi Driver Permit', state.request.cpcDocumentPath, () {
@@ -951,7 +960,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Transport/Taxi Permit',
             onPicked: (path) => notifier.setCpcDocumentPath(path),
           );
-        }),
+        }, onRemove: () => notifier.setCpcDocumentPath("")),
         const SizedBox(height: 16),
         
         _buildUploadCard('Police Conduct Certificate', state.request.policeConductDocumentPath, () {
@@ -959,7 +968,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Police Conduct',
             onPicked: (path) => notifier.setPoliceConductDocumentPath(path),
           );
-        }),
+        }, onRemove: () => notifier.setPoliceConductDocumentPath("")),
         const SizedBox(height: 16),
         
         _buildUploadCard('Proof of Address (Utility Bill / Bank Statement)', state.request.proofOfAddressDocumentPath, () {
@@ -967,7 +976,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Proof of Address',
             onPicked: (path) => notifier.setProofOfAddressDocumentPath(path),
           );
-        }),
+        }, onRemove: () => notifier.setProofOfAddressDocumentPath("")),
         const SizedBox(height: 16),
         
         _buildUploadCard('Medical Fitness Certificate', state.request.medicalCertificateDocumentPath, () {
@@ -975,7 +984,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Medical Certificate',
             onPicked: (path) => notifier.setMedicalCertificateDocumentPath(path),
           );
-        }),
+        }, onRemove: () => notifier.setMedicalCertificateDocumentPath("")),
         const SizedBox(height: 16),
         
         _buildUploadCard('Work Permit / Residence Permit (Only for Non-EU Drivers)', state.request.workPermitDocumentPath, () {
@@ -983,7 +992,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             title: 'Upload Work/Residence Permit',
             onPicked: (path) => notifier.setWorkPermitDocumentPath(path),
           );
-        }, isRequired: false),
+        }, isRequired: false, onRemove: () => notifier.setWorkPermitDocumentPath("")),
         const SizedBox(height: 16),
         // --- Extra Documents ---
         const Text('Additional Documents (Optional)', style: AppTextStyles.titleMedium),
@@ -1023,7 +1032,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     title: 'Upload ${doc['name']?.isEmpty == true ? "Document" : doc['name']}',
                     onPicked: (path) => notifier.updateExtraDocumentPath(idx, path),
                   );
-                }, isRequired: false),
+                }, isRequired: false, onRemove: () => notifier.updateExtraDocumentPath(idx, "")),
               ],
             ),
           );
@@ -1170,8 +1179,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildUploadCard(String label, String? path, VoidCallback onTap, {bool isRequired = true}) {
+  Widget _buildUploadCard(String label, String? path, VoidCallback onTap, {VoidCallback? onRemove, bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isEmpty = path == null || path.isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1186,7 +1196,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         ),
         const SizedBox(height: 8),
         InkWell(
-          onTap: path == null ? onTap : null,
+          onTap: isEmpty ? onTap : null,
           child: Container(
             height: 110,
             width: double.infinity,
@@ -1195,7 +1205,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.primaryGold.withOpacity(0.3), style: BorderStyle.solid),
             ),
-            child: path == null 
+            child: isEmpty 
               ? InkWell(
                   onTap: onTap,
                   child: const Column(
@@ -1208,6 +1218,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ),
                 )
               : Stack(
+                  fit: StackFit.expand,
                   children: [
                     _isImageFile(path)
                         ? ClipRRect(
@@ -1221,8 +1232,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 44,
-                                  height: 44,
+                                  width: 60,
+                                  height: 60,
                                   decoration: BoxDecoration(
                                     color: AppColors.primaryGold.withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(8),
@@ -1232,7 +1243,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                         ? Icons.picture_as_pdf_rounded 
                                         : Icons.description_rounded,
                                     color: AppColors.primaryGold,
-                                    size: 24,
+                                    size: 28,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -1259,6 +1270,23 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                               ],
                             ),
                           ),
+                    if (_isImageFile(path))
+                      Positioned(
+                        bottom: 0, left: 0, right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                          ),
+                          child: Text(
+                            path.split('/').last,
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     Positioned(
                       right: 8, top: 8,
                       child: CircleAvatar(
@@ -1267,7 +1295,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                          onPressed: onTap,
+                          onPressed: onRemove ?? onTap,
                         ),
                       ),
                     ),

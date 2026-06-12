@@ -62,6 +62,7 @@ class Ride {
     double? dropoffLat,
     double? dropoffLng,
     double? fare,
+    String? paymentMethod,
     List<RideStop>? stops,
     int? currentStopIndex,
   }) {
@@ -79,7 +80,7 @@ class Ride {
       distanceKm: distanceKm,
       estimatedMinutes: estimatedMinutes,
       otp: otp ?? this.otp,
-      paymentMethod: paymentMethod,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       createdAt: createdAt,
       stops: stops ?? this.stops,
       currentStopIndex: currentStopIndex ?? this.currentStopIndex,

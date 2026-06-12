@@ -10,6 +10,7 @@ class RegistrationRequest {
   final String? vehicleType;
   final String? vehicleNumber;
   final String? drivingLicensePath;
+  final String? drivingLicenseBackPath;
   final String? aadhaarNumber;
   final String? profileImagePath;
 
@@ -56,6 +57,7 @@ class RegistrationRequest {
     this.vehicleType,
     this.vehicleNumber,
     this.drivingLicensePath,
+    this.drivingLicenseBackPath,
     this.aadhaarNumber,
     this.profileImagePath,
     this.dateOfBirth,
@@ -94,6 +96,7 @@ class RegistrationRequest {
       if (vehicleType != null) 'vehicleType': vehicleType,
       if (vehicleNumber != null) 'vehicleNumber': vehicleNumber,
       'drivingLicense': drivingLicensePath,
+      'drivingLicenseBack': drivingLicenseBackPath,
       'aadhaarNumber': aadhaarNumber ?? nationalId,
       'profileImage': profileImagePath,
       'dateOfBirth': dateOfBirth,
@@ -137,6 +140,7 @@ class RegistrationRequest {
     String? vehicleType,
     String? vehicleNumber,
     String? drivingLicensePath,
+    String? drivingLicenseBackPath,
     String? aadhaarNumber,
     String? profileImagePath,
     String? dateOfBirth,
@@ -173,6 +177,7 @@ class RegistrationRequest {
       vehicleType: vehicleType ?? this.vehicleType,
       vehicleNumber: vehicleNumber ?? this.vehicleNumber,
       drivingLicensePath: drivingLicensePath ?? this.drivingLicensePath,
+      drivingLicenseBackPath: drivingLicenseBackPath ?? this.drivingLicenseBackPath,
       aadhaarNumber: aadhaarNumber ?? this.aadhaarNumber,
       profileImagePath: profileImagePath ?? this.profileImagePath,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,

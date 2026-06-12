@@ -71,6 +71,7 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
   void setVehicleType(String value) => state = state.copyWith(request: state.request.copyWith(vehicleType: value));
   void setVehicleNumber(String value) => state = state.copyWith(request: state.request.copyWith(vehicleNumber: value));
   void setLicensePath(String value) => state = state.copyWith(request: state.request.copyWith(drivingLicensePath: value));
+  void setLicenseBackPath(String value) => state = state.copyWith(request: state.request.copyWith(drivingLicenseBackPath: value));
   void setAadhaar(String value) => state = state.copyWith(request: state.request.copyWith(aadhaarNumber: value));
   void setProfileImage(String value) => state = state.copyWith(request: state.request.copyWith(profileImagePath: value));
 

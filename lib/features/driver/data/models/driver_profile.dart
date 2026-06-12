@@ -1,11 +1,44 @@
 import '../../../../core/utils/json_parse.dart';
 
+class DriverSupplier {
+  final String id;
+  final String companyName;
+  final String? email;
+  final String? contactPhone;
+  final String? tradingName;
+  final String? city;
+  final String? country;
+
+  const DriverSupplier({
+    required this.id,
+    required this.companyName,
+    this.email,
+    this.contactPhone,
+    this.tradingName,
+    this.city,
+    this.country,
+  });
+
+  factory DriverSupplier.fromJson(Map<String, dynamic> json) {
+    return DriverSupplier(
+      id: json['id'] as String? ?? '',
+      companyName: json['companyName'] as String? ?? 'Unknown',
+      email: json['email'] as String?,
+      contactPhone: json['contactPhone'] as String?,
+      tradingName: json['tradingName'] as String?,
+      city: json['city'] as String?,
+      country: json['country'] as String?,
+    );
+  }
+}
+
 class DriverVehicle {
   final String id;
   final String make;
   final String model;
   final String plate;
   final String type;
+  final String color;
 
   const DriverVehicle({
     required this.id,
@@ -13,6 +46,7 @@ class DriverVehicle {
     required this.model,
     required this.plate,
     required this.type,
+    required this.color,
   });
 
   factory DriverVehicle.fromJson(Map<String, dynamic> json) {
@@ -22,6 +56,7 @@ class DriverVehicle {
       model: json['model'] as String? ?? '',
       plate: json['plateNumber'] as String? ?? json['plate'] as String? ?? '',
       type: json['vehicleType'] as String? ?? json['type'] as String? ?? 'standard',
+      color: json['color'] as String? ?? '',
     );
   }
 }
@@ -64,6 +99,7 @@ class DriverProfile {
   final double acceptanceRate;
   final String status;
   final DriverVehicle? vehicle;
+  final DriverSupplier? supplier;
   final List<DriverDocument> documents;
   final String? payoutBankName;
   final String? payoutAccountNumber;
@@ -82,6 +118,7 @@ class DriverProfile {
     required this.acceptanceRate,
     required this.status,
     this.vehicle,
+    this.supplier,
     this.documents = const [],
     this.payoutBankName,
     this.payoutAccountNumber,
@@ -108,6 +145,7 @@ class DriverProfile {
       acceptanceRate: toDouble(json['acceptanceRate']) ?? 0.0,
       status: json['status'] as String? ?? 'ACTIVE',
       vehicle: vehicleJson != null ? DriverVehicle.fromJson(vehicleJson) : null,
+      supplier: json['supplier'] != null ? DriverSupplier.fromJson(json['supplier'] as Map<String, dynamic>) : null,
       documents: (json['documents'] as List<dynamic>?)
               ?.map((e) => DriverDocument.fromJson(e as Map<String, dynamic>))
               .toList() ??

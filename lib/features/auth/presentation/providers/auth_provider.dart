@@ -7,7 +7,9 @@ import '../../../../core/providers/dio_provider.dart';
 import '../../../../core/providers/storage_provider.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/network/socket_service.dart';
 import '../../../driver/presentation/providers/driver_status_provider.dart';
+import '../../../driver/presentation/providers/location_provider.dart';
 import '../../../driver/presentation/providers/driver_provider.dart';
 import '../../../driver/presentation/providers/earnings_provider.dart';
 import '../../../home/presentation/home_shell.dart';
@@ -90,9 +92,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> forgotPassword(String driverId) async {
+    state = const AuthLoading();
+    final result = await _repository.forgotPassword(driverId);
+    switch (result) {
+      case ApiSuccess():
+        state = const AuthUnauthenticated(); // Stay on current screen but show success
+        return true;
+      case ApiFailure(:final exception):
+        state = AuthError(exception.message);
+        return false;
+    }
+  }
+
+  Future<bool> resetPassword({
+    required String driverId,
+    required String newPassword,
+  }) async {
+    state = const AuthLoading();
+    final result = await _repository.resetPassword(driverId, newPassword);
+    switch (result) {
+      case ApiSuccess():
+        state = const AuthUnauthenticated(); // Ready to login
+        return true;
+      case ApiFailure(:final exception):
+        state = AuthError(exception.message);
+        return false;
+    }
+  }
+
   Future<void> logout() async {
     // Before actually logging out, set driver to offline if possible to stop location tracking gracefully
     _ref.read(driverStatusProvider.notifier).state = DriverStatus.offline;
+
+    // Disconnect sockets directly
+    _ref.read(socketServiceProvider).disconnect();
 
     await _repository.logout();
     state = const AuthUnauthenticated();
@@ -104,5 +138,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _ref.invalidate(todayEarningsProvider);
     _ref.invalidate(earningsScreenProvider);
     _ref.invalidate(rideSessionProvider);
+    
+    // Attempt to resolve the locationUpdateProvider to stop tracking
+    try {
+      _ref.invalidate(locationUpdateProvider);
+    } catch (_) {}
   }
 }

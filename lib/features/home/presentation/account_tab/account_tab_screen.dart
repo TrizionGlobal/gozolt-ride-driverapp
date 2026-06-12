@@ -545,7 +545,7 @@ class AccountTabScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'support@gozolt.com',
+                    'support@gozolt.com.mt',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.primaryGold,
                       fontWeight: FontWeight.w500,

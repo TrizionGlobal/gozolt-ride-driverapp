@@ -25,6 +25,9 @@ class AuthRemoteDataSource {
       if (data['drivingLicense'] != null) {
         formDataMap['drivingLicense'] = await MultipartFile.fromFile(data['drivingLicense'] as String, filename: 'license.jpg');
       }
+      if (data['drivingLicenseBack'] != null) {
+        formDataMap['drivingLicenseBack'] = await MultipartFile.fromFile(data['drivingLicenseBack'] as String, filename: 'license_back.jpg');
+      }
       if (data['cpcDocument'] != null) {
         formDataMap['cpcDocument'] = await MultipartFile.fromFile(data['cpcDocument'] as String, filename: 'cpc.jpg');
       }
@@ -158,7 +161,48 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<void> forgotPassword(String driverId) async {
+    try {
+      await _dio.post(
+        ApiConstants.driverForgotPassword,
+        data: {'driverId': driverId},
+      );
+    } on DioException catch (e) {
+      throw ServerException(_parseError(e, 'Failed to send OTP. Please check your Driver ID.'));
+    }
+  }
+
+  Future<void> resetPassword(String driverId, String newPassword) async {
+    try {
+      await _dio.post(
+        ApiConstants.driverResetPassword,
+        data: {
+          'driverId': driverId,
+          'newPassword': newPassword,
+        },
+      );
+    } on DioException catch (e) {
+      throw ServerException(_parseError(e, 'Failed to reset password.'));
+    }
+  }
+
   String _parseError(DioException e, String defaultMsg) {
+    // Handle network or connection related errors with a friendly message
+    if (e.type == DioExceptionType.connectionTimeout || 
+        e.type == DioExceptionType.receiveTimeout || 
+        e.type == DioExceptionType.sendTimeout || 
+        e.type == DioExceptionType.connectionError) {
+      return 'Connection lost. Please check your internet connection and try again.';
+    }
+
+    // Handle unknown types wrapping SocketException (like Failed host lookup)
+    if (e.type == DioExceptionType.unknown && 
+        (e.message?.contains('Failed host lookup') == true || 
+         e.message?.contains('SocketException') == true || 
+         e.message?.contains('Connection refused') == true)) {
+      return 'Connection lost. Please check your internet connection and try again.';
+    }
+
     if (e.response?.data != null) {
       final data = e.response!.data;
       if (data is Map && data.containsKey('message')) {
@@ -170,6 +214,6 @@ class AuthRemoteDataSource {
         }
       }
     }
-    return e.message ?? defaultMsg;
+    return defaultMsg;
   }
 }

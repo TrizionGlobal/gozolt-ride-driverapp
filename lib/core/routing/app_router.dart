@@ -8,6 +8,10 @@ import '../../features/auth/presentation/registration_status_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/otp_screen.dart';
+import '../../features/auth/presentation/forgot_password/forgot_password_screen.dart';
+import '../../features/auth/presentation/forgot_password/forgot_password_otp_screen.dart';
+import '../../features/auth/presentation/forgot_password/reset_password_screen.dart';
+import '../../features/auth/presentation/forgot_password/reset_success_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/domain/models/auth_state.dart';
 import '../../features/home/presentation/home_shell.dart';
@@ -77,6 +81,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           return RegistrationStatusScreen(isFleet: isFleet, phone: phone);
         },
+      ),
+      GoRoute(
+        path: RouteNames.forgotPassword,
+        name: 'forgotPassword',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.forgotPasswordOtp,
+        name: 'forgotPasswordOtp',
+        builder: (context, state) {
+          final driverId = state.extra as String? ?? '';
+          return ForgotPasswordOtpScreen(driverId: driverId);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.resetPassword,
+        name: 'resetPassword',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return ResetPasswordScreen(
+            driverId: extra['driverId'] as String? ?? '',
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.resetSuccess,
+        name: 'resetSuccess',
+        builder: (context, state) => const ResetSuccessScreen(),
       ),
     ],
     errorBuilder: (context, state) {

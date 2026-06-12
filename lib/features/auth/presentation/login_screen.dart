@@ -123,7 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Title
                         Text(
                           l10n.welcomeBack,
-                          style: AppTextStyles.headlineLarge.copyWith(
+                          style: AppTextStyles.headlineMedium.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -132,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Text(
                           "Login with your credentials to continue",
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textMuted,
+                            color: Theme.of(context).brightness == Brightness.dark ? AppColors.textMuted : AppColors.textMutedLight,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -225,39 +225,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
-                        // Remember me
-                        GestureDetector(
-                          onTap: ref.read(loginFormProvider.notifier).toggleRememberMe,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: Checkbox(
-                                  value: formState.rememberMe,
-                                  onChanged: (_) => ref
-                                      .read(loginFormProvider.notifier)
-                                      .toggleRememberMe(),
-                                  activeColor: AppColors.primaryGold,
-                                  checkColor: Theme.of(context).scaffoldBackgroundColor,
-                                  side: BorderSide(
-                                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
-                                    width: 1.5,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Remember me
+                            GestureDetector(
+                              onTap: ref.read(loginFormProvider.notifier).toggleRememberMe,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Checkbox(
+                                      value: formState.rememberMe,
+                                      onChanged: (_) => ref
+                                          .read(loginFormProvider.notifier)
+                                          .toggleRememberMe(),
+                                      activeColor: AppColors.primaryGold,
+                                      checkColor: Theme.of(context).scaffoldBackgroundColor,
+                                      side: BorderSide(
+                                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
+                                        width: 1.5,
+                                      ),
+                                    ),
                                   ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    l10n.rememberMe,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            // Forgot Password
+                            GestureDetector(
+                              onTap: () {
+                                context.push(RouteNames.forgotPassword);
+                              },
+                              child: Text(
+                                'Forgot Password?',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.primaryGold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Text(
-                                l10n.rememberMe,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
 

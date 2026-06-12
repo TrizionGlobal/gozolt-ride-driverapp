@@ -23,9 +23,9 @@ class ServerException extends ApiException {
 }
 
 class NetworkException extends ApiException {
-  const NetworkException([super.message = 'Network error']);
+  const NetworkException([super.message = 'Connection lost. Please check your internet connection and try again.']);
 }
 
 class ConnectionTimeoutException extends ApiException {
-  const ConnectionTimeoutException([super.message = 'Request timed out']);
+  const ConnectionTimeoutException([super.message = 'Connection lost. Please check your internet connection and try again.']);
 }

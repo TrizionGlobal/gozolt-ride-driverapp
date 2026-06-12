@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
@@ -19,21 +20,23 @@ abstract final class AppTheme {
         onSurface: AppColors.textPrimaryLight,
         onError: AppColors.white,
       ),
-      textTheme: const TextTheme(
-        displayLarge: AppTextStyles.displayLarge,
-        displayMedium: AppTextStyles.displayMedium,
-        headlineLarge: AppTextStyles.headlineLarge,
-        headlineMedium: AppTextStyles.headlineMedium,
-        headlineSmall: AppTextStyles.headlineSmall,
-        titleLarge: AppTextStyles.titleLarge,
-        titleMedium: AppTextStyles.titleMedium,
-        titleSmall: AppTextStyles.titleSmall,
-        bodyLarge: AppTextStyles.bodyLarge,
-        bodyMedium: AppTextStyles.bodyMedium,
-        bodySmall: AppTextStyles.bodySmall,
-        labelLarge: AppTextStyles.labelLarge,
-        labelMedium: AppTextStyles.labelMedium,
-        labelSmall: AppTextStyles.labelSmall,
+      textTheme: GoogleFonts.poppinsTextTheme(
+        const TextTheme(
+          displayLarge: AppTextStyles.displayLarge,
+          displayMedium: AppTextStyles.displayMedium,
+          headlineLarge: AppTextStyles.headlineLarge,
+          headlineMedium: AppTextStyles.headlineMedium,
+          headlineSmall: AppTextStyles.headlineSmall,
+          titleLarge: AppTextStyles.titleLarge,
+          titleMedium: AppTextStyles.titleMedium,
+          titleSmall: AppTextStyles.titleSmall,
+          bodyLarge: AppTextStyles.bodyLarge,
+          bodyMedium: AppTextStyles.bodyMedium,
+          bodySmall: AppTextStyles.bodySmall,
+          labelLarge: AppTextStyles.labelLarge,
+          labelMedium: AppTextStyles.labelMedium,
+          labelSmall: AppTextStyles.labelSmall,
+        )
       ).apply(
         bodyColor: AppColors.textPrimaryLight,
         displayColor: AppColors.textPrimaryLight,
@@ -128,21 +131,23 @@ abstract final class AppTheme {
         onSurface: AppColors.textPrimary,
         onError: AppColors.textPrimary,
       ),
-      textTheme: const TextTheme(
-        displayLarge: AppTextStyles.displayLarge,
-        displayMedium: AppTextStyles.displayMedium,
-        headlineLarge: AppTextStyles.headlineLarge,
-        headlineMedium: AppTextStyles.headlineMedium,
-        headlineSmall: AppTextStyles.headlineSmall,
-        titleLarge: AppTextStyles.titleLarge,
-        titleMedium: AppTextStyles.titleMedium,
-        titleSmall: AppTextStyles.titleSmall,
-        bodyLarge: AppTextStyles.bodyLarge,
-        bodyMedium: AppTextStyles.bodyMedium,
-        bodySmall: AppTextStyles.bodySmall,
-        labelLarge: AppTextStyles.labelLarge,
-        labelMedium: AppTextStyles.labelMedium,
-        labelSmall: AppTextStyles.labelSmall,
+      textTheme: GoogleFonts.poppinsTextTheme(
+        const TextTheme(
+          displayLarge: AppTextStyles.displayLarge,
+          displayMedium: AppTextStyles.displayMedium,
+          headlineLarge: AppTextStyles.headlineLarge,
+          headlineMedium: AppTextStyles.headlineMedium,
+          headlineSmall: AppTextStyles.headlineSmall,
+          titleLarge: AppTextStyles.titleLarge,
+          titleMedium: AppTextStyles.titleMedium,
+          titleSmall: AppTextStyles.titleSmall,
+          bodyLarge: AppTextStyles.bodyLarge,
+          bodyMedium: AppTextStyles.bodyMedium,
+          bodySmall: AppTextStyles.bodySmall,
+          labelLarge: AppTextStyles.labelLarge,
+          labelMedium: AppTextStyles.labelMedium,
+          labelSmall: AppTextStyles.labelSmall,
+        )
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.backgroundPrimary,

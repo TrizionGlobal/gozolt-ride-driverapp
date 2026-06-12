@@ -141,11 +141,14 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
         return;
       }
 
-      // 3. Fallback: Request fresh position directly from Geolocator after checks
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
-          SnackbarUtils.showError(context, 'Location services are disabled. Please enable them in your device settings.');
+          _showLocationSettingsDialog(
+            'Location Services Disabled',
+            'Please enable location services in your device settings to receive rides.',
+            isServiceDisabled: true,
+          );
         }
         return;
       }
@@ -163,7 +166,11 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          SnackbarUtils.showError(context, 'Location permissions are permanently denied. Please enable them in app settings.');
+          _showLocationSettingsDialog(
+            'Location Permission Required',
+            'We need your location to find nearby rides. Please allow location access in your device settings.',
+            isServiceDisabled: false,
+          );
         }
         return;
       }
@@ -182,10 +189,55 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       );
     } catch (e) {
       debugPrint('Error getting current location: $e');
-      if (mounted) {
-        SnackbarUtils.showError(context, 'Error getting location: $e');
-      }
+      // Intentionally not showing a snackbar here as it can be noisy on simulators
+      // or when the user simply denies location. The map will stay at default location.
     }
+  }
+
+  bool _isLocationDialogShowing = false;
+
+  void _showLocationSettingsDialog(String title, String message, {required bool isServiceDisabled}) {
+    if (_isLocationDialogShowing) return;
+    _isLocationDialogShowing = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          title,
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: AppTextStyles.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _isLocationDialogShowing = false;
+              Navigator.pop(ctx);
+            },
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () {
+              _isLocationDialogShowing = false;
+              Navigator.pop(ctx);
+              if (isServiceDisabled) {
+                Geolocator.openLocationSettings();
+              } else {
+                Geolocator.openAppSettings();
+              }
+            },
+            child: const Text('Open Settings', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    ).then((_) => _isLocationDialogShowing = false);
   }
 
   Set<Marker> _buildMarkers() {

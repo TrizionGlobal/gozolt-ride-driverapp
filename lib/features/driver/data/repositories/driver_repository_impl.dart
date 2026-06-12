@@ -30,6 +30,7 @@ class DriverRepositoryImpl implements DriverRepository {
       model: 'Prius',
       plate: 'ABC 123',
       type: 'standard',
+      color: 'White',
     ),
   );
 

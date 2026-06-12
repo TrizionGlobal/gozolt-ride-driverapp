@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 abstract final class AppTextStyles {
-  static const String _fontFamily = 'Roboto';
 
   // Display styles
   static const TextStyle displayLarge = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 48,
     fontWeight: FontWeight.w900,
     letterSpacing: 2.0,
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 36,
     fontWeight: FontWeight.w800,
     letterSpacing: 1.5,
@@ -21,78 +20,78 @@ abstract final class AppTextStyles {
 
   // Headline styles
   static const TextStyle headlineLarge = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 32,
     fontWeight: FontWeight.w700,
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 24,
     fontWeight: FontWeight.w600,
   );
 
   static const TextStyle headlineSmall = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 20,
     fontWeight: FontWeight.w600,
   );
 
   // Title styles
   static const TextStyle titleLarge = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 18,
     fontWeight: FontWeight.w600,
   );
 
   static const TextStyle titleMedium = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 16,
     fontWeight: FontWeight.w500,
   );
 
   static const TextStyle titleSmall = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 14,
     fontWeight: FontWeight.w500,
   );
 
   // Body styles
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 16,
     fontWeight: FontWeight.w400,
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 14,
     fontWeight: FontWeight.w400,
   );
 
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 12,
     fontWeight: FontWeight.w400,
   );
 
   // Label styles
   static const TextStyle labelLarge = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
   );
 
   static const TextStyle labelMedium = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 10,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
@@ -100,14 +99,14 @@ abstract final class AppTextStyles {
 
   // Splash screen specific styles
   static const TextStyle splashTitle = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 84,
     fontWeight: FontWeight.w900,
     letterSpacing: 3.0,
   );
 
   static const TextStyle splashSubtitle = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: 5.0,
@@ -115,7 +114,7 @@ abstract final class AppTextStyles {
 
   // Onboarding styles
   static const TextStyle onboardingTitle = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 22,
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.italic,
@@ -123,13 +122,13 @@ abstract final class AppTextStyles {
 
   // Footer styles
   static const TextStyle footerText = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 12,
     fontWeight: FontWeight.w400,
   );
 
   static const TextStyle footerAccent = TextStyle(
-    fontFamily: _fontFamily,
+    
     fontSize: 12,
     fontWeight: FontWeight.w600,
     color: AppColors.brandYellow,

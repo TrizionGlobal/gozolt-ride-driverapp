@@ -10,4 +10,6 @@ abstract class AuthRepository {
   Future<ApiResult<void>> register(Map<String, dynamic> data);
   Future<void> logout();
   Future<bool> isAuthenticated();
+  Future<ApiResult<void>> forgotPassword(String driverId);
+  Future<ApiResult<void>> resetPassword(String driverId, String newPassword);
 }

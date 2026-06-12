@@ -63,6 +63,8 @@ dependencies:
   # UI Extensions
   cached_network_image: ^3.4.1
   flutter_svg: ^2.1.0
+  pin_code_fields: ^9.4.0
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
@@ -80,7 +82,8 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/Gozolt_Driver_Icon.png"
-  adaptive_icon_background: "#1A1A2E"
+  image_path_ios: "assets/images/Gozolt_Driver_Icon_iOS.png"
+  adaptive_icon_background: "#092646"
   adaptive_icon_foreground: "assets/images/Gozolt_Driver_Icon.png"
   adaptive_icon_foreground_inset: 20
   remove_alpha_ios: true

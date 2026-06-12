@@ -27,6 +27,8 @@ class SocketService {
       StreamController<Map<String, dynamic>>.broadcast();
   final _onDestinationChangeController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final _onPaymentChangedController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Map<String, dynamic>> get onRideRequest => _onRideRequestController.stream;
   Stream<Map<String, dynamic>> get onRideStatusChanged =>
@@ -37,6 +39,8 @@ class SocketService {
       _onChatMessageController.stream;
   Stream<Map<String, dynamic>> get onDestinationChange =>
       _onDestinationChangeController.stream;
+  Stream<Map<String, dynamic>> get onPaymentChanged =>
+      _onPaymentChangedController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
 
@@ -129,6 +133,15 @@ class SocketService {
       }
     });
 
+    _socket!.on('ride:payment:changed', (data) {
+      _log('[DriverSocket] Payment changed');
+      if (data is Map<String, dynamic>) {
+        _onPaymentChangedController.add(data);
+      } else if (data is Map) {
+        _onPaymentChangedController.add(Map<String, dynamic>.from(data));
+      }
+    });
+
     _socket!.onDisconnect((reason) {
       _log('[DriverSocket] Disconnected: $reason');
     });
@@ -200,5 +213,6 @@ class SocketService {
     _onSurgeUpdateController.close();
     _onChatMessageController.close();
     _onDestinationChangeController.close();
+    _onPaymentChangedController.close();
   }
 }

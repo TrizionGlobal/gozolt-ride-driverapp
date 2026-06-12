@@ -61,6 +61,9 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
   StreamSubscription<Map<String, dynamic>>? _destinationChangeSub;
   StreamSubscription<Map<String, dynamic>>? _chatSub;
   StreamSubscription<Map<String, dynamic>>? _statusChangeSub;
+  StreamSubscription<Map<String, dynamic>>? _paymentChangeSub;
+
+  final List<Map<String, dynamic>> _requestQueue = [];
 
   RideSessionNotifier({
     required RideRepository repository,
@@ -82,43 +85,20 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         return;
       }
 
-      // Support both camelCase and snake_case field names
-      final rideId = socketData['rideId'] as String? ?? socketData['ride_id'] as String? ?? socketData['id'] as String?;
-      if (rideId == null) {
-        if (kDebugMode) print('[RideSession] ERROR: No rideId in socket data');
-        return;
+      _requestQueue.add(socketData);
+      if (state == null) {
+        _processNextRequest();
       }
+    });
 
-      final timeoutSeconds = (socketData['timeoutSeconds'] as num?)?.toInt() ??
-          (socketData['timeout_seconds'] as num?)?.toInt() ?? 15;
-      final etaMinutes = (socketData['etaMinutes'] as num?)?.toInt() ??
-          (socketData['eta_minutes'] as num?)?.toInt() ?? 0;
-      final distanceKm = (socketData['distanceKm'] as num?)?.toDouble() ??
-          (socketData['distance_km'] as num?)?.toDouble() ?? 0.0;
+    _paymentChangeSub = _socketService.onPaymentChanged.listen((data) {
+      final currentRide = state;
+      final rideId = data['rideId'] as String?;
+      final newPaymentMethod = data['paymentMethod'] as String?;
 
-      try {
-        if (kDebugMode) print('[RideSession] Fetching ride details for $rideId...');
-        final result = await _repository.getRideDetails(rideId);
-        switch (result) {
-          case ApiSuccess(:final data):
-            if (kDebugMode) print('[RideSession] Ride details fetched OK: ${data.id}, pickup=${data.pickupAddress}, status=${data.status}');
-            _showRideRequest(data, timeoutSeconds);
-            _playContinuousAlert();
-            break;
-          case ApiFailure(:final exception):
-            if (kDebugMode) print('[RideSession] getRideDetails FAILED: $exception — trying socket data as Ride');
-            // Try to parse the socket data itself as a Ride (backend may embed ride fields)
-            _showRideRequest(
-              _buildFallbackRide(socketData, rideId, distanceKm, etaMinutes),
-              timeoutSeconds,
-            );
-        }
-      } catch (e) {
-        if (kDebugMode) print('[RideSession] getRideDetails EXCEPTION: $e — using fallback');
-        _showRideRequest(
-          _buildFallbackRide(socketData, rideId, distanceKm, etaMinutes),
-          timeoutSeconds,
-        );
+      if (currentRide != null && rideId == currentRide.id && newPaymentMethod != null) {
+        if (kDebugMode) print('[RideSession] Updating payment method to $newPaymentMethod');
+        state = currentRide.copyWith(paymentMethod: newPaymentMethod);
       }
     });
     _destinationChangeSub = _socketService.onDestinationChange.listen((data) {
@@ -179,6 +159,52 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         if (kDebugMode) print('[RideSession] Ride cancelled by user — cleared ride state');
       }
     });
+  }
+
+  Future<void> _processNextRequest() async {
+    if (_requestQueue.isEmpty) return;
+    
+    // Process the first request in the queue
+    final socketData = _requestQueue.first;
+
+    final rideId = socketData['rideId'] as String? ?? socketData['ride_id'] as String? ?? socketData['id'] as String?;
+    if (rideId == null) {
+      if (kDebugMode) print('[RideSession] ERROR: No rideId in socket data');
+      _requestQueue.removeAt(0);
+      _processNextRequest();
+      return;
+    }
+
+    final timeoutSeconds = (socketData['timeoutSeconds'] as num?)?.toInt() ??
+        (socketData['timeout_seconds'] as num?)?.toInt() ?? 15;
+    final etaMinutes = (socketData['etaMinutes'] as num?)?.toInt() ??
+        (socketData['eta_minutes'] as num?)?.toInt() ?? 0;
+    final distanceKm = (socketData['distanceKm'] as num?)?.toDouble() ??
+        (socketData['distance_km'] as num?)?.toDouble() ?? 0.0;
+
+    try {
+      if (kDebugMode) print('[RideSession] Fetching ride details for $rideId...');
+      final result = await _repository.getRideDetails(rideId);
+      switch (result) {
+        case ApiSuccess(:final data):
+          if (kDebugMode) print('[RideSession] Ride details fetched OK: ${data.id}, pickup=${data.pickupAddress}, status=${data.status}');
+          _showRideRequest(data, timeoutSeconds);
+          _playContinuousAlert();
+          break;
+        case ApiFailure(:final exception):
+          if (kDebugMode) print('[RideSession] getRideDetails FAILED: $exception — trying socket data as Ride');
+          _showRideRequest(
+            _buildFallbackRide(socketData, rideId, distanceKm, etaMinutes),
+            timeoutSeconds,
+          );
+      }
+    } catch (e) {
+      if (kDebugMode) print('[RideSession] getRideDetails EXCEPTION: $e — using fallback');
+      _showRideRequest(
+        _buildFallbackRide(socketData, rideId, distanceKm, etaMinutes),
+        timeoutSeconds,
+      );
+    }
   }
 
   /// Show an incoming ride request and start the countdown.
@@ -296,6 +322,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         if (kDebugMode) print('[RideSession] Decline sent for ${ride.id}');
       }).catchError((_) {});
     }
+    _processNextRequest();
   }
 
   /// Mark as arriving at pickup location.
@@ -416,6 +443,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
           state = null;
           _driverStatusNotifier.goOnline();
           _socketService.reconnect();
+          _processNextRequest();
           return true;
         }(),
       ApiFailure() => false,
@@ -500,6 +528,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     _socketService.reconnect();
     // Refresh the today-earnings pill on the home screen
     _ref.read(todayEarningsProvider.notifier).fetchTodayEarnings();
+    _processNextRequest();
   }
 
   void _startCountdown(int seconds) {
@@ -538,6 +567,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     _destinationChangeSub?.cancel();
     _chatSub?.cancel();
     _statusChangeSub?.cancel();
+    _paymentChangeSub?.cancel();
     super.dispose();
   }
 }

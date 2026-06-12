@@ -26,12 +26,7 @@ Position _dummyPosition() => Position(
 
 final locationPermissionProvider = FutureProvider<LocationPermission>((ref) async {
   if (_devBypass) return LocationPermission.whileInUse;
-
-  LocationPermission permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-  }
-  return permission;
+  return await Geolocator.checkPermission();
 });
 
 final currentPositionProvider = FutureProvider<Position>((ref) async {

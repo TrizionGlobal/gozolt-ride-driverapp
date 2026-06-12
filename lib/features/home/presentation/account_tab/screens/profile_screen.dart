@@ -349,13 +349,63 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   const SizedBox(height: 32),
 
+                  // Supplier Info
+                  _buildSectionHeader('Supplier Details'),
+                  if (profile?.supplier != null) ...[
+                    _buildInfoCard(
+                      icon: Icons.business_rounded,
+                      label: 'Company Name',
+                      value: profile!.supplier!.companyName,
+                    ),
+                    if (profile.supplier!.contactPhone != null || profile.supplier!.email != null)
+                      const SizedBox(height: 12),
+                    if (profile.supplier!.contactPhone != null)
+                      _buildInfoCard(
+                        icon: Icons.phone_rounded,
+                        label: 'Contact Phone',
+                        value: profile.supplier!.contactPhone!,
+                      ),
+                    if (profile.supplier!.contactPhone != null && profile.supplier!.email != null)
+                      const SizedBox(height: 12),
+                    if (profile.supplier!.email != null)
+                      _buildInfoCard(
+                        icon: Icons.email_rounded,
+                        label: 'Email',
+                        value: profile.supplier!.email!,
+                      ),
+                  ] else ...[
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Text('No supplier assigned.', style: TextStyle(color: Colors.grey)),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+
                   // Vehicle Info (Read-only for security)
                   _buildSectionHeader('Vehicle Details'),
                   if (profile?.vehicle != null) ...[
                     _buildInfoCard(
                       icon: Icons.directions_car_rounded,
+                      label: 'Make',
+                      value: profile!.vehicle!.make.isNotEmpty ? profile.vehicle!.make : 'N/A',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.car_repair_rounded,
+                      label: 'Model',
+                      value: profile.vehicle!.model.isNotEmpty ? profile.vehicle!.model : 'N/A',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.color_lens_rounded,
+                      label: 'Color',
+                      value: profile.vehicle!.color.isNotEmpty ? profile.vehicle!.color : 'N/A',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      icon: Icons.class_rounded,
                       label: 'Vehicle Type',
-                      value: profile!.vehicle!.type.isNotEmpty ? profile.vehicle!.type : 'N/A',
+                      value: profile.vehicle!.type.isNotEmpty ? profile.vehicle!.type : 'N/A',
                     ),
                     const SizedBox(height: 12),
                     _buildInfoCard(

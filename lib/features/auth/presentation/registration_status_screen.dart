@@ -146,7 +146,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
     final bodyText = widget.phone != null ? 'My registered phone number is: ${widget.phone}' : '';
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@gozolt.com',
+      path: 'support@gozolt.com.mt',
       query: 'subject=Gozolt Driver Onboarding Support Request&body=${Uri.encodeComponent(bodyText)}',
     );
     try {
@@ -155,7 +155,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
       }
     } catch (e) {
       if (mounted) {
-        SnackbarUtils.showInfo(context, 'Support email: support@gozolt.com');
+        SnackbarUtils.showInfo(context, 'Support email: support@gozolt.com.mt');
       }
     }
   }
