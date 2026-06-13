@@ -131,8 +131,8 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(4, (index) {
                 return Container(
-                  width: 58,
-                  height: 58,
+                  width: 50,
+                  height: 50,
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   child: TextField(
                     controller: _controllers[index],
@@ -193,7 +193,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
             // Start button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 44,
               child: ElevatedButton(
                 onPressed:
                     _isComplete && !_isVerifying ? _handleVerify : null,
@@ -203,7 +203,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                   disabledBackgroundColor:
                       AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                 ),
                 child: _isVerifying
@@ -218,7 +218,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     : const Text(
                         'Start',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

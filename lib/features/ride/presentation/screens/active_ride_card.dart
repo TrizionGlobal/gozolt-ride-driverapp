@@ -116,9 +116,9 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                         onTap: () =>
                             _showEndRideConfirmation(context, ref),
                         child: Container(
-                          height: 52,
+                          height: 44,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(26),
+                            borderRadius: BorderRadius.circular(22),
                             border: Border.all(
                               color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white,
                               width: 1.5,
@@ -127,7 +127,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                           child: Center(
                             child: Text(
                               isNearDestination ? 'Ride Complete' : 'End Ride',
-                              style: AppTextStyles.titleMedium.copyWith(
+                              style: AppTextStyles.titleSmall.copyWith(
                                color: Theme.of(context).textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -159,9 +159,9 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                       _showEndRideConfirmation(context, ref),
                   child: Container(
                     width: double.infinity,
-                    height: 52,
+                    height: 44,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
                         color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         width: 1.5,
@@ -170,7 +170,7 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
                     child: Center(
                       child: Text(
                         'End Ride',
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.titleSmall.copyWith(
                           color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.w700,
                         ),

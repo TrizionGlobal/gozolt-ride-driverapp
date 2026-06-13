@@ -84,9 +84,9 @@ class RideRequestSheet extends ConsumerWidget {
                   onTap: () =>
                       ref.read(rideSessionProvider.notifier).skipRide(),
                   child: Container(
-                    height: 50,
+                    height: 44,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
                         color: const Color(0xFFE53935),
                         width: 1.5,
@@ -95,7 +95,7 @@ class RideRequestSheet extends ConsumerWidget {
                     child: Center(
                       child: Text(
                         'Skip',
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.titleSmall.copyWith(
                           color: const Color(0xFFE53935),
                           fontWeight: FontWeight.w600,
                         ),
@@ -122,15 +122,15 @@ class RideRequestSheet extends ConsumerWidget {
                     }
                   },
                   child: Container(
-                    height: 50,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: AppColors.primaryGold,
-                      borderRadius: BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(22),
                     ),
                     child: Center(
                       child: Text(
                         'Accept',
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.titleSmall.copyWith(
                           color: AppColors.backgroundPrimary,
                           fontWeight: FontWeight.w700,
                         ),

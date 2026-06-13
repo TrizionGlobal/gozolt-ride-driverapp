@@ -20,10 +20,10 @@ class GoldActionButton extends StatelessWidget {
       onTap: isLoading ? null : onTap,
       child: Container(
         width: double.infinity,
-        height: 52,
+        height: 44,
         decoration: BoxDecoration(
           color: AppColors.primaryGold,
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryGold.withOpacity(0.4),
@@ -44,7 +44,7 @@ class GoldActionButton extends StatelessWidget {
                 )
               : Text(
                   label,
-                  style: AppTextStyles.titleMedium.copyWith(
+                  style: AppTextStyles.titleSmall.copyWith(
                     color: AppColors.backgroundPrimary,
                     fontWeight: FontWeight.w700,
                   ),

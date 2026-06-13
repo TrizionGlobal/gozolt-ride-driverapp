@@ -404,7 +404,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                     // Report Issue Button
                     SizedBox(
                       width: double.infinity,
-                      height: 52,
+                      height: 44,
                       child: OutlinedButton(
                         onPressed: _isLoading
                             ? null
@@ -418,12 +418,12 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                           foregroundColor: AppColors.error,
                           side: const BorderSide(color: AppColors.error, width: 1.5),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(26),
+                            borderRadius: BorderRadius.circular(22),
                           ),
                         ),
                         child: Text(
                           'Report an Issue',
-                          style: AppTextStyles.titleMedium.copyWith(
+                          style: AppTextStyles.titleSmall.copyWith(
                             color: AppColors.error,
                             fontWeight: FontWeight.w700,
                           ),
@@ -436,7 +436,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                   // Confirm Payment / Finish Ride Button
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: 44,
                     child: ElevatedButton(
                       onPressed: _isLoading
                           ? null
@@ -460,7 +460,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                         backgroundColor: isCompleted ? AppColors.success : AppColors.primaryGold,
                         foregroundColor: isCompleted ? Colors.white : AppColors.backgroundDark,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(27),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         elevation: 4,
                       ),
@@ -488,7 +488,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 const SizedBox(width: 10),
                                 Text(
                                   isCompleted ? 'Finish Ride' : 'Cash Received',
-                                  style: AppTextStyles.titleMedium.copyWith(
+                                  style: AppTextStyles.titleSmall.copyWith(
                                     color: isCompleted ? Colors.white : AppColors.backgroundDark,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,

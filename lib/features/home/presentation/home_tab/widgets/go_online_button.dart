@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -149,191 +150,177 @@ class _OnlineSection extends StatefulWidget {
 
 class _OnlineSectionState extends State<_OnlineSection>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _waveController;
+  late final AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
-    _waveController = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 2000),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _waveController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Go Offline button
-        GestureDetector(
-          onTap: widget.onGoOffline,
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? AppColors.backgroundPrimary 
-                  : AppColors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withOpacity(0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.power_settings_new_rounded,
-              color: Color(0xFFE53935),
-              size: 26,
-            ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      width: double.infinity,
+      height: 68,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E24).withOpacity(0.85) : Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(34),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
+          BoxShadow(
+            color: AppColors.primaryGold.withOpacity(0.15),
+            blurRadius: 30,
+            spreadRadius: 2,
+          ),
+        ],
+        border: Border.all(
+          color: AppColors.primaryGold.withOpacity(isDark ? 0.4 : 0.6),
+          width: 1.5,
         ),
-        const SizedBox(width: 12),
-        // Finding Rides indicator with wavy animation inside
-        Expanded(
-          child: Container(
-            height: 58,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(29),
-              border: Border.all(
-                color: AppColors.primaryGold,
-                width: 2,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(27),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                  ),
-                  // Wavy gold-green gradient animation
-                  AnimatedBuilder(
-                    animation: _waveController,
-                    builder: (context, child) {
-                      return CustomPaint(
-                        painter: _WavePainter(
-                          progress: _waveController.value,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(34),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Row(
+            children: [
+              // Radar Pulsing Icon
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Pulse rings
+                      AnimatedBuilder(
+                        animation: _pulseController,
+                        builder: (context, child) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: List.generate(2, (index) {
+                              final delay = index * 0.5;
+                              var progress = _pulseController.value - delay;
+                              if (progress < 0) progress += 1.0;
+                              return Transform.scale(
+                                scale: 1.0 + (progress * 1.5),
+                                child: Opacity(
+                                  opacity: (1.0 - progress).clamp(0.0, 1.0) * 0.6,
+                                  child: Container(
+                                    width: 26,
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppColors.primaryGold,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                      // Center Icon
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGold.withOpacity(0.2),
+                          shape: BoxShape.circle,
                         ),
-                        size: Size.infinite,
-                      );
-                    },
-                  ),
-                  // Content overlay
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wifi_tethering_rounded,
+                        child: const Icon(
+                          Icons.radar_rounded,
                           color: AppColors.primaryGold,
-                          size: 24,
+                          size: 22,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Finding Rides...',
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: Theme.of(context).textTheme.titleMedium?.color,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              
+              // Text Content
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Finding Rides...',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                    Text(
+                      'You are online',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.primaryGold,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Go Offline Button
+              GestureDetector(
+                onTap: widget.onGoOffline,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE53935).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE53935).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.power_settings_new_rounded,
+                        color: Color(0xFFE53935),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Offline',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: const Color(0xFFE53935),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
-}
-
-class _WavePainter extends CustomPainter {
-  final double progress;
-
-  _WavePainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final waveShift = progress * 2 * math.pi;
-
-    // Draw two wave layers for depth
-    _drawWave(
-      canvas,
-      size,
-      shift: waveShift,
-      amplitude: 8,
-      frequency: 1.5,
-      baseY: size.height * 0.55,
-      colors: [
-        const Color(0xFFD4A843).withOpacity(0.25),
-        const Color(0xFF4CAF50).withOpacity(0.15),
-      ],
-    );
-
-    _drawWave(
-      canvas,
-      size,
-      shift: waveShift + math.pi * 0.8,
-      amplitude: 6,
-      frequency: 2.0,
-      baseY: size.height * 0.5,
-      colors: [
-        const Color(0xFF4CAF50).withOpacity(0.2),
-        const Color(0xFFD4A843).withOpacity(0.12),
-      ],
-    );
-  }
-
-  void _drawWave(
-    Canvas canvas,
-    Size size, {
-    required double shift,
-    required double amplitude,
-    required double frequency,
-    required double baseY,
-    required List<Color> colors,
-  }) {
-    final path = Path();
-    path.moveTo(0, size.height);
-
-    for (double x = 0; x <= size.width; x++) {
-      final y = baseY +
-          amplitude * math.sin((x / size.width) * frequency * 2 * math.pi + shift);
-      if (x == 0) {
-        path.lineTo(0, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-
-    path.lineTo(size.width, size.height);
-    path.close();
-
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: colors,
-      ).createShader(Offset.zero & size);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_WavePainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }
 

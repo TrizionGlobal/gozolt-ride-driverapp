@@ -345,7 +345,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 44,
                 child: ElevatedButton(
                   onPressed: _submitRating,
                   style: ElevatedButton.styleFrom(
@@ -360,7 +360,7 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       'Submit Rating',
-                      style: AppTextStyles.titleMedium.copyWith(
+                      style: AppTextStyles.titleSmall.copyWith(
                         color: AppColors.backgroundDark,
                         fontWeight: FontWeight.w700,
                       ),

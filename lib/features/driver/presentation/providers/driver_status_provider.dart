@@ -25,7 +25,10 @@ class DriverStatusNotifier extends StateNotifier<DriverStatus> {
     final ApiResult<void> result = await _repository.goOnline();
     if (kDebugMode) print('[DriverStatus] goOnline API result: $result');
     return switch (result) {
-      ApiSuccess() => () {
+      ApiSuccess() => () async {
+          // Explicitly start shift so matching engine includes us
+          await _repository.startShift();
+          
           state = DriverStatus.online;
           if (token != null) {
             if (kDebugMode) print('[DriverStatus] API success, now connecting socket with token...');
@@ -35,7 +38,7 @@ class DriverStatusNotifier extends StateNotifier<DriverStatus> {
           }
           return true;
         }(),
-      ApiFailure() => () {
+      ApiFailure() => () async {
           if (kDebugMode) print('[DriverStatus] goOnline API FAILED');
           return false;
         }(),
@@ -43,6 +46,9 @@ class DriverStatusNotifier extends StateNotifier<DriverStatus> {
   }
 
   Future<bool> goOffline() async {
+    // End shift explicitly
+    await _repository.endShift();
+    
     final ApiResult<void> result = await _repository.goOffline();
     return switch (result) {
       ApiSuccess() => () {

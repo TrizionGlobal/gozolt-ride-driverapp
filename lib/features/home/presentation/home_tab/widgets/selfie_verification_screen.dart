@@ -23,17 +23,23 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
 
   Future<void> _takeSelfie() async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.camera,
-      preferredCameraDevice: CameraDevice.front,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 80,
-    );
-    if (image != null && mounted) {
-      setState(() => _capturedImage = image);
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 80,
+      );
+      if (image != null && mounted) {
+        setState(() => _capturedImage = image);
+      }
+    } catch (e) {
+      debugPrint('Failed to capture selfie: $e');
     }
   }
+
+
 
   Future<void> _submit() async {
     if (_capturedImage == null) return;

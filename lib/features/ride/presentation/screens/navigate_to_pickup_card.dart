@@ -200,9 +200,9 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                                 ? () => _showNoShowDialog(context, ref)
                                 : null,
                             child: Container(
-                              height: 52,
+                              height: 44,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(26),
+                                borderRadius: BorderRadius.circular(22),
                                 border: Border.all(
                                   color: _canNoShow
                                       ? const Color(0xFFE53935)
@@ -214,7 +214,7 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
                               child: Center(
                                 child: Text(
                                   _canNoShow ? 'No Show' : 'Wait...',
-                                  style: AppTextStyles.titleMedium.copyWith(
+                                  style: AppTextStyles.titleSmall.copyWith(
                                     color: _canNoShow
                                         ? const Color(0xFFE53935)
                                         : const Color(0xFFE53935)
