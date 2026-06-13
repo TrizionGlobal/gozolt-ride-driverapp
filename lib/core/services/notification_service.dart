@@ -64,10 +64,6 @@ class NotificationService {
         }
         if (apnsToken == null) {
           debugPrint("Skipping FCM token retrieval: APNS token is null (likely on iOS Simulator).");
-          // Generate a mock token for simulator testing
-          const mockToken = "mock_ios_simulator_fcm_token";
-          debugPrint("Registering mock FCM token for iOS Simulator: $mockToken");
-          await _saveTokenToBackend(mockToken);
           return;
         }
       }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/constants/api_constants.dart';
@@ -11,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/utils/snackbar_utils.dart';
 import '../../../../auth/domain/models/country_code.dart';
 import '../../../../auth/presentation/widgets/country_code_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -25,6 +27,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   File? _pickedImage;
+  bool _isAvatarRemoved = false;
   bool _isSaving = false;
   String? _emailError;
   CountryCode _selectedCountry = supportedCountryCodes.first;
@@ -107,10 +110,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     
     bool success = true;
 
-    // 1. Upload picked image if present
+    // 1. Upload picked image or delete it if removed
     if (_pickedImage != null) {
       final uploadSuccess = await ref.read(driverProfileProvider.notifier).uploadAvatar(_pickedImage!.path);
       if (!uploadSuccess) {
+        success = false;
+      }
+    } else if (_isAvatarRemoved) {
+      final deleteSuccess = await ref.read(driverProfileProvider.notifier).deleteAvatar();
+      if (!deleteSuccess) {
         success = false;
       }
     }
@@ -133,7 +141,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       setState(() {
         _isSaving = false;
         if (success) {
-          _pickedImage = null; // Clear the picked image file after successful upload/save
+          _isAvatarRemoved = false; // reset the flag after successful save
         }
       });
       _showSnackBar(
@@ -222,23 +230,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Center(
                     child: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: AppColors.primaryGold.withOpacity(0.2),
-                          backgroundImage: _pickedImage != null
-                              ? FileImage(_pickedImage!) as ImageProvider
-                              : (profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-                                  ? NetworkImage(ApiConstants.fullUrl(profile.avatarUrl!)) as ImageProvider
-                                  : null),
-                          child: (_pickedImage == null && (profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty))
-                              ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
-                              : null,
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryGold.withOpacity(0.2),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: _pickedImage != null
+                              ? Image.file(_pickedImage!, fit: BoxFit.cover)
+                              : _isAvatarRemoved
+                                  ? const Icon(Icons.person, size: 50, color: AppColors.primaryGold)
+                                  : (profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty)
+                                      ? CachedNetworkImage(
+                                          imageUrl: ApiConstants.fullUrl(profile.avatarUrl!),
+                                          fit: BoxFit.cover,
+                                          errorListener: (err) {},
+                                          errorWidget: (context, url, error) => const Icon(Icons.person, size: 50, color: AppColors.primaryGold),
+                                          placeholder: (context, url) => const Icon(Icons.person, size: 50, color: AppColors.primaryGold),
+                                        )
+                                      : const Icon(Icons.person, size: 50, color: AppColors.primaryGold),
                         ),
                         Positioned(
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: _pickImage,
+                            onTap: () => _showAvatarOptions(context),
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -599,11 +617,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Future<void> _pickImage() async {
+  void _showAvatarOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).dividerTheme.color ?? Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: AppColors.primaryGold),
+                title: Text('Take Photo', style: AppTextStyles.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: AppColors.primaryGold),
+                title: Text('Choose from Gallery', style: AppTextStyles.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: AppColors.error),
+                title: Text('Remove Photo',
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _pickedImage = null;
+                    _isAvatarRemoved = true;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final image = await picker.pickImage(source: source);
     if (image != null) {
-      setState(() => _pickedImage = File(image.path));
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Profile Picture',
+            toolbarColor: AppColors.primaryGold,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Profile Picture',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        setState(() {
+          _pickedImage = File(croppedFile.path);
+          _isAvatarRemoved = false;
+        });
+      }
     }
   }
 }

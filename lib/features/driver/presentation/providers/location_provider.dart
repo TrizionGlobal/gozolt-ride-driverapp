@@ -7,31 +7,13 @@ import '../../../../core/network/socket_service.dart';
 import 'driver_provider.dart';
 import 'driver_status_provider.dart';
 
-// Location uses real GPS — set to true only if testing without a device/emulator GPS
-const _devBypass = false;
-
-// Dummy position: Valletta, Malta
-Position _dummyPosition() => Position(
-      latitude: AppConstants.defaultLat,
-      longitude: AppConstants.defaultLng,
-      timestamp: DateTime.now(),
-      accuracy: 10.0,
-      altitude: 0.0,
-      altitudeAccuracy: 0.0,
-      heading: 45.0,
-      headingAccuracy: 0.0,
-      speed: 0.0,
-      speedAccuracy: 0.0,
-    );
+// Location uses real GPS
 
 final locationPermissionProvider = FutureProvider<LocationPermission>((ref) async {
-  if (_devBypass) return LocationPermission.whileInUse;
   return await Geolocator.checkPermission();
 });
 
 final currentPositionProvider = FutureProvider<Position>((ref) async {
-  if (_devBypass) return _dummyPosition();
-
   final permission = await ref.watch(locationPermissionProvider.future);
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
@@ -45,11 +27,6 @@ final currentPositionProvider = FutureProvider<Position>((ref) async {
 });
 
 final locationStreamProvider = StreamProvider<Position>((ref) {
-  if (_devBypass) {
-    // Emit a dummy position every 5 seconds to simulate movement
-    return Stream.periodic(const Duration(seconds: 5), (_) => _dummyPosition());
-  }
-
   final permissionAsync = ref.watch(locationPermissionProvider);
 
   return permissionAsync.when(
@@ -109,8 +86,6 @@ class LocationUpdateService {
   }
 
   Future<void> _sendLocation() async {
-    if (_devBypass) return;
-
     try {
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(

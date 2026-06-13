@@ -10,8 +10,6 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
   final SecureStorageService _storage;
 
-  static const _devBypassLogin = false;
-
   AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required SecureStorageService storage,
