@@ -33,6 +33,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Gozolt Driver needs camera access for selfie verification and document uploads.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Gozolt Driver needs photo library access for document and profile image uploads.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Gozolt Driver needs your location in the background to track active rides and send location updates to passengers.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
