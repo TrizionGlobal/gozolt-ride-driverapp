@@ -701,9 +701,28 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Phone Verification', style: AppTextStyles.headlineSmall),
+        Text('Driver Application', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryGold)),
         const SizedBox(height: 8),
-        const Text('Enter your mobile number to receive a verification OTP. This verifies your device identity.', style: AppTextStyles.bodyMedium),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGold.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primaryGold.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.drive_eta_rounded, color: AppColors.primaryGold, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Join Gozolt as a driver! Verify your phone number to start your application process.',
+                  style: AppTextStyles.bodyMedium.copyWith(color: isDark ? Colors.white : Colors.black87),
+                ),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 24),
         
         // Phone number input

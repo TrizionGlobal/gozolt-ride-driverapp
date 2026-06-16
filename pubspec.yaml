@@ -1,7 +1,7 @@
 name: gozolt_driver
 description: "Gozolt Driver App - Born in Malta, Loved by Europe"
 publish_to: 'none'
-version: 1.0.0+101
+version: 1.0.1+28
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -66,6 +66,7 @@ dependencies:
   pin_code_fields: ^9.4.0
   google_fonts: ^8.1.0
   image_cropper: ^12.2.1
+  flutter_local_notifications: ^22.0.1
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,5 @@
 abstract final class AppConstants {
-  static const Duration splashDuration = Duration(seconds: 4);
+  static const Duration splashDuration = Duration(milliseconds: 2500);
   static const int onboardingPageCount = 2;
   static const String appName = 'Gozolt Partner';
   static const String appTagline = 'THE DRIVER APP';

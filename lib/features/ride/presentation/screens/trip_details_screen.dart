@@ -621,8 +621,6 @@ class _EarningCard extends StatelessWidget {
           _FareRow('Base Price', detail.baseFare),
           const SizedBox(height: 10),
           _FareRow('Distance Price', detail.distanceFare),
-          const SizedBox(height: 10),
-          _FareRow('Time Price', detail.timeFare),
           if (detail.waitTimeFee != null && detail.waitTimeFee! > 0) ...[
             const SizedBox(height: 10),
             _FareRow('Wait Time Fee', detail.waitTimeFee),

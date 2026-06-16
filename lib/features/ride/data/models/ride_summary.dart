@@ -5,6 +5,7 @@ class RideSummary {
   final double baseFare;
   final double distanceFare;
   final double timeFare;
+  final double waitTimeFee;
   final double totalFare;
   final double driverEarnings;
   final double distanceKm;
@@ -19,6 +20,7 @@ class RideSummary {
     required this.baseFare,
     required this.distanceFare,
     required this.timeFare,
+    this.waitTimeFee = 0.0,
     required this.totalFare,
     required this.driverEarnings,
     required this.distanceKm,
@@ -35,6 +37,7 @@ class RideSummary {
       baseFare: toDouble(json['baseFare']) ?? 0.0,
       distanceFare: toDouble(json['distanceFare']) ?? 0.0,
       timeFare: toDouble(json['timeFare']) ?? 0.0,
+      waitTimeFee: toDouble(json['waitTimeFee']) ?? 0.0,
       totalFare: toDouble(json['totalFare']) ?? toDouble(json['actualFare']) ?? 0.0,
       driverEarnings: toDouble(json['driverEarnings']) ?? 0.0,
       distanceKm: toDouble(json['distanceKm']) ?? 0.0,

@@ -425,8 +425,11 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       polylines.add(Polyline(
         polylineId: const PolylineId('to_pickup'),
         points: routePoints,
-        color: const Color(0xFFD4A843),
-        width: 4,
+        color: AppColors.primaryGold,
+        width: 5,
+        jointType: JointType.round,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
         patterns: [PatternItem.dash(20), PatternItem.gap(10)],
       ));
     } else if (ride.status == RideStatus.inProgress) {
@@ -439,8 +442,11 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       polylines.add(Polyline(
         polylineId: const PolylineId('to_dropoff'),
         points: routePoints,
-        color: const Color(0xFF4CAF50),
-        width: 4,
+        color: AppColors.primaryGold,
+        width: 5,
+        jointType: JointType.round,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
       ));
     }
 

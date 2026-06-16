@@ -38,15 +38,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final size = MediaQuery.of(context).size;
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final curveColor = isDark ? AppColors.backgroundSecondary : const Color(0xFF0C1B30);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Static background painter (Navy blue curved road at the bottom)
           Positioned.fill(
             child: CustomPaint(
-              painter: OnboardingBackgroundPainter(),
+              painter: OnboardingBackgroundPainter(color: curveColor),
             ),
           ),
 
@@ -101,11 +103,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Roboto',
                                 fontSize: 21,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: isDark ? AppColors.textPrimary : Colors.white,
                                 height: 1.35,
                               ),
                               children: [
@@ -146,12 +148,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: GestureDetector(
               onTap: _onSkipPressed,
               behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'Skip',
                   style: TextStyle(
-                    color: Color(0xFF1B2838),
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -169,11 +171,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: SmoothPageIndicator(
                 controller: _pageController,
                 count: onboardingPages.length,
-                effect: const WormEffect(
+                effect: WormEffect(
                   dotWidth: 10,
                   dotHeight: 10,
-                  activeDotColor: Color(0xFFF5C518),
-                  dotColor: Colors.white54,
+                  activeDotColor: const Color(0xFFF5C518),
+                  dotColor: isDark ? Colors.white24 : Colors.white54,
                   spacing: 8,
                 ),
               ),
@@ -186,10 +188,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 }
 
 class OnboardingBackgroundPainter extends CustomPainter {
+  final Color color;
+
+  OnboardingBackgroundPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF0C1B30)
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final double startHeight = size.height * 0.56; // Starts lower at the edges

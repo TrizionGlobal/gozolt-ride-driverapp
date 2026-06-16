@@ -159,7 +159,8 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
           // Fare breakdown
           _FareRow(label: 'Base Fare', amount: summary.baseFare),
           _FareRow(label: 'Distance Fare', amount: summary.distanceFare),
-          _FareRow(label: 'Time Fare', amount: summary.timeFare),
+          if (summary.waitTimeFee > 0)
+            _FareRow(label: 'Wait Time Fee', amount: summary.waitTimeFee),
           if (summary.bookingFee > 0)
             _FareRow(label: 'Booking Fee', amount: summary.bookingFee),
           if (summary.surgeMultiplier > 1.0)

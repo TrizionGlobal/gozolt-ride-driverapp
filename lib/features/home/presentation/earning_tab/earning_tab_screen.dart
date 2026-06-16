@@ -248,7 +248,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'TOTAL EARNINGS',
+                                            'ESTIMATED EARNINGS',
                                             style: AppTextStyles.labelSmall.copyWith(
                                               color: AppColors.primaryGold,
                                               fontWeight: FontWeight.w800,
@@ -447,6 +447,42 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
             ),
             const SizedBox(height: 12),
 
+            // ── Settlement Info Banner ───────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceCard : AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primaryGold.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: AppColors.primaryGold,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Earnings are settled and transferred by your Fleet Supplier every 10 days.',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
             // ── Bottom total bar (floating card layout) ───────────────
             Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -473,7 +509,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total Balance',
+                    'Pending Fleet Settlement',
                     style: AppTextStyles.titleSmall.copyWith(
                       color: const Color(0xFF0F1923),
                       fontWeight: FontWeight.w800,

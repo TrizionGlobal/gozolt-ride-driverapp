@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../network/dio_client.dart';
 import '../constants/api_constants.dart';
 import '../providers/dio_provider.dart';
@@ -8,6 +10,8 @@ import '../providers/storage_provider.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   final Ref _ref;
 
   NotificationService(this._ref);
@@ -32,6 +36,37 @@ class NotificationService {
       debugPrint('Driver declined or has not accepted notification permission');
     }
 
+    // Initialize local notifications
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@drawable/ic_notification');
+        
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      macOS: initializationSettingsDarwin,
+    );
+
+    await _localNotificationsPlugin.initialize(
+      settings: initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('Local notification clicked: ${response.payload}');
+      },
+    );
+
+    // Allow iOS to show notifications in the foreground natively
+    await _fcm.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Got a message whilst in the foreground!');
@@ -39,7 +74,29 @@ class NotificationService {
 
       if (message.notification != null) {
         debugPrint('Message also contained a notification: ${message.notification?.title}');
-        // You could show a local notification here if needed
+        
+        final AndroidNotificationDetails androidPlatformChannelSpecifics =
+            AndroidNotificationDetails(
+          'gozolt_driver_channel_id',
+          'Gozolt Driver Notifications',
+          channelDescription: 'High priority notifications for Gozolt Driver App',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@drawable/ic_notification',
+          largeIcon: const DrawableResourceAndroidBitmap('notification_large_icon'),
+          color: const Color(0xFFD4A843), // primaryGold
+        );
+
+        final NotificationDetails platformChannelSpecifics =
+            NotificationDetails(android: androidPlatformChannelSpecifics);
+
+        _localNotificationsPlugin.show(
+          id: message.hashCode,
+          title: message.notification?.title,
+          body: message.notification?.body,
+          notificationDetails: platformChannelSpecifics,
+          payload: message.data.toString(),
+        );
       }
     });
 

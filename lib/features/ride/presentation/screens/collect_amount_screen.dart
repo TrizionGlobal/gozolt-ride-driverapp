@@ -220,11 +220,14 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                               isDark: isDark,
                             ),
                             const SizedBox(height: 12),
-                            _FareBreakdownRow(
-                              label: 'Time Fare',
-                              amount: summary.timeFare,
-                              isDark: isDark,
-                            ),
+                            if (summary.waitTimeFee > 0) ...[
+                              const SizedBox(height: 12),
+                              _FareBreakdownRow(
+                                label: 'Wait Time Fee',
+                                amount: summary.waitTimeFee,
+                                isDark: isDark,
+                              ),
+                            ],
                             if (summary.bookingFee > 0) ...[
                               const SizedBox(height: 12),
                               _FareBreakdownRow(

@@ -14,6 +14,7 @@ class RideDetail {
   final double? distanceFare;
   final double? timeFare;
   final double? waitTimeFee;
+  final double? bookingFee;
   final double? totalFare;
   final double? distanceKm;
   final int? durationMinutes;
@@ -40,6 +41,7 @@ class RideDetail {
     this.distanceFare,
     this.timeFare,
     this.waitTimeFee,
+    this.bookingFee,
     this.totalFare,
     this.distanceKm,
     this.durationMinutes,
@@ -82,6 +84,7 @@ class RideDetail {
       distanceFare: toDouble(json['distanceFare']) ?? toDouble(json['distance_fare']),
       timeFare: toDouble(json['timeFare']) ?? toDouble(json['time_fare']),
       waitTimeFee: toDouble(json['waitTimeFee']) ?? toDouble(json['wait_time_fee']),
+      bookingFee: toDouble(json['bookingFee']) ?? toDouble(json['booking_fee']),
       totalFare: toDouble(json['actualFare']) ??
           toDouble(json['actual_fare']) ??
           toDouble(json['estimatedFare']) ??

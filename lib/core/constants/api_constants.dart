@@ -1,8 +1,16 @@
 abstract final class ApiConstants {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://gozolt-new-ride-backend-production.up.railway.app/v1',
-  );
+   // ── Base URL ───────────────────────────────────────────
+  static const bool useLocal = false;
+
+  static const String baseUrl = useLocal 
+      ? 'http://127.0.0.1:3000/v1' 
+      : 'https://gozolt-new-ride-backend-production.up.railway.app/v1';
+
+  static const String wsUrl = useLocal
+      ? 'ws://127.0.0.1:3000'
+      : 'wss://gozolt-new-ride-backend-production.up.railway.app';
+
+  
 
   // Auth endpoints
   static const String loginDriver = '/auth/driver/login';

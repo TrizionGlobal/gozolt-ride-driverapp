@@ -108,13 +108,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const Expanded(child: _SplashContent()),
-            const _SplashFooter(),
-            const SizedBox(height: 24),
-          ],
+      body: const SafeArea(
+        child: Center(
+          child: _SplashContent(),
         ),
       ),
     );
@@ -126,121 +122,11 @@ class _SplashContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoPath = isDark ? AssetPaths.gozoltLogoWithText : AssetPaths.lightGozoltLogoWithText;
-
-    return Center(
-      child: Image.asset(
-        logoPath,
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: 400,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return const _FallbackBranding();
-        },
-      ),
-    );
-  }
-}
-
-class _FallbackBranding extends StatelessWidget {
-  const _FallbackBranding();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const GozoltLogo(size: 180),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'GO',
-              style: AppTextStyles.splashTitle.copyWith(
-                color: AppColors.brandYellow,
-              ),
-            ),
-            Text(
-              'ZOLT',
-              style: AppTextStyles.splashTitle.copyWith(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-            ),
-          ],
-        ),
-        Text('GO PARTNER', style: AppTextStyles.splashSubtitle.copyWith(
-          color: Theme.of(context).brightness == Brightness.dark ? AppColors.brandYellow : AppColors.backgroundPrimary,
-        )),
-      ],
-    );
-  }
-}
-
-class _SplashFooter extends StatelessWidget {
-  const _SplashFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // "Born in Malta, Loved by Europe" with flags
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              AssetPaths.maltaFlag,
-              width: 24,
-              height: 16,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Text('🇲🇹', style: TextStyle(fontSize: 16)),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Born in Malta, Loved by Europe',
-              style: AppTextStyles.footerText.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Image.asset(
-              AssetPaths.euFlag,
-              width: 24,
-              height: 16,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Text('🇪🇺', style: TextStyle(fontSize: 16)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // "Powered By PRIMOOO"
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Powered By ', style: AppTextStyles.footerText.copyWith(
-              color: Theme.of(context).textTheme.bodySmall?.color,
-            )),
-            Text('PRIMOOO', style: AppTextStyles.footerAccent.copyWith(
-              color: AppColors.primaryGold,
-            )),
-            const SizedBox(width: 8),
-            Image.asset(
-              AssetPaths.primoooLogo,
-              width: 32,
-              height: 20,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      ],
+    return Image.asset(
+      'assets/images/Gozolt_Driver_Icon.png',
+      width: 200,
+      height: 200,
+      fit: BoxFit.contain,
     );
   }
 }
