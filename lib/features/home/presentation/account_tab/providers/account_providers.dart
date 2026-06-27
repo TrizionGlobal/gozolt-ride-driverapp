@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/network/api_result.dart';
 import '../../../../driver/data/models/driver_earnings_balance.dart';
 import '../../../../driver/data/models/driver_ratings_response.dart';
+import '../../../../driver/data/models/driver_payout_log.dart';
 import '../../../../driver/presentation/providers/driver_provider.dart';
 
 class DriverWalletNotifier extends AutoDisposeAsyncNotifier<DriverEarningsBalance> {
@@ -35,12 +36,24 @@ class DriverWalletNotifier extends AutoDisposeAsyncNotifier<DriverEarningsBalanc
     switch (result) {
       case ApiSuccess(:final data):
         state = AsyncData(data);
+        ref.invalidate(driverWithdrawalsProvider);
         return true;
       case ApiFailure():
         return false;
     }
   }
 }
+
+final driverWithdrawalsProvider = FutureProvider.autoDispose<List<DriverPayoutLog>>((ref) async {
+  final repository = ref.watch(driverRepositoryProvider);
+  final result = await repository.getWithdrawals();
+  switch (result) {
+    case ApiSuccess(:final data):
+      return data;
+    case ApiFailure(:final exception):
+      throw exception;
+  }
+});
 
 final walletBalanceProvider = AsyncNotifierProvider.autoDispose<DriverWalletNotifier, DriverEarningsBalance>(() {
   return DriverWalletNotifier();

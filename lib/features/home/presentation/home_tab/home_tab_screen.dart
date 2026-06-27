@@ -579,7 +579,8 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     final isOnRide = ride != null;
     final driverStatus = ref.watch(driverStatusProvider);
     final isBottomNavBarVisible = !driverStatus.isOnline && !isOnRide;
-    final bottomOffset = isBottomNavBarVisible ? 104.0 : 16.0;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final bottomOffset = isBottomNavBarVisible ? 104.0 : (16.0 + safeBottom);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

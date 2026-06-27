@@ -10,6 +10,7 @@ import '../models/earnings_summary.dart';
 import '../models/daily_earnings.dart';
 import '../models/driver_earnings_balance.dart';
 import '../models/driver_ratings_response.dart';
+import '../models/driver_payout_log.dart';
 
 class DriverRemoteDataSource {
   final Dio _dio;
@@ -260,6 +261,15 @@ class DriverRemoteDataSource {
         data: {'amount': amount},
       );
       return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<List<DriverPayoutLog>> getWithdrawals() async {
+    try {
+      final response = await _dio.get('${ApiConstants.driverMe}/wallet/withdrawals');
+      return (response.data as List).map((x) => DriverPayoutLog.fromJson(x as Map<String, dynamic>)).toList();
     } on DioException catch (e) {
       throw _mapException(e);
     }

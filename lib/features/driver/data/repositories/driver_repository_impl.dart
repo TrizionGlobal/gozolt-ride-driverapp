@@ -7,6 +7,7 @@ import '../models/driver_profile.dart';
 import '../models/earnings_summary.dart';
 import '../models/driver_earnings_balance.dart';
 import '../models/driver_ratings_response.dart';
+import '../models/driver_payout_log.dart';
 
 class DriverRepositoryImpl implements DriverRepository {
   final DriverRemoteDataSource _remoteDataSource;
@@ -207,6 +208,16 @@ class DriverRepositoryImpl implements DriverRepository {
     try {
       final balance = await _remoteDataSource.withdraw(amount);
       return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
+  Future<ApiResult<List<DriverPayoutLog>>> getWithdrawals() async {
+    try {
+      final logs = await _remoteDataSource.getWithdrawals();
+      return ApiSuccess(logs);
     } on ApiException catch (e) {
       return ApiFailure(e);
     }

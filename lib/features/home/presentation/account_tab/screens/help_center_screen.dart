@@ -7,14 +7,14 @@ class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
 
   Future<void> _openWhatsApp() async {
-    final uri = Uri.parse('https://wa.me/35699999999');
+    final uri = Uri.parse('https://wa.me/35677979979');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   Future<void> _openWebsite() async {
-    final uri = Uri.parse('https://www.gozolt.com');
+    final uri = Uri.parse('https://gozolt.com.mt');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

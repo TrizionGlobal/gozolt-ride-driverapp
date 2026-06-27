@@ -105,6 +105,7 @@ class DriverProfile {
   final String? payoutAccountNumber;
   final String? payoutAccountHolder;
   final String? payoutSwiftCode;
+  final bool editBankDetails;
 
   const DriverProfile({
     required this.id,
@@ -124,6 +125,7 @@ class DriverProfile {
     this.payoutAccountNumber,
     this.payoutAccountHolder,
     this.payoutSwiftCode,
+    this.editBankDetails = false,
   });
 
   String get fullName => '$firstName $lastName';
@@ -149,11 +151,12 @@ class DriverProfile {
       documents: (json['documents'] as List<dynamic>?)
               ?.map((e) => DriverDocument.fromJson(e as Map<String, dynamic>))
               .toList() ??
-          [],
+          const [],
       payoutBankName: json['payoutBankName'] as String?,
       payoutAccountNumber: json['payoutAccountNumber'] as String?,
       payoutAccountHolder: json['payoutAccountHolder'] as String?,
       payoutSwiftCode: json['payoutSwiftCode'] as String?,
+      editBankDetails: json['editBankDetails'] as bool? ?? false,
     );
   }
 }

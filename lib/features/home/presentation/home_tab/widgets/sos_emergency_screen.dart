@@ -10,13 +10,16 @@ class SosEmergencyScreen extends ConsumerWidget {
   const SosEmergencyScreen({super.key});
 
   Future<void> _makeCall(BuildContext context, String number) async {
+    final navigator = Navigator.of(context);
+    navigator.pop();
+
     final uri = Uri.parse('tel:$number');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (navigator.context.mounted) {
+          ScaffoldMessenger.of(navigator.context).showSnackBar(
             const SnackBar(
               content: Text('Phone dialer not available on this device (Simulator).'),
               backgroundColor: Color(0xFFE53935),
@@ -25,8 +28,8 @@ class SosEmergencyScreen extends ConsumerWidget {
         }
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (navigator.context.mounted) {
+        ScaffoldMessenger.of(navigator.context).showSnackBar(
           const SnackBar(
             content: Text('Failed to open dialer.'),
             backgroundColor: Color(0xFFE53935),
@@ -37,6 +40,10 @@ class SosEmergencyScreen extends ConsumerWidget {
   }
 
   Future<void> _shareToWhatsApp(WidgetRef ref, BuildContext context) async {
+    // Immediately close the modal bottom sheet so errors/dialogs appear correctly
+    final navigator = Navigator.of(context);
+    navigator.pop();
+
     try {
       // Check location permissions first
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -62,26 +69,33 @@ class SosEmergencyScreen extends ConsumerWidget {
 
       final text = '🚨 *Emergency SOS* 🚨\n\n$driverInfo*My Current Location:*\nhttps://maps.google.com/?q=${position.latitude},${position.longitude}';
       
-      final uri = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(text)}');
+      final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}');
       
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('WhatsApp is not installed on this device'),
-              backgroundColor: Color(0xFFE53935),
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (navigator.context.mounted) {
+          showDialog(
+            context: navigator.context,
+            builder: (_) => AlertDialog(
+              title: const Text('WhatsApp Not Found'),
+              content: const Text('You need to install WhatsApp to use the emergency chat feature.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
             ),
           );
         }
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not share location.'),
-            backgroundColor: Color(0xFFE53935),
+      if (navigator.context.mounted) {
+        ScaffoldMessenger.of(navigator.context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: const Color(0xFFE53935),
           ),
         );
       }

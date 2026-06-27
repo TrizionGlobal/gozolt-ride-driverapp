@@ -172,113 +172,90 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
             ),
           ),
           const Spacer(),
-          // Buttons
-          if (_capturedImage == null) ...[
-            // Take Selfie button
-            GestureDetector(
-              onTap: _takeSelfie,
-              child: Container(
-                width: double.infinity,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGold,
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.camera_alt,
-                      color: AppColors.backgroundDark,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Take Selfie',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.backgroundDark,
-                        fontWeight: FontWeight.w700,
+          // Buttons Row
+          Row(
+            children: [
+              // Left Button (Cancel or Retake)
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_capturedImage == null) {
+                      Navigator.pop(context);
+                    } else {
+                      setState(() => _capturedImage = null);
+                    }
+                  },
+                  child: Container(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                        width: 1.5,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ] else ...[
-            // Submit + Retake buttons
-            Row(
-              children: [
-                // Retake
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _capturedImage = null),
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(26),
-                        border: Border.all(
+                    child: Center(
+                      child: Text(
+                        _capturedImage == null ? 'Cancel' : 'Retake',
+                        style: AppTextStyles.titleMedium.copyWith(
                           color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Retake',
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Submit
-                Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    onTap: _isSubmitting ? null : _submit,
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryGold,
-                        borderRadius: BorderRadius.circular(26),
-                      ),
-                      child: Center(
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.backgroundDark,
-                                ),
-                              )
-                            : Text(
-                                'Submit',
-                                style: AppTextStyles.titleMedium.copyWith(
-                                  color: AppColors.backgroundDark,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
-          // Skip/Cancel
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
-            ),
+              const SizedBox(width: 12),
+              
+              // Right Button (Take Selfie or Submit)
+              Expanded(
+                flex: 2,
+                child: GestureDetector(
+                  onTap: _capturedImage == null
+                      ? _takeSelfie
+                      : (_isSubmitting ? null : _submit),
+                  child: Container(
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: Center(
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.backgroundDark,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_capturedImage == null) ...[
+                                  const Icon(
+                                    Icons.camera_alt,
+                                    color: AppColors.backgroundDark,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(
+                                  _capturedImage == null ? 'Take Selfie' : 'Submit',
+                                  style: AppTextStyles.titleMedium.copyWith(
+                                    color: AppColors.backgroundDark,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

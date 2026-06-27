@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../providers/account_providers.dart';
-import '../widgets/stripe_add_money_sheet.dart';
 import 'payout_details_screen.dart';
 
 
@@ -17,6 +17,7 @@ class WalletScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final balanceAsync = ref.watch(walletBalanceProvider);
+    final withdrawalsAsync = ref.watch(driverWithdrawalsProvider);
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -120,8 +121,6 @@ class WalletScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            _buildActionButton(context, Icons.add_rounded, 'Add Money', () => _showAddMoneyDialog(context, ref)),
-                            const SizedBox(width: 12),
                             _buildActionButton(
                               context,
                               Icons.account_balance_wallet_rounded,
@@ -137,37 +136,102 @@ class WalletScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Transactions (compact and theme-based)
+                  // Wallet Details and History
                   Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Wallet Details',
-                            style: AppTextStyles.titleMedium.copyWith(
-                              color: isDark ? AppColors.white : AppColors.textPrimaryLight,
-                              fontWeight: FontWeight.w700,
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Wallet Details',
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: ListView(
-                              padding: EdgeInsets.zero,
-                              children: [
-                                _buildDetailTile(context, 'Total Earnings (All-time)', '€${balance.totalEarnings.toStringAsFixed(2)}', Colors.green),
-                                Divider(height: 8, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
-                                _buildDetailTile(context, 'Total Paid Out', '€${balance.totalPaidOut.toStringAsFixed(2)}', Colors.blue),
-                                Divider(height: 8, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
-                                _buildDetailTile(context, 'Pending Penalties', '€${balance.pendingPenalties.toStringAsFixed(2)}', Colors.red),
-                                Divider(height: 8, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
-                                _buildDetailTile(context, 'Available Wallet Balance', '€${balance.availableBalance.toStringAsFixed(2)}', AppColors.primaryGold),
-                              ],
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isDark ? AppColors.surfaceCard : AppColors.surfaceCardLight,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+                              ),
+                              child: Column(
+                                children: [
+                                  _buildDetailTile(context, 'Total Earnings (All-time)', '€${balance.totalEarnings.toStringAsFixed(2)}', Colors.green),
+                                  Divider(height: 16, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
+                                  _buildDetailTile(context, 'Total Paid Out', '€${balance.totalPaidOut.toStringAsFixed(2)}', Colors.blue),
+                                  Divider(height: 16, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
+                                  _buildDetailTile(context, 'Pending Penalties', '€${balance.pendingPenalties.toStringAsFixed(2)}', Colors.red),
+                                  Divider(height: 16, thickness: 0.5, color: isDark ? Colors.white10 : Colors.black12),
+                                  _buildDetailTile(context, 'Available Wallet Balance', '€${balance.availableBalance.toStringAsFixed(2)}', AppColors.primaryGold),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            
+                            const SizedBox(height: 24),
+                            Text(
+                              'Recent Withdrawals',
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Dynamic Withdrawal History list
+                            withdrawalsAsync.when(
+                              data: (withdrawals) {
+                                if (withdrawals.isEmpty) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                    child: Center(
+                                      child: Text(
+                                        'No recent withdrawals',
+                                        style: TextStyle(
+                                          color: isDark ? AppColors.textMuted : Colors.black54,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: EdgeInsets.zero,
+                                  itemCount: withdrawals.length,
+                                  itemBuilder: (context, index) {
+                                    final log = withdrawals[index];
+                                    return _buildTransactionTile(
+                                      context: context,
+                                      title: (log.notes?.isEmpty ?? true) ? 'Withdrawal' : log.notes!,
+                                      date: DateFormat('dd MMM yyyy, h:mm a').format(log.createdAt.toLocal()),
+                                      amount: '-€${log.amount.toStringAsFixed(2)}',
+                                      icon: Icons.account_balance_rounded,
+                                      isPositive: false,
+                                    );
+                                  },
+                                );
+                              },
+                              loading: () => const Padding(
+                                padding: EdgeInsets.all(24.0),
+                                child: Center(child: CircularProgressIndicator(color: AppColors.primaryGold)),
+                              ),
+                              error: (error, stack) => Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Center(
+                                  child: Text('Failed to load history', style: TextStyle(color: Colors.red.shade400)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -243,12 +307,73 @@ class WalletScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddMoneyDialog(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _AddMoneySheet(ref: ref),
+  Widget _buildTransactionTile({
+    required BuildContext context,
+    required String title,
+    required String date,
+    required String amount,
+    required IconData icon,
+    required bool isPositive,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = isPositive ? Colors.green : (isDark ? AppColors.white : Colors.black87);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceCard : AppColors.surfaceCardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: (isPositive ? Colors.green : AppColors.primaryGold).withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: isPositive ? Colors.green : AppColors.primaryGold,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -309,260 +434,6 @@ class WalletScreen extends ConsumerWidget {
         availableBalance: availableBalance,
         profile: profile,
       ),
-    );
-  }
-}
-
-class _AddMoneySheet extends StatefulWidget {
-  final WidgetRef ref;
-
-  const _AddMoneySheet({required this.ref});
-
-  @override
-  State<_AddMoneySheet> createState() => _AddMoneySheetState();
-}
-
-class _AddMoneySheetState extends State<_AddMoneySheet> {
-  final _amountController = TextEditingController();
-  bool _isLoading = false;
-  String? _error;
-  bool _success = false;
-
-  void _selectAmount(double amount) {
-    setState(() {
-      _amountController.text = amount.toStringAsFixed(2);
-      _error = null;
-    });
-  }
-
-  Future<void> _processPayment() async {
-    final amountText = _amountController.text.trim();
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) {
-      setState(() => _error = 'Please enter a valid amount');
-      return;
-    }
-
-    Navigator.pop(context); // Close the amount selection sheet
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StripeAddMoneySheet(
-        ref: widget.ref,
-        amount: amount,
-        onSuccess: () {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              final isDark = Theme.of(context).brightness == Brightness.dark;
-              return Dialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                backgroundColor: Theme.of(context).cardTheme.color ?? (isDark ? AppColors.surfaceDark : Colors.white),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.check_circle_outline_rounded, color: Colors.green, size: 72),
-                      const SizedBox(height: 20),
-                      Text('Payment Successful', style: AppTextStyles.titleLarge, textAlign: TextAlign.center),
-                      const SizedBox(height: 8),
-                      Text(
-                        '€${amount.toStringAsFixed(2)} has been added to your wallet',
-                        style: TextStyle(color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryGold,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text('Done', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGold.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.add_rounded, color: AppColors.primaryGold, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Text('Add Money', style: AppTextStyles.titleLarge.copyWith(fontWeight: FontWeight.w800)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Top up your wallet balance instantly using Stripe.',
-              style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.textMuted, fontSize: 13),
-            ),
-            const SizedBox(height: 24),
-            
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
-              ),
-              
-            // Amount Input Field
-            Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border.all(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.2),
-                borderRadius: BorderRadius.circular(12),
-                color: isDark ? AppColors.surfaceInput : Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark ? Colors.black26 : Colors.black.withOpacity(0.02),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Text(
-                    '€',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        hintText: '0.00',
-                        hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 18),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _amountChip(10),
-                  const SizedBox(width: 10),
-                  _amountChip(20),
-                  const SizedBox(width: 10),
-                  _amountChip(50),
-                  const SizedBox(width: 10),
-                  _amountChip(100),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _processPayment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGold,
-                  disabledBackgroundColor: isDark ? Colors.white10 : Colors.grey[300],
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
-                      )
-                    : const Text('Proceed to Payment', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _amountChip(double amount) {
-    return ActionChip(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      label: Text('+€${amount.toInt()}'),
-      onPressed: () => _selectAmount(amount),
-      backgroundColor: AppColors.primaryGold.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Colors.transparent),
-      ),
-      labelStyle: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 13),
     );
   }
 }

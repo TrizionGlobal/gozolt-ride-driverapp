@@ -23,14 +23,18 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Fetch latest profile to ensure we have the most up-to-date editBankDetails permission
+    Future.microtask(() => ref.read(driverProfileProvider.notifier).fetchProfile());
+
     final profile = ref.read(driverProfileProvider).valueOrNull;
     _payoutAccountHolderController = TextEditingController(text: profile?.payoutAccountHolder);
     _payoutAccountNumberController = TextEditingController(text: profile?.payoutAccountNumber); // IBAN
     _payoutBankNameController = TextEditingController(text: profile?.payoutBankName);
     _payoutSwiftCodeController = TextEditingController(text: profile?.payoutSwiftCode);
 
-    // If details are completely empty, start in edit mode
-    if ((profile?.payoutAccountNumber ?? '').isEmpty) {
+    // If details are completely empty and editing is allowed, start in edit mode
+    if ((profile?.payoutAccountNumber ?? '').isEmpty && (profile?.editBankDetails == true)) {
       _isEditing = true;
     }
   }
@@ -160,6 +164,9 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(driverProfileProvider).valueOrNull;
+    final canEdit = profile?.editBankDetails ?? false;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -173,7 +180,21 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
           color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
         actions: [
-          if (!_isEditing)
+          if (_isEditing && canEdit && (profile?.payoutAccountNumber ?? '').isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.grey),
+              onPressed: () {
+                setState(() {
+                  _isEditing = false;
+                  // Restore old text
+                  _payoutAccountHolderController.text = profile?.payoutAccountHolder ?? '';
+                  _payoutAccountNumberController.text = profile?.payoutAccountNumber ?? '';
+                  _payoutBankNameController.text = profile?.payoutBankName ?? '';
+                  _payoutSwiftCodeController.text = profile?.payoutSwiftCode ?? '';
+                });
+              },
+            ),
+          if (!_isEditing && canEdit)
             IconButton(
               icon: const Icon(Icons.edit, color: AppColors.primaryGold),
               onPressed: () {
@@ -274,6 +295,28 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
                   ),
                 ),
             ] else ...[
+              if (profile != null && !canEdit)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock_outline, color: Colors.blue, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Please contact your supplier if you need to update your bank details.',
+                          style: AppTextStyles.bodySmall.copyWith(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               _buildInfoRow('Account Holder Name', _payoutAccountHolderController.text),
               _buildInfoRow('IBAN', _payoutAccountNumberController.text),
               _buildInfoRow('Bank Name', _payoutBankNameController.text),

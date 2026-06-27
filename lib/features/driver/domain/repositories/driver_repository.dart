@@ -4,6 +4,7 @@ import '../../data/models/daily_earnings.dart';
 import '../../data/models/earnings_summary.dart';
 import '../../data/models/driver_earnings_balance.dart';
 import '../../data/models/driver_ratings_response.dart';
+import '../../data/models/driver_payout_log.dart';
 
 abstract class DriverRepository {
   Future<ApiResult<DriverProfile>> getProfile();
@@ -39,5 +40,6 @@ abstract class DriverRepository {
   Future<ApiResult<DriverEarningsBalance>> addMoney(double amount, {String? paymentIntentId});
   Future<ApiResult<Map<String, dynamic>>> createWalletPaymentIntent(double amount);
   Future<ApiResult<DriverEarningsBalance>> withdraw(double amount);
+  Future<ApiResult<List<DriverPayoutLog>>> getWithdrawals();
   Future<ApiResult<DriverRatingsResponse>> getRatings();
 }
