@@ -294,12 +294,14 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
                 // Ride is no longer available — clear state and go back to online
                 state = null;
                 _driverStatusNotifier.goOnline();
+                _processNextRequest();
                 return false;
             }
           } catch (e) {
             if (kDebugMode) print('[RideSession] acceptRide respond fallback exception: $e');
             state = null;
             _driverStatusNotifier.goOnline();
+            _processNextRequest();
             return false;
           }
       }
@@ -307,6 +309,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
       if (kDebugMode) print('[RideSession] acceptRide EXCEPTION: $e');
       state = null;
       _driverStatusNotifier.goOnline();
+      _processNextRequest();
       return false;
     }
   }

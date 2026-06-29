@@ -14,6 +14,7 @@ import '../../../core/widgets/gozolt_logo.dart';
 import '../../auth/domain/models/auth_state.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import '../../driver/presentation/providers/driver_provider.dart';
+import '../../../core/routing/startup_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -61,10 +62,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     final storage = ref.read(secureStorageProvider);
     final hasTokens = await storage.getAccessToken() != null;
+    final hasSeenOnboarding = await storage.hasSeenOnboarding();
     
+    // Mark as initialized so GoRouter knows it can proceed to other routes
+    ref.read(startupProvider).markInitialized();
+
+    final intendedRoute = GoRouterState.of(context).uri.queryParameters['from'];
+
     if (hasTokens) {
       debugPrint('SplashScreen: Found tokens, navigating to home');
-      _navigate(RouteNames.home);
+      _navigate(intendedRoute ?? RouteNames.home);
+    } else if (hasSeenOnboarding) {
+      debugPrint('SplashScreen: Has seen onboarding, navigating to welcome');
+      _navigate(RouteNames.welcome);
     } else {
       debugPrint('SplashScreen: No tokens, navigating to onboarding');
       _navigate(RouteNames.onboarding);
@@ -98,9 +108,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   void _navigate(String route) {
     if (_navigated || !mounted) return;
-    _navigated = true;
-    
-    debugPrint('SplashScreen: Navigating to $route');
+    setState(() => _navigated = true);
+
+    // If we're going to the exact same place we currently are (e.g., splash to splash),
+    // we should go to home instead to avoid a freeze.
+    if (route == RouteNames.splash) {
+      route = RouteNames.home;
+    }
+
+    // We use context.go to ensure the route stack is replaced
     context.go(route);
   }
 
@@ -122,10 +138,13 @@ class _SplashContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Image.asset(
-      'assets/images/Gozolt_Driver_Icon.png',
-      width: 200,
-      height: 200,
+      isDark
+          ? 'assets/images/gozolt_logo_with_text.png'
+          : 'assets/images/light_gozolt_logo_with_text.png',
+      width: 350,
       fit: BoxFit.contain,
     );
   }

@@ -30,14 +30,10 @@ class AccountTabScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        slivers: [
+      body: Column(
+        children: [
           // ── Gold Header with Profile ────────────────
-          SliverToBoxAdapter(
-            child: Container(
+          Container(
               width: double.infinity,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -142,13 +138,17 @@ class AccountTabScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
 
           // ── Menu Items ─────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 // Section: Account
                 _sectionLabel(context, 'Account'),
                 _menuItem(
@@ -175,7 +175,7 @@ class AccountTabScreen extends ConsumerWidget {
                 _menuItem(
                   context,
                   icon: Icons.account_balance_wallet_outlined,
-                  label: 'My Wallet',
+                  label: 'Earnings & Payouts',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -188,7 +188,7 @@ class AccountTabScreen extends ConsumerWidget {
                 _menuItem(
                   context,
                   icon: Icons.account_balance,
-                  label: 'Payout Details',
+                  label: 'Bank Account Details',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -220,7 +220,7 @@ class AccountTabScreen extends ConsumerWidget {
                   label: 'Dark Mode',
                   value: isDark,
                   onChanged: (v) {
-                    ref.read(themeModeProvider.notifier).toggleTheme();
+                    ref.read(themeModeProvider.notifier).setThemeMode(v ? ThemeMode.dark : ThemeMode.light);
                   },
                 ),
 
@@ -309,7 +309,8 @@ class AccountTabScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ]),
+                ],
+              ),
             ),
           ),
         ],
@@ -412,14 +413,20 @@ class AccountTabScreen extends ConsumerWidget {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? (Theme.of(context).brightness == Brightness.dark ? AppColors.surfaceCard : AppColors.surfaceCardLight),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
-      ),
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onChanged(!value);
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color ?? (Theme.of(context).brightness == Brightness.dark ? AppColors.surfaceCard : AppColors.surfaceCardLight),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+        ),
       child: Row(
         children: [
           Icon(
@@ -453,6 +460,7 @@ class AccountTabScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

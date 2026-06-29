@@ -40,8 +40,8 @@ class GoOnlineButton extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         builder: (_) => SelfieVerificationScreen(
           onVerified: () {
-            if (context.mounted) {
-              showDialog(
+      if (context.mounted) {
+        showDialog(
                 context: context,
                 builder: (_) => StatusConfirmationDialog(
                   goingOnline: true,
@@ -73,7 +73,7 @@ class GoOnlineButton extends ConsumerWidget {
                   },
                 ),
               );
-            }
+      }
           },
         ),
       );

@@ -527,8 +527,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               errorMsg.toLowerCase().contains('pending approval');
           if (isAlreadyRegistered) {
             _showAlreadyRegisteredDialog();
-          } else {
-            _showError(errorMsg);
           }
         }
         return;
@@ -542,8 +540,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         if (success && mounted) {
           SnackbarUtils.showSuccess(context, 'Phone number verified!');
           notifier.setStep(1);
-        } else if (!success && mounted) {
-          _showError(ref.read(registrationProvider).errorMessage ?? 'Invalid OTP');
         }
         return;
       } else {
@@ -586,22 +582,32 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
   void _showAlreadyRegisteredDialog() {
     ref.read(registrationProvider.notifier).clearError();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline_rounded, color: Color(0xFFFFC107), size: 28),
-            SizedBox(width: 10),
-            Text('Already Registered', style: TextStyle(color: Colors.white, fontSize: 18)),
+            const Icon(Icons.info_outline_rounded, color: AppColors.primaryGold, size: 28),
+            const SizedBox(width: 10),
+            Text('Already Registered', style: TextStyle(
+              color: isDark ? Colors.white : Colors.black, 
+              fontSize: 18, 
+              fontWeight: FontWeight.bold,
+            )),
           ],
         ),
-        content: const Text(
+        content: Text(
           'You have already registered as a driver.\n\nPlease wait for your supplier to approve your account. You will receive a notification once approved.',
-          style: TextStyle(color: Colors.white70, height: 1.5),
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87, 
+            height: 1.5,
+            fontSize: 14,
+          ),
         ),
         actions: [
           TextButton(
@@ -609,7 +615,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               Navigator.pop(ctx);
               context.go(RouteNames.welcome);
             },
-            child: const Text('OK', style: TextStyle(color: Color(0xFFFFC107), fontWeight: FontWeight.bold)),
+            child: const Text('OK', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
