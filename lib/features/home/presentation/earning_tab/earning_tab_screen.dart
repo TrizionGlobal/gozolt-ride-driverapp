@@ -248,7 +248,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            'ESTIMATED EARNINGS',
+                                            'TRIP ACTIVITY',
                                             style: AppTextStyles.labelSmall.copyWith(
                                               color: AppColors.primaryGold,
                                               fontWeight: FontWeight.w800,
@@ -284,23 +284,14 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
-                                        '€ ${summary.totalEarnings.toStringAsFixed(2)}',
-                                        style: AppTextStyles.displayMedium.copyWith(
-                                          color: isDark ? AppColors.white : AppColors.textPrimaryLight,
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 32,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
                                         period == EarningsPeriod.today
-                                            ? 'Earnings gathered today'
+                                            ? 'Activity today'
                                             : period == EarningsPeriod.weekly
-                                                ? 'Earnings gathered this week'
-                                                : 'Earnings for selected range',
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
-                                          fontWeight: FontWeight.w500,
+                                                ? 'Activity this week'
+                                                : 'Activity for selected range',
+                                        style: AppTextStyles.headlineMedium.copyWith(
+                                          color: isDark ? AppColors.white : AppColors.textPrimaryLight,
+                                          fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                     ],
@@ -470,7 +461,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Earnings are settled and transferred by your Fleet Supplier every 10 days.',
+                        'Payments are calculated and sent directly to your bank account by your Supplier.',
                         style: AppTextStyles.labelSmall.copyWith(
                           color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
                           height: 1.3,
@@ -481,52 +472,7 @@ class _EarningTabScreenState extends ConsumerState<EarningTabScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-
-            // ── Bottom total bar (floating card layout) ───────────────
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    AppColors.primaryGold,
-                    Color(0xFFE5B20D),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryGold.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Pending Fleet Settlement',
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: const Color(0xFF0F1923),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                    ),
-                  ),
-                  Text(
-                    '€ ${summary.totalEarnings.toStringAsFixed(2)}',
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: const Color(0xFF0F1923),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

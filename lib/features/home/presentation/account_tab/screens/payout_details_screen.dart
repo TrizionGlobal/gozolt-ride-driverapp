@@ -242,7 +242,7 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
               const SizedBox(height: 16),
               _buildTextField('Bank Name', _payoutBankNameController),
               const SizedBox(height: 16),
-              _buildTextField('BIC/SWIFT Code', _payoutSwiftCodeController, hint: '(optional depending on bank)'),
+              _buildTextField('BIC/SWIFT Code (Optional)', _payoutSwiftCodeController, hint: 'Optional depending on bank'),
               const SizedBox(height: 32),
               
               SizedBox(
@@ -320,7 +320,7 @@ class _PayoutDetailsScreenState extends ConsumerState<PayoutDetailsScreen> {
               _buildInfoRow('Account Holder Name', _payoutAccountHolderController.text),
               _buildInfoRow('IBAN', _payoutAccountNumberController.text),
               _buildInfoRow('Bank Name', _payoutBankNameController.text),
-              _buildInfoRow('BIC/SWIFT Code', _payoutSwiftCodeController.text),
+              _buildInfoRow('BIC/SWIFT Code (Optional)', _payoutSwiftCodeController.text),
             ],
           ],
         ),

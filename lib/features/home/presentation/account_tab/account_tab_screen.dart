@@ -175,7 +175,7 @@ class AccountTabScreen extends ConsumerWidget {
                 _menuItem(
                   context,
                   icon: Icons.account_balance_wallet_outlined,
-                  label: 'My Wallet',
+                  label: 'Earnings & Payouts',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -188,7 +188,7 @@ class AccountTabScreen extends ConsumerWidget {
                 _menuItem(
                   context,
                   icon: Icons.account_balance,
-                  label: 'Payout Details',
+                  label: 'Bank Account Details',
                   onTap: () {
                     Navigator.push(
                       context,

@@ -79,6 +79,7 @@ dev_dependencies:
   riverpod_generator: ^2.4.0
   json_serializable: ^6.8.0
   freezed: ^2.4.1
+  flutter_native_splash: ^2.4.8
 
 flutter_launcher_icons:
   android: true
@@ -97,3 +98,14 @@ flutter:
   assets:
     - assets/images/
     - assets/map/
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#FFFFFF"
+  image: "assets/images/Gozolt_Driver_Splash_Icon.png"
+  image_dark: "assets/images/Gozolt_Driver_Splash_Icon.png"
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#FFFFFF"
+    image: "assets/images/Gozolt_Driver_Splash_Icon.png"
+    image_dark: "assets/images/Gozolt_Driver_Splash_Icon.png"

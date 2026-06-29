@@ -11,6 +11,8 @@ class DriverPayoutLog with _$DriverPayoutLog {
     required String supplierId,
     @Default(0) double amount,
     @Default(0) double deductions,
+    int? totalRides,
+    double? totalFare,
     String? notes,
     required DateTime createdAt,
   }) = _DriverPayoutLog;

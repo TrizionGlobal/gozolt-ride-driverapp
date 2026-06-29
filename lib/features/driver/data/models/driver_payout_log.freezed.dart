@@ -25,6 +25,8 @@ mixin _$DriverPayoutLog {
   String get supplierId => throw _privateConstructorUsedError;
   double get amount => throw _privateConstructorUsedError;
   double get deductions => throw _privateConstructorUsedError;
+  int? get totalRides => throw _privateConstructorUsedError;
+  double? get totalFare => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -46,6 +48,8 @@ abstract class $DriverPayoutLogCopyWith<$Res> {
       String supplierId,
       double amount,
       double deductions,
+      int? totalRides,
+      double? totalFare,
       String? notes,
       DateTime createdAt});
 }
@@ -68,6 +72,8 @@ class _$DriverPayoutLogCopyWithImpl<$Res, $Val extends DriverPayoutLog>
     Object? supplierId = null,
     Object? amount = null,
     Object? deductions = null,
+    Object? totalRides = freezed,
+    Object? totalFare = freezed,
     Object? notes = freezed,
     Object? createdAt = null,
   }) {
@@ -92,6 +98,14 @@ class _$DriverPayoutLogCopyWithImpl<$Res, $Val extends DriverPayoutLog>
           ? _value.deductions
           : deductions // ignore: cast_nullable_to_non_nullable
               as double,
+      totalRides: freezed == totalRides
+          ? _value.totalRides
+          : totalRides // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalFare: freezed == totalFare
+          ? _value.totalFare
+          : totalFare // ignore: cast_nullable_to_non_nullable
+              as double?,
       notes: freezed == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
@@ -118,6 +132,8 @@ abstract class _$$DriverPayoutLogImplCopyWith<$Res>
       String supplierId,
       double amount,
       double deductions,
+      int? totalRides,
+      double? totalFare,
       String? notes,
       DateTime createdAt});
 }
@@ -138,6 +154,8 @@ class __$$DriverPayoutLogImplCopyWithImpl<$Res>
     Object? supplierId = null,
     Object? amount = null,
     Object? deductions = null,
+    Object? totalRides = freezed,
+    Object? totalFare = freezed,
     Object? notes = freezed,
     Object? createdAt = null,
   }) {
@@ -162,6 +180,14 @@ class __$$DriverPayoutLogImplCopyWithImpl<$Res>
           ? _value.deductions
           : deductions // ignore: cast_nullable_to_non_nullable
               as double,
+      totalRides: freezed == totalRides
+          ? _value.totalRides
+          : totalRides // ignore: cast_nullable_to_non_nullable
+              as int?,
+      totalFare: freezed == totalFare
+          ? _value.totalFare
+          : totalFare // ignore: cast_nullable_to_non_nullable
+              as double?,
       notes: freezed == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
@@ -183,6 +209,8 @@ class _$DriverPayoutLogImpl implements _DriverPayoutLog {
       required this.supplierId,
       this.amount = 0,
       this.deductions = 0,
+      this.totalRides,
+      this.totalFare,
       this.notes,
       required this.createdAt});
 
@@ -202,13 +230,17 @@ class _$DriverPayoutLogImpl implements _DriverPayoutLog {
   @JsonKey()
   final double deductions;
   @override
+  final int? totalRides;
+  @override
+  final double? totalFare;
+  @override
   final String? notes;
   @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'DriverPayoutLog(id: $id, driverId: $driverId, supplierId: $supplierId, amount: $amount, deductions: $deductions, notes: $notes, createdAt: $createdAt)';
+    return 'DriverPayoutLog(id: $id, driverId: $driverId, supplierId: $supplierId, amount: $amount, deductions: $deductions, totalRides: $totalRides, totalFare: $totalFare, notes: $notes, createdAt: $createdAt)';
   }
 
   @override
@@ -224,6 +256,10 @@ class _$DriverPayoutLogImpl implements _DriverPayoutLog {
             (identical(other.amount, amount) || other.amount == amount) &&
             (identical(other.deductions, deductions) ||
                 other.deductions == deductions) &&
+            (identical(other.totalRides, totalRides) ||
+                other.totalRides == totalRides) &&
+            (identical(other.totalFare, totalFare) ||
+                other.totalFare == totalFare) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
@@ -232,7 +268,7 @@ class _$DriverPayoutLogImpl implements _DriverPayoutLog {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, driverId, supplierId, amount,
-      deductions, notes, createdAt);
+      deductions, totalRides, totalFare, notes, createdAt);
 
   @JsonKey(ignore: true)
   @override
@@ -256,6 +292,8 @@ abstract class _DriverPayoutLog implements DriverPayoutLog {
       required final String supplierId,
       final double amount,
       final double deductions,
+      final int? totalRides,
+      final double? totalFare,
       final String? notes,
       required final DateTime createdAt}) = _$DriverPayoutLogImpl;
 
@@ -272,6 +310,10 @@ abstract class _DriverPayoutLog implements DriverPayoutLog {
   double get amount;
   @override
   double get deductions;
+  @override
+  int? get totalRides;
+  @override
+  double? get totalFare;
   @override
   String? get notes;
   @override

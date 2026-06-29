@@ -93,26 +93,7 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'TOTAL REVENUE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.backgroundPrimary.withOpacity(0.6),
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '€ ${totalEarnings.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.backgroundPrimary,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -531,13 +512,26 @@ class _RideCard extends StatelessWidget {
                               ),
                             )
                           else if (ride.fare != null)
-                            Text(
-                              '€ ${ride.fare!.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '€ ${ride.fare!.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                                  ),
+                                ),
+                                const Text(
+                                  'Fare',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                         ],
                       ),

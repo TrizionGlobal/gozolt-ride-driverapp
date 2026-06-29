@@ -19,12 +19,28 @@ import '../../features/home/presentation/notifications/notification_screen.dart'
 import '../theme/app_colors.dart';
 import '../providers/storage_provider.dart';
 import 'route_names.dart';
+import 'startup_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final startupNotifier = ref.watch(startupProvider);
+
   return GoRouter(
     restorationScopeId: 'router',
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
+    refreshListenable: startupNotifier,
+    redirect: (context, state) {
+      final isInitialized = startupNotifier.value;
+      final isGoingToSplash = state.uri.path == RouteNames.splash;
+
+      if (!isInitialized && !isGoingToSplash) {
+        // If not initialized and trying to go somewhere else (like when OS restores app),
+        // intercept and go to splash, remembering where they wanted to go.
+        return '${RouteNames.splash}?from=${state.uri.path}';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: RouteNames.splash,
