@@ -92,7 +92,6 @@ class AuthRepositoryImpl implements AuthRepository {
       // Ignore remote logout errors so local logout always completes
     } finally {
       await _storage.clearTokens();
-      await _storage.clearOnboardingSeen();
     }
   }
 

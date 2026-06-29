@@ -104,7 +104,7 @@ class WelcomeScreen extends ConsumerWidget {
                       ),
                     ),
                     TextSpan(
-                      text: 'PRIMOOO 2025',
+                      text: 'PRIMOOO 2024',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.primaryGold,
                         fontSize: 11,
