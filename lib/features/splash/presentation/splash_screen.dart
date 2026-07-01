@@ -15,6 +15,7 @@ import '../../auth/domain/models/auth_state.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import '../../driver/presentation/providers/driver_provider.dart';
 import '../../../core/routing/startup_provider.dart';
+import '../../../core/services/app_version_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -57,16 +58,41 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Future.delayed(AppConstants.splashDuration);
     if (!mounted || _navigated) return;
 
+    // Mark as initialized so GoRouter knows it can proceed to other routes
+    ref.read(startupProvider).markInitialized();
+
+    // --- Version Check ---
+    final versionService = ref.read(appVersionServiceProvider);
+    final config = await versionService.fetchAppVersionConfig();
+    
+    if (config != null) {
+      final requiresUpdate = await versionService.isUpdateRequired(config.minimumVersion);
+      if (requiresUpdate) {
+        if (mounted && !_navigated) {
+          setState(() => _navigated = true);
+          context.go('/force-update', extra: {
+            'iosStoreUrl': config.iosStoreUrl,
+            'androidStoreUrl': config.androidStoreUrl,
+          });
+        }
+        return;
+      }
+    }
+    // ----------------------
+
     await _performAuthCheck();
     if (!mounted || _navigated) return;
 
     final storage = ref.read(secureStorageProvider);
-    final hasTokens = await storage.getAccessToken() != null;
-    final hasSeenOnboarding = await storage.hasSeenOnboarding();
+    bool hasTokens = false;
+    bool hasSeenOnboarding = false;
+    try {
+      hasTokens = await storage.getAccessToken() != null;
+      hasSeenOnboarding = await storage.hasSeenOnboarding();
+    } catch (_) {
+      await storage.clearAll();
+    }
     
-    // Mark as initialized so GoRouter knows it can proceed to other routes
-    ref.read(startupProvider).markInitialized();
-
     final intendedRoute = GoRouterState.of(context).uri.queryParameters['from'];
 
     if (hasTokens) {
@@ -144,7 +170,7 @@ class _SplashContent extends StatelessWidget {
       isDark
           ? 'assets/images/gozolt_logo_with_text.png'
           : 'assets/images/light_gozolt_logo_with_text.png',
-      width: 350,
+      width: 250,
       fit: BoxFit.contain,
     );
   }

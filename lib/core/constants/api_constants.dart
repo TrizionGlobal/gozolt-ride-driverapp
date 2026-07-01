@@ -1,13 +1,16 @@
 abstract final class ApiConstants {
-   // ── Base URL ───────────────────────────────────────────
-  static const bool useLocal = false;
+  // ── Config ──────────────────────────────────────────────
+  static const String appVersion = '/config/app-version';
+
+  // ── Base URL ───────────────────────────────────────────
+  static const bool useLocal = true;
 
   static const String baseUrl = useLocal 
-      ? 'http://localhost:4000/v1' 
+      ? 'http://127.0.0.1:4000/v1' 
       : 'https://gozolt-new-ride-backend-production.up.railway.app/v1';
 
   static const String wsUrl = useLocal
-      ? 'ws://localhost:4000'
+      ? 'ws://127.0.0.1:4000'
       : 'wss://gozolt-new-ride-backend-production.up.railway.app';
 
   

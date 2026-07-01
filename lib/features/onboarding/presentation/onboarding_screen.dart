@@ -26,12 +26,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  Future<void> _onSkipPressed() async {
+  Future<void> _completeOnboarding() async {
     await ref.read(secureStorageProvider).setOnboardingSeen();
     if (mounted) {
       context.go(RouteNames.welcome);
     }
   }
+
+  Future<void> _onSkipPressed() async {
+    await _completeOnboarding();
+  }
+
+  bool get _isLastPage => _currentPage == onboardingPages.length - 1;
 
   @override
   Widget build(BuildContext context) {
@@ -162,22 +168,51 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
 
-          // Static Page Indicator centered at bottom
+          // Bottom controls (Indicator or Get Started)
           Positioned(
             bottom: bottomPadding + 32,
             left: 0,
             right: 0,
             child: Center(
-              child: SmoothPageIndicator(
-                controller: _pageController,
-                count: onboardingPages.length,
-                effect: WormEffect(
-                  dotWidth: 10,
-                  dotHeight: 10,
-                  activeDotColor: const Color(0xFFF5C518),
-                  dotColor: isDark ? Colors.white24 : Colors.white54,
-                  spacing: 8,
-                ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _isLastPage
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _completeOnboarding,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF5C518),
+                              foregroundColor: const Color(0xFF0D1117),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Get Started',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : SmoothPageIndicator(
+                        controller: _pageController,
+                        count: onboardingPages.length,
+                        effect: WormEffect(
+                          dotWidth: 10,
+                          dotHeight: 10,
+                          activeDotColor: const Color(0xFFF5C518),
+                          dotColor: isDark ? Colors.white24 : Colors.white54,
+                          spacing: 8,
+                        ),
+                      ),
               ),
             ),
           ),

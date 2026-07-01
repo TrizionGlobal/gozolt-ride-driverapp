@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/splash/presentation/force_update_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/registration_screen.dart';
 import '../../features/auth/presentation/registration_status_screen.dart';
@@ -39,6 +40,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '${RouteNames.splash}?from=${state.uri.path}';
       }
 
+      if (!isInitialized) return null;
+
+      if (state.matchedLocation == '/force-update') {
+        return null;
+      }
+
       return null;
     },
     routes: [
@@ -46,6 +53,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: RouteNames.splash,
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/force-update',
+        name: 'forceUpdate',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>? ?? {};
+          return ForceUpdateScreen(
+            iosStoreUrl: extras['iosStoreUrl'] ?? '',
+            androidStoreUrl: extras['androidStoreUrl'] ?? '',
+          );
+        },
       ),
       GoRoute(
         path: RouteNames.welcome,
