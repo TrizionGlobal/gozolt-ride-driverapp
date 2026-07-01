@@ -3,7 +3,7 @@ abstract final class ApiConstants {
   static const String appVersion = '/config/app-version';
 
   // ── Base URL ───────────────────────────────────────────
-  static const bool useLocal = true;
+  static const bool useLocal = false;
 
   static const String baseUrl = useLocal 
       ? 'http://127.0.0.1:4000/v1' 
