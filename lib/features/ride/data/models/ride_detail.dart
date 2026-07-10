@@ -27,6 +27,8 @@ class RideDetail {
   final DateTime? completedAt;
   final List<RideStop> stops;
   final double? tipAmount;
+  final String? cancelledBy;
+  final double? cancellationFee;
 
   const RideDetail({
     required this.id,
@@ -54,6 +56,8 @@ class RideDetail {
     this.completedAt,
     this.stops = const [],
     this.tipAmount,
+    this.cancelledBy,
+    this.cancellationFee,
   });
 
   factory RideDetail.fromJson(Map<String, dynamic> json) {
@@ -92,7 +96,7 @@ class RideDetail {
       distanceKm: toDouble(json['distanceKm']) ?? toDouble(json['distance_km']),
       durationMinutes: toInt(json['durationMinutes'] ?? json['duration_minutes']),
       paymentMethod: payment?['method'] as String? ?? json['paymentMethod'] as String? ?? json['payment_method'] as String? ?? 'cash',
-      paymentStatus: payment?['status'] as String? ?? 'PENDING',
+      paymentStatus: payment?['status'] as String? ?? json['paymentStatus'] as String? ?? json['payment_status'] as String? ?? 'PENDING',
       requestedAt: _parseDate(json['requestedAt'] ?? json['requested_at']),
       acceptedAt: _parseDate(json['acceptedAt'] ?? json['accepted_at']),
       arrivedAt: _parseDate(json['arrivedAt'] ?? json['arrived_at']),
@@ -103,6 +107,13 @@ class RideDetail {
               .toList() ??
           const [],
       tipAmount: calculatedTip ?? toDouble(json['tipAmount']) ?? toDouble(json['tip_amount']),
+      cancelledBy: (json['cancellation'] as Map<String, dynamic>?)?['cancelledBy'] as String? 
+          ?? (json['cancellation'] as Map<String, dynamic>?)?['cancelled_by'] as String?
+          ?? json['cancelledBy'] as String? 
+          ?? json['cancelled_by'] as String?,
+      cancellationFee: toDouble((json['cancellation'] as Map<String, dynamic>?)?['fee']) 
+          ?? toDouble(json['cancellationFee']) 
+          ?? toDouble(json['cancellation_fee']),
     );
   }
 

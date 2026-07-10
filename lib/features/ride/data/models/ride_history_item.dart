@@ -10,6 +10,8 @@ class RideHistoryItem {
   final double? tipAmount;
   final DateTime? completedAt;
   final DateTime createdAt;
+  final String? cancelledBy;
+  final double? cancellationFee;
 
   const RideHistoryItem({
     required this.id,
@@ -21,6 +23,8 @@ class RideHistoryItem {
     this.tipAmount,
     this.completedAt,
     required this.createdAt,
+    this.cancelledBy,
+    this.cancellationFee,
   });
 
   factory RideHistoryItem.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,10 @@ class RideHistoryItem {
       calculatedTip = sum;
     }
 
+    if (json['status'] == 'CANCELLED' || json['status'] == 'cancelled') {
+      print('DEBUG RAW CANCELLED JSON: $json');
+    }
+
     return RideHistoryItem(
       id: json['id'] as String? ?? '',
       status: json['status'] as String? ?? '',
@@ -61,6 +69,13 @@ class RideHistoryItem {
       createdAt: DateTime.tryParse(
               json['createdAt'] as String? ?? json['created_at'] as String? ?? '') ??
           DateTime.now(),
+      cancelledBy: (json['cancellation'] as Map<String, dynamic>?)?['cancelledBy'] as String? 
+          ?? (json['cancellation'] as Map<String, dynamic>?)?['cancelled_by'] as String?
+          ?? json['cancelledBy'] as String? 
+          ?? json['cancelled_by'] as String?,
+      cancellationFee: toDouble((json['cancellation'] as Map<String, dynamic>?)?['fee']) 
+          ?? toDouble(json['cancellationFee']) 
+          ?? toDouble(json['cancellation_fee']),
     );
   }
 }

@@ -146,27 +146,43 @@ class RideTimelineScreen extends StatelessWidget {
       ));
     }
 
-    if (detail.completedAt != null) {
+    if (detail.status == 'CANCELLED') {
       events.add(_TimelineEvent(
-        title: 'Ride Completed',
-        description: 'The ride was completed successfully at destination',
-        dateTime: detail.completedAt!,
-        icon: Icons.done_all_rounded,
-        color: AppColors.success,
+        title: 'Ride Cancelled',
+        description: detail.cancelledBy == 'USER' 
+            ? 'The passenger cancelled the ride' 
+            : detail.cancelledBy == 'DRIVER'
+                ? 'You cancelled the ride'
+                : 'The ride was cancelled',
+        dateTime: detail.completedAt ?? DateTime.now(),
+        icon: Icons.cancel_outlined,
+        color: AppColors.error,
+      ));
+    } else {
+      if (detail.completedAt != null) {
+        events.add(_TimelineEvent(
+          title: 'Ride Completed',
+          description: 'The ride was completed successfully at destination',
+          dateTime: detail.completedAt!,
+          icon: Icons.done_all_rounded,
+          color: AppColors.success,
+        ));
+      }
+
+      // Payment status (Only for completed or non-cancelled rides)
+      final String pStatus = detail.paymentStatus.toUpperCase();
+      final isCash = detail.paymentMethod.toLowerCase() == 'cash';
+      final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
+      events.add(_TimelineEvent(
+        title: isPaid ? 'Payment Received' : 'Payment Pending',
+        description: isPaid
+            ? 'Payment of €${(detail.totalFare ?? 0).toStringAsFixed(2)} received via ${detail.paymentMethod}'
+            : 'Awaiting payment confirmation from passenger',
+        dateTime: detail.completedAt ?? DateTime.now(),
+        icon: isPaid ? Icons.account_balance_wallet_outlined : Icons.pending_actions_rounded,
+        color: isPaid ? AppColors.success : AppColors.warning,
       ));
     }
-
-    // Payment status
-    final isPaid = detail.paymentStatus.toUpperCase() == 'PAID';
-    events.add(_TimelineEvent(
-      title: isPaid ? 'Payment Received' : 'Payment Pending',
-      description: isPaid
-          ? 'Payment of €${(detail.totalFare ?? 0).toStringAsFixed(2)} received via ${detail.paymentMethod}'
-          : 'Awaiting payment confirmation from passenger',
-      dateTime: detail.completedAt ?? DateTime.now(),
-      icon: isPaid ? Icons.account_balance_wallet_outlined : Icons.pending_actions_rounded,
-      color: isPaid ? AppColors.success : AppColors.warning,
-    ));
 
     return events;
   }

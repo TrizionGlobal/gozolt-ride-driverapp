@@ -75,6 +75,9 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         _socketService = socketService,
         _ref = ref,
         super(null) {
+    // Automatically restore active ride state when the provider is initialized (e.g. after app restart)
+    checkActiveRide();
+
     _rideRequestSub = _socketService.onRideRequest.listen((socketData) async {
       if (kDebugMode) print('[RideSession] Socket ride:request:new received: $socketData');
 
@@ -159,6 +162,18 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         if (kDebugMode) print('[RideSession] Ride cancelled by user — cleared ride state');
       }
     });
+  }
+
+  /// Checks if there is an active ride for the driver on backend when the app starts
+  Future<void> checkActiveRide() async {
+    final result = await _repository.getActiveRide();
+    if (result case ApiSuccess(:final data)) {
+      state = data;
+      // If the ride was completed by the driver but payment confirmation was skipped:
+      if (data.status == RideStatus.completed) {
+        _ref.read(showCollectAmountProvider.notifier).state = true;
+      }
+    }
   }
 
   Future<void> _processNextRequest() async {
@@ -392,47 +407,70 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
 
     final paymentMethod = (ride.paymentMethod ?? 'cash').toLowerCase();
 
-    if (paymentMethod == 'card') {
-      final result = await _repository.completeRide(ride.id);
-      return switch (result) {
-        ApiSuccess(:final data) => () {
-            _ref.read(rideSummaryProvider.notifier).state = data;
-            state = ride.copyWith(status: RideStatus.completed);
-            return true;
-          }(),
-        ApiFailure() => false,
-      };
+    // For BOTH Cash and Card, we get the fare preview first
+    // so the driver can see and confirm the final amount and payment method.
+    // The user explicitly requested that the User app should instantly show the ride complete
+    // screen when the driver clicks "End Ride", so we must call completeRide immediately
+    // instead of just getting a preview.
+    final result = await _repository.completeRide(ride.id);
+    
+    if (result is ApiSuccess<RideSummary>) {
+      // Overwrite the backend's totalFare with the originally fixed fare
+      _ref.read(farePreviewProvider.notifier).state = RideSummary(
+        rideId: result.data.rideId,
+        baseFare: result.data.baseFare,
+        distanceFare: result.data.distanceFare,
+        timeFare: result.data.timeFare,
+        waitTimeFee: result.data.waitTimeFee,
+        totalFare: ride.fare ?? result.data.totalFare, // ENFORCE ORIGINAL FARE
+        driverEarnings: result.data.driverEarnings,
+        distanceKm: result.data.distanceKm,
+        durationMinutes: result.data.durationMinutes,
+        paymentMethod: result.data.paymentMethod,
+        tipAmount: result.data.tipAmount,
+        bookingFee: result.data.bookingFee,
+        surgeMultiplier: result.data.surgeMultiplier,
+      );
     } else {
-      // CASH payment method: get fare preview first
-      final result = await _repository.getFarePreview(ride.id);
-      return switch (result) {
-        ApiSuccess(:final data) => () {
-            _ref.read(farePreviewProvider.notifier).state = data;
-            _ref.read(showCollectAmountProvider.notifier).state = true;
-            // Note: We do NOT change status to completed here to prevent fraud.
-            // Status remains inProgress so that it's still inProgress in DB.
-            return true;
-          }(),
-        ApiFailure() => false,
-      };
+      // Fallback if backend completeRide fails or is unavailable.
+      _ref.read(farePreviewProvider.notifier).state = RideSummary(
+        rideId: ride.id,
+        baseFare: 0,
+        distanceFare: 0,
+        timeFare: 0,
+        totalFare: ride.fare ?? 0.0, // ENFORCE ORIGINAL FARE
+        driverEarnings: (ride.fare ?? 0.0) * 0.8, // Estimate 80% for driver
+        distanceKm: ride.distanceKm,
+        durationMinutes: ride.estimatedMinutes,
+        paymentMethod: paymentMethod,
+      );
     }
+    
+    _ref.read(showCollectAmountProvider.notifier).state = true;
+    // Note: We do NOT change status to completed here.
+    // Status remains inProgress so that it's still inProgress in DB until confirmed.
+    return true;
   }
 
-  /// Confirm cash collection and complete the ride on the backend.
-  Future<bool> confirmCashReceived() async {
+  /// Confirm payment collection (card or cash). 
+  /// The ride was already completed on the backend in endRide().
+  Future<bool> confirmPaymentAndComplete() async {
     final ride = state;
     if (ride == null) return false;
 
-    final result = await _repository.completeRide(ride.id);
-    return switch (result) {
-      ApiSuccess(:final data) => () {
-          _ref.read(rideSummaryProvider.notifier).state = data;
-          _ref.read(cashPaymentConfirmedProvider.notifier).state = true;
-          state = ride.copyWith(status: RideStatus.completed);
-          return true;
-        }(),
-      ApiFailure() => false,
-    };
+    // We no longer call _repository.completeRide(ride.id) here because
+    // we already called it instantly in endRide() so the User app could
+    // show the completed screen instantly. We just update the local UI.
+    
+    // Check if we have a summary from endRide
+    final summary = _ref.read(farePreviewProvider);
+    if (summary != null) {
+      _ref.read(rideSummaryProvider.notifier).state = summary;
+    }
+    
+    _ref.read(cashPaymentConfirmedProvider.notifier).state = true;
+    state = ride.copyWith(status: RideStatus.completed);
+    return true;
   }
 
   /// Cancel ride with a reason.

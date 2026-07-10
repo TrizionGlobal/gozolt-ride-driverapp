@@ -15,6 +15,7 @@ class RideDetailNotifier extends StateNotifier<RideDetail?> {
   RideDetailNotifier(this._repository) : super(null);
 
   Future<void> fetchRideDetail(String rideId) async {
+    state = null; // Clear previous state to show loading indicator immediately
     final result = await _repository.getRideDetail(rideId);
     if (result is ApiSuccess<RideDetail>) {
       state = result.data;

@@ -33,12 +33,23 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
     // Apply filter
     final filteredRides = _activeFilter == 'all'
         ? rides
-        : rides.where((r) => r.status == _activeFilter).toList();
+        : rides.where((r) {
+            final status = r.status.toUpperCase();
+            final cancelledBy = r.cancelledBy?.toUpperCase();
+            print('RIDE ID: ${r.id}, STATUS: ${r.status}, CANCELLED BY: ${r.cancelledBy}');
+            if (_activeFilter == 'USER_CANCELLED') {
+              return status == 'CANCELLED' && cancelledBy == 'USER';
+            }
+            if (_activeFilter == 'DRIVER_CANCELLED') {
+              return status == 'CANCELLED' && cancelledBy == 'DRIVER';
+            }
+            return status == _activeFilter;
+          }).toList();
 
     // Calculate total earnings from all completed rides (fixed)
     double totalEarnings = 0;
     for (final ride in rides) {
-      if (ride.fare != null && ride.status == 'COMPLETED') {
+      if (ride.fare != null && ride.status.toUpperCase() == 'COMPLETED') {
         totalEarnings += ride.fare!;
         totalEarnings += ride.tipAmount ?? 0;
       }
@@ -94,32 +105,49 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSummaryStat(
-                        label: 'Total Trips',
-                        value: '${rides.length}',
-                      ),
-                      Container(
-                        height: 24,
-                        width: 1,
-                        color: AppColors.backgroundPrimary.withOpacity(0.15),
-                      ),
-                      _buildSummaryStat(
-                        label: 'Completed',
-                        value: '${rides.where((r) => r.status == 'COMPLETED').length}',
-                      ),
-                      Container(
-                        height: 24,
-                        width: 1,
-                        color: AppColors.backgroundPrimary.withOpacity(0.15),
-                      ),
-                      _buildSummaryStat(
-                        label: 'Cancelled',
-                        value: '${rides.where((r) => r.status == 'CANCELLED').length}',
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildSummaryStat(
+                          label: 'Total Trips',
+                          value: '${rides.length}',
+                        ),
+                        const SizedBox(width: 15),
+                        Container(
+                          height: 24,
+                          width: 1,
+                          color: AppColors.backgroundPrimary.withOpacity(0.15),
+                        ),
+                        const SizedBox(width: 15),
+                        _buildSummaryStat(
+                          label: 'Completed',
+                          value: '${rides.where((r) => r.status.toUpperCase() == 'COMPLETED').length}',
+                        ),
+                        const SizedBox(width: 15),
+                        Container(
+                          height: 24,
+                          width: 1,
+                          color: AppColors.backgroundPrimary.withOpacity(0.15),
+                        ),
+                        const SizedBox(width: 15),
+                        _buildSummaryStat(
+                          label: 'User Cancelled',
+                          value: '${rides.where((r) => r.status.toUpperCase() == 'CANCELLED' && r.cancelledBy?.toUpperCase() == 'USER').length}',
+                        ),
+                        const SizedBox(width: 15),
+                        Container(
+                          height: 24,
+                          width: 1,
+                          color: AppColors.backgroundPrimary.withOpacity(0.15),
+                        ),
+                        const SizedBox(width: 15),
+                        _buildSummaryStat(
+                          label: 'Driver Cancelled',
+                          value: '${rides.where((r) => r.status.toUpperCase() == 'CANCELLED' && r.cancelledBy?.toUpperCase() == 'DRIVER').length}',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -128,26 +156,35 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
             // ── Filter chips ─────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                children: [
-                  _FilterChip(
-                    label: 'All',
-                    isActive: _activeFilter == 'all',
-                    onTap: () => setState(() => _activeFilter = 'all'),
-                  ),
-                  const SizedBox(width: 10),
-                  _FilterChip(
-                    label: 'Completed',
-                    isActive: _activeFilter == 'COMPLETED',
-                    onTap: () => setState(() => _activeFilter = 'COMPLETED'),
-                  ),
-                  const SizedBox(width: 10),
-                  _FilterChip(
-                    label: 'Cancelled',
-                    isActive: _activeFilter == 'CANCELLED',
-                    onTap: () => setState(() => _activeFilter = 'CANCELLED'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterChip(
+                      label: 'All',
+                      isActive: _activeFilter == 'all',
+                      onTap: () => setState(() => _activeFilter = 'all'),
+                    ),
+                    const SizedBox(width: 10),
+                    _FilterChip(
+                      label: 'Completed',
+                      isActive: _activeFilter == 'COMPLETED',
+                      onTap: () => setState(() => _activeFilter = 'COMPLETED'),
+                    ),
+                    const SizedBox(width: 10),
+                    _FilterChip(
+                      label: 'User Cancelled',
+                      isActive: _activeFilter == 'USER_CANCELLED',
+                      onTap: () => setState(() => _activeFilter = 'USER_CANCELLED'),
+                    ),
+                    const SizedBox(width: 10),
+                    _FilterChip(
+                      label: 'Driver Cancelled',
+                      isActive: _activeFilter == 'DRIVER_CANCELLED',
+                      onTap: () => setState(() => _activeFilter = 'DRIVER_CANCELLED'),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -495,16 +532,20 @@ class _RideCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                           ],
-                          if (ride.status == 'CANCELLED')
+                          if (ride.status.toUpperCase() == 'CANCELLED')
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppColors.error.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                'Cancelled',
-                                style: TextStyle(
+                              child: Text(
+                                ride.cancelledBy?.toUpperCase() == 'USER'
+                                    ? 'User Cancelled'
+                                    : ride.cancelledBy?.toUpperCase() == 'DRIVER'
+                                        ? 'Driver Cancelled'
+                                        : 'Cancelled',
+                                style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.error,

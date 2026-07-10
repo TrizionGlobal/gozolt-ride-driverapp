@@ -30,6 +30,17 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
     final detail = ref.watch(rideDetailProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final double statusBarHeight = MediaQuery.of(context).padding.top;
+    
+    double displayTotal = 0;
+    if (detail != null) {
+      if (detail.status == 'CANCELLED' && detail.cancelledBy == 'USER' && (detail.cancellationFee ?? 0) > 0) {
+        displayTotal = detail.cancellationFee!;
+      } else if (detail.status == 'CANCELLED') {
+        displayTotal = 0;
+      } else {
+        displayTotal = (detail.totalFare ?? 0) + (detail.tipAmount ?? 0);
+      }
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -92,7 +103,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                          '€ ${displayTotal.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 38,
                             fontWeight: FontWeight.w900,
@@ -145,63 +156,18 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                           _AddressesCard(detail: detail),
                           const SizedBox(height: 16),
 
-                          // Payment Details
-                          _PaymentDetailsCard(detail: detail),
-                          const SizedBox(height: 16),
+                          if (detail.status == 'CANCELLED')
+                            _CancellationDetailsCard(detail: detail)
+                          else ...[
+                            // Payment Details
+                            _PaymentDetailsCard(detail: detail),
+                            const SizedBox(height: 16),
 
-                          // Invoice Earning Card
-                          _EarningCard(detail: detail),
+                            // Invoice Earning Card
+                            _EarningCard(detail: detail),
+                          ],
                         ],
                       ),
-                    ),
-                  ),
-
-                  // ── Sub Total Bar ─────────────────────────────
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      16,
-                      20,
-                      16 + MediaQuery.of(context).padding.bottom,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.surfaceDark : Colors.white,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                      boxShadow: isDark
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, -4),
-                              ),
-                            ],
-                      border: Border.all(
-                        color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Sub Total',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
-                          ),
-                        ),
-                        Text(
-                          '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ],
@@ -303,8 +269,9 @@ class _AddressesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dateStr = detail.startedAt != null
-        ? DateFormat('dd MMM yyyy, hh:mm a').format(detail.startedAt!)
+    final dateToUse = detail.startedAt ?? detail.requestedAt;
+    final dateStr = dateToUse != null
+        ? DateFormat('dd MMM yyyy, hh:mm a').format(dateToUse)
         : '';
 
     return Container(
@@ -462,7 +429,8 @@ class _PaymentDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isCash = detail.paymentMethod.toLowerCase() == 'cash';
-    final isPaid = detail.paymentStatus.toUpperCase() == 'PAID';
+    final String pStatus = detail.paymentStatus.toUpperCase();
+    final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
     final methodColor = isCash ? const Color(0xFF4CAF50) : const Color(0xFF2196F3);
     final methodIcon = isCash ? Icons.money : Icons.credit_card;
 
@@ -572,6 +540,28 @@ class _PaymentDetailsCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Price',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                ),
+              ),
+              Text(
+                '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -586,6 +576,16 @@ class _EarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasBaseFare = detail.baseFare != null && detail.baseFare! > 0;
+    final bool hasDistanceFare = detail.distanceFare != null && detail.distanceFare! > 0;
+    final bool hasWaitTimeFee = detail.waitTimeFee != null && detail.waitTimeFee! > 0;
+    final bool hasTip = detail.tipAmount != null && detail.tipAmount! > 0;
+
+    // If there is no breakdown to show, hide the entire card to prevent it from being empty.
+    if (!hasBaseFare && !hasDistanceFare && !hasWaitTimeFee && !hasTip) {
+      return const SizedBox.shrink();
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
@@ -618,15 +618,19 @@ class _EarningCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _FareRow('Base Price', detail.baseFare),
-          const SizedBox(height: 10),
-          _FareRow('Distance Price', detail.distanceFare),
-          if (detail.waitTimeFee != null && detail.waitTimeFee! > 0) ...[
-            const SizedBox(height: 10),
-            _FareRow('Wait Time Fee', detail.waitTimeFee),
+          if (hasBaseFare) ...[
+            _FareRow('Base Price', detail.baseFare),
+            if (hasDistanceFare || hasWaitTimeFee || hasTip) const SizedBox(height: 10),
           ],
-          if (detail.tipAmount != null && detail.tipAmount! > 0) ...[
-            const SizedBox(height: 10),
+          if (hasDistanceFare) ...[
+            _FareRow('Distance Price', detail.distanceFare),
+            if (hasWaitTimeFee || hasTip) const SizedBox(height: 10),
+          ],
+          if (hasWaitTimeFee) ...[
+            _FareRow('Wait Time Fee', detail.waitTimeFee),
+            if (hasTip) const SizedBox(height: 10),
+          ],
+          if (hasTip) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -655,31 +659,7 @@ class _EarningCard extends StatelessWidget {
               ],
             ),
           ],
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total Price',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                ),
-              ),
-              Text(
-                '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.primaryGold,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
+          // The Total Price row has been removed from here as requested.
         ],
       ),
     );
@@ -713,6 +693,115 @@ class _FareRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Cancellation Details Card ──────────────────────────────────────────────────
+
+class _CancellationDetailsCard extends StatelessWidget {
+  final RideDetail detail;
+  const _CancellationDetailsCard({required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final bool isUserCancelled = detail.cancelledBy == 'USER';
+    final bool hasPenalty = isUserCancelled && (detail.cancellationFee ?? 0) > 0;
+
+    String title = 'Trip Cancelled';
+    String message = 'This trip was cancelled.';
+    
+    if (isUserCancelled) {
+      title = 'User Cancelled';
+      if (hasPenalty) {
+        message = 'The rider cancelled the trip after the free cancellation window. A cancellation penalty was charged and credited directly to the Gozolt app.';
+      } else {
+        message = 'The rider cancelled the trip before the cancellation window expired. No penalty fee was charged.';
+      }
+    } else if (detail.cancelledBy == 'DRIVER') {
+      title = 'Driver Cancelled';
+      message = 'You cancelled this trip.';
+    } else {
+      title = 'Trip Cancelled';
+      message = 'This trip was cancelled.';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.cancel_outlined, color: AppColors.error, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+              height: 1.4,
+            ),
+          ),
+          if (hasPenalty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Divider(height: 1),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Cancellation Penalty',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                  ),
+                ),
+                Text(
+                  '€ ${detail.cancellationFee!.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.primaryGold,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

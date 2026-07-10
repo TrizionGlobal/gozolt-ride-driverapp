@@ -73,6 +73,15 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark ? AppColors.backgroundSecondary : Colors.white;
     final textCol = isDark ? AppColors.white : AppColors.textPrimaryLight;
+    
+    final isCard = summary.paymentMethod.toLowerCase() == 'card';
+    final headerTitle = isCompleted 
+        ? 'Payment Confirmed' 
+        : (isCard ? 'Confirm Payment' : 'Collect Cash');
+        
+    final statusTitle = isCompleted
+        ? '✓ Payment Confirmed'
+        : (isCard ? 'Confirm Card Payment' : 'Collect Cash From Passenger');
 
     return Container(
       width: double.infinity,
@@ -89,19 +98,9 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (!isCompleted)
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      color: textCol,
-                      iconSize: 20,
-                      onPressed: () => ref
-                          .read(rideSessionProvider.notifier)
-                          .dismissCollectAmount(),
-                    )
-                  else
-                    const SizedBox(width: 40),
+                  const SizedBox(width: 40),
                   Text(
-                    isCompleted ? 'Payment Confirmed' : 'Collect Cash',
+                    headerTitle,
                     style: AppTextStyles.titleLarge.copyWith(
                       color: textCol,
                       fontWeight: FontWeight.w800,
@@ -119,12 +118,12 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                 decoration: BoxDecoration(
                   color: isCompleted
                       ? AppColors.success.withOpacity(0.15)
-                      : AppColors.warning.withOpacity(0.15),
+                      : (isCard ? AppColors.info.withOpacity(0.15) : AppColors.warning.withOpacity(0.15)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isCompleted
                         ? AppColors.success.withOpacity(0.3)
-                        : AppColors.warning.withOpacity(0.3),
+                        : (isCard ? AppColors.info.withOpacity(0.3) : AppColors.warning.withOpacity(0.3)),
                     width: 1.5,
                   ),
                 ),
@@ -134,18 +133,16 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                     Icon(
                       isCompleted
                           ? Icons.check_circle_rounded
-                          : Icons.payments_rounded,
-                      color: isCompleted ? AppColors.success : AppColors.warning,
+                          : (isCard ? Icons.credit_card : Icons.payments_rounded),
+                      color: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.warning),
                       size: 24,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        isCompleted
-                            ? '✓ Payment Confirmed'
-                            : 'Collect Cash From Passenger',
+                        statusTitle,
                         style: AppTextStyles.titleMedium.copyWith(
-                          color: isCompleted ? AppColors.success : AppColors.warning,
+                          color: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.warning),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -451,7 +448,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 } else {
                                   await ref
                                       .read(rideSessionProvider.notifier)
-                                      .confirmCashReceived();
+                                      .confirmPaymentAndComplete();
                                 }
                               } finally {
                                 if (mounted) {
@@ -460,8 +457,8 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isCompleted ? AppColors.success : AppColors.primaryGold,
-                        foregroundColor: isCompleted ? Colors.white : AppColors.backgroundDark,
+                        backgroundColor: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.primaryGold),
+                        foregroundColor: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(22),
                         ),
@@ -474,7 +471,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.5,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  isCompleted ? Colors.white : AppColors.backgroundDark,
+                                  isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
                                 ),
                               ),
                             )
@@ -484,15 +481,15 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 Icon(
                                   isCompleted
                                       ? Icons.done_all_rounded
-                                      : Icons.check_circle_rounded,
-                                  color: isCompleted ? Colors.white : AppColors.backgroundDark,
+                                      : (isCard ? Icons.credit_card : Icons.check_circle_rounded),
+                                  color: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
                                   size: 22,
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  isCompleted ? 'Finish Ride' : 'Cash Received',
+                                  isCompleted ? 'Finish Ride' : (isCard ? 'Payment completed' : 'Cash collected'),
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: isCompleted ? Colors.white : AppColors.backgroundDark,
+                                    color: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
                                   ),
