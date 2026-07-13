@@ -7,6 +7,7 @@ import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/providers/storage_provider.dart';
 import '../../../../driver/presentation/providers/driver_status_provider.dart';
 import 'selfie_verification_screen.dart';
+import 'package:geolocator/geolocator.dart';
 import 'status_confirmation_dialog.dart';
 
 class GoOnlineButton extends ConsumerWidget {
@@ -31,9 +32,33 @@ class GoOnlineButton extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     required bool goingOnline,
-  }) {
+  }) async {
     if (goingOnline) {
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 5),
+          ),
+        );
+        if (position.isMocked) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Fake location detected! Please disable GPS spoofing to go online.'),
+                backgroundColor: const Color(0xFFE53935),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          return;
+        }
+      } catch (e) {
+        debugPrint('Error checking location before online: $e');
+      }
+
       // Show selfie verification first, then confirmation dialog
+      if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,

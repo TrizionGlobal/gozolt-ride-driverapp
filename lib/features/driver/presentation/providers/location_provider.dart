@@ -92,6 +92,10 @@ class LocationUpdateService {
           accuracy: LocationAccuracy.high,
         ),
       );
+      if (position.isMocked) {
+        debugPrint('Fake location detected during tracking. Skipping backend update.');
+        return;
+      }
       await _repository.updateLocation(
         lat: position.latitude,
         lng: position.longitude,
