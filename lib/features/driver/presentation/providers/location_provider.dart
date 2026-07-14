@@ -47,12 +47,17 @@ final locationStreamProvider = StreamProvider<Position>((ref) {
   );
 });
 
+final driverPositionProvider = StateProvider<Position?>((ref) => null);
+
 /// Sends location updates to backend every 3 seconds when driver is online.
 final locationUpdateProvider = Provider<LocationUpdateService>((ref) {
   final repository = ref.watch(driverRepositoryProvider);
   final socketService = ref.watch(socketServiceProvider);
   final driverStatus = ref.watch(driverStatusProvider);
-  final service = LocationUpdateService(repository, socketService);
+  
+  final service = LocationUpdateService(repository, socketService, (pos) {
+    ref.read(driverPositionProvider.notifier).state = pos;
+  });
 
   if (driverStatus.isOnline || driverStatus.isOnRide) {
     service.startTracking();
@@ -68,14 +73,18 @@ final locationUpdateProvider = Provider<LocationUpdateService>((ref) {
 class LocationUpdateService {
   final dynamic _repository;
   final SocketService _socketService;
+  final void Function(Position) _onPositionUpdate;
   Timer? _timer;
   bool _isTracking = false;
+  Position? _lastPosition;
+  double _lastHeading = 0.0;
 
-  LocationUpdateService(this._repository, this._socketService);
+  LocationUpdateService(this._repository, this._socketService, this._onPositionUpdate);
 
   void startTracking() {
     if (_isTracking) return;
     _isTracking = true;
+    _sendLocation(); // Send immediately
     _timer = Timer.periodic(const Duration(seconds: 3), (_) => _sendLocation());
   }
 
@@ -83,6 +92,7 @@ class LocationUpdateService {
     _isTracking = false;
     _timer?.cancel();
     _timer = null;
+    _lastPosition = null;
   }
 
   Future<void> _sendLocation() async {
@@ -96,20 +106,64 @@ class LocationUpdateService {
         debugPrint('Fake location detected during tracking. Skipping backend update.');
         return;
       }
-      await _repository.updateLocation(
-        lat: position.latitude,
-        lng: position.longitude,
-        heading: position.heading,
+
+      double currentHeading = position.heading;
+
+      // If heading is invalid (often 0.0 on emulators) or we have moved, calculate bearing manually
+      if (_lastPosition != null) {
+        final distance = Geolocator.distanceBetween(
+          _lastPosition!.latitude, _lastPosition!.longitude,
+          position.latitude, position.longitude,
+        );
+
+        if (distance > 1.0) {
+          // Calculate heading from last position to new position
+          currentHeading = Geolocator.bearingBetween(
+            _lastPosition!.latitude, _lastPosition!.longitude,
+            position.latitude, position.longitude,
+          );
+          if (currentHeading < 0) currentHeading += 360.0;
+          _lastHeading = currentHeading;
+        } else {
+          currentHeading = _lastHeading;
+        }
+      } else {
+        _lastHeading = currentHeading;
+      }
+
+      final updatedPosition = Position(
+        longitude: position.longitude,
+        latitude: position.latitude,
+        timestamp: position.timestamp,
+        accuracy: position.accuracy,
+        altitude: position.altitude,
+        altitudeAccuracy: position.altitudeAccuracy,
+        heading: currentHeading,
+        headingAccuracy: position.headingAccuracy,
         speed: position.speed,
+        speedAccuracy: position.speedAccuracy,
+        floor: position.floor,
+        isMocked: position.isMocked,
+      );
+
+      _lastPosition = updatedPosition;
+      
+      _onPositionUpdate(updatedPosition);
+      
+      await _repository.updateLocation(
+        lat: updatedPosition.latitude,
+        lng: updatedPosition.longitude,
+        heading: updatedPosition.heading,
+        speed: updatedPosition.speed,
       );
       // Also emit via WebSocket for real-time updates
       _socketService.emitLocationUpdate(
-        position.latitude,
-        position.longitude,
-        position.heading,
-        position.speed,
+        updatedPosition.latitude,
+        updatedPosition.longitude,
+        updatedPosition.heading,
+        updatedPosition.speed,
       );
-      if (kDebugMode) print('[Location] Sent: ${position.latitude}, ${position.longitude}');
+      if (kDebugMode) print('[Location] Sent: ${updatedPosition.latitude}, ${updatedPosition.longitude} Heading: ${updatedPosition.heading}');
     } catch (e) {
       if (kDebugMode) print('[Location] Update failed: $e');
     }

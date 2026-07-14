@@ -51,14 +51,11 @@ class CustomMarkerPainter {
 
   /// Load and resize the top-down car icon asset
   static Future<BitmapDescriptor> carAssetMarker() async {
-    final ByteData data = await rootBundle.load('assets/images/map_navigator_icon.png');
-    final ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: 50,
+    return await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(45, 45)),
+      'assets/images/map_navigator_icon.png',
+      width: 45,
     );
-    final ui.FrameInfo fi = await codec.getNextFrame();
-    final bytes = (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
-    return BitmapDescriptor.bytes(bytes);
   }
 
   /// Top-down 2D car icon (Uber-style) — for driver location

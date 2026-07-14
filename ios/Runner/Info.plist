@@ -75,5 +75,7 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>io.flutter.embedded_views_preview</key>
+		<true/>
 	</dict>
 </plist>

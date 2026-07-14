@@ -8,7 +8,7 @@ import GoogleMaps
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Use the working Google Maps API key from the User App
+    // Use the explicit Google Maps API key for the Driver App
     GMSServices.provideAPIKey("AIzaSyAa722axSSj5ggXMJ-wi8UG29VbwxmppVA")
     
     GeneratedPluginRegistrant.register(with: self)

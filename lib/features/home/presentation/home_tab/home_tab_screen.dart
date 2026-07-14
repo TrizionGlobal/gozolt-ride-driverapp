@@ -112,32 +112,38 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    _goToCurrentLocation();
+    _goToCurrentLocation(animate: false);
   }
 
-  Future<void> _goToCurrentLocation() async {
+  Future<void> _goToCurrentLocation({bool animate = true}) async {
     try {
       // 1. Try to use the stream provider's latest value
       final streamPos = ref.read(locationStreamProvider).valueOrNull;
       if (streamPos != null) {
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(streamPos.latitude, streamPos.longitude),
-            _defaultZoom,
-          ),
+        final update = CameraUpdate.newLatLngZoom(
+          LatLng(streamPos.latitude, streamPos.longitude),
+          _defaultZoom,
         );
+        if (animate) {
+          _mapController?.animateCamera(update);
+        } else {
+          _mapController?.moveCamera(update);
+        }
         return;
       }
 
       // 2. Try to use the current position provider's cached value
       final cachedPos = ref.read(currentPositionProvider).valueOrNull;
       if (cachedPos != null) {
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(cachedPos.latitude, cachedPos.longitude),
-            _defaultZoom,
-          ),
+        final update = CameraUpdate.newLatLngZoom(
+          LatLng(cachedPos.latitude, cachedPos.longitude),
+          _defaultZoom,
         );
+        if (animate) {
+          _mapController?.animateCamera(update);
+        } else {
+          _mapController?.moveCamera(update);
+        }
         return;
       }
 
@@ -181,12 +187,16 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
           timeLimit: Duration(seconds: 10),
         ),
       );
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(position.latitude, position.longitude),
-          _defaultZoom,
-        ),
+      
+      final update = CameraUpdate.newLatLngZoom(
+        LatLng(position.latitude, position.longitude),
+        _defaultZoom,
       );
+      if (animate) {
+        _mapController?.animateCamera(update);
+      } else {
+        _mapController?.moveCamera(update);
+      }
     } catch (e) {
       debugPrint('Error getting current location: $e');
       // Intentionally not showing a snackbar here as it can be noisy on simulators
@@ -243,10 +253,8 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   Set<Marker> _buildMarkers() {
     final markers = <Marker>{};
 
-    // Driver marker — use stream position, fallback to current position provider
-    final streamPosition = ref.watch(locationStreamProvider).valueOrNull;
-    final fallbackPosition = ref.watch(currentPositionProvider).valueOrNull;
-    final position = streamPosition ?? fallbackPosition;
+    // Driver marker — use constant state provider updated by timer
+    final position = ref.watch(driverPositionProvider);
     if (position != null) {
       markers.add(
         Marker(
@@ -256,6 +264,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
               BitmapDescriptor.hueYellow),
           anchor: const Offset(0.5, 0.5),
           rotation: position.heading,
+          flat: true,
         ),
       );
     }
@@ -334,8 +343,9 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
   /// Get the driver's current LatLng or null (one-shot read for callbacks).
   LatLng? _driverLatLng() {
-    final p = ref.read(locationStreamProvider).valueOrNull;
-    return p != null ? LatLng(p.latitude, p.longitude) : null;
+    final pos = ref.read(driverPositionProvider);
+    if (pos == null) return null;
+    return LatLng(pos.latitude, pos.longitude);
   }
 
   Future<void> _fetchDirectionsRoute(LatLng origin, LatLng destination, {required bool isPickupRoute}) async {
@@ -587,20 +597,22 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       body: Stack(
         children: [
           // Full-screen Google Map
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _getInitialTarget(),
-              zoom: _defaultZoom,
+          Positioned.fill(
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _getInitialTarget(),
+                zoom: _defaultZoom,
+              ),
+              style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              compassEnabled: false,
+              mapToolbarEnabled: false,
+              markers: _buildMarkers(),
+              polylines: _buildPolylines(),
             ),
-            style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
-            myLocationEnabled: false,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            compassEnabled: false,
-            mapToolbarEnabled: false,
-            markers: _buildMarkers(),
-            polylines: _buildPolylines(),
           ),
 
           // Top bar overlay (hidden during ride)

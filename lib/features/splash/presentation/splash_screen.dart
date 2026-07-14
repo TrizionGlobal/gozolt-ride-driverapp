@@ -95,15 +95,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     
     final intendedRoute = GoRouterState.of(context).uri.queryParameters['from'];
 
+    final unauthRoutes = [
+      RouteNames.welcome,
+      RouteNames.login,
+      RouteNames.register,
+      RouteNames.otp,
+      RouteNames.registrationStatus,
+      RouteNames.forgotPassword,
+      RouteNames.forgotPasswordOtp,
+      RouteNames.resetPassword,
+      RouteNames.resetSuccess,
+    ];
+
     if (hasTokens) {
       debugPrint('SplashScreen: Found tokens, navigating to home');
       _navigate(intendedRoute ?? RouteNames.home);
-    } else if (hasSeenOnboarding) {
-      debugPrint('SplashScreen: Has seen onboarding, navigating to welcome');
-      _navigate(RouteNames.welcome);
     } else {
-      debugPrint('SplashScreen: No tokens, navigating to onboarding');
-      _navigate(RouteNames.onboarding);
+      if (intendedRoute != null && unauthRoutes.contains(intendedRoute)) {
+        debugPrint('SplashScreen: Navigating to intended unauth route: $intendedRoute');
+        _navigate(intendedRoute);
+      } else if (hasSeenOnboarding) {
+        debugPrint('SplashScreen: Has seen onboarding, navigating to welcome');
+        _navigate(RouteNames.welcome);
+      } else {
+        debugPrint('SplashScreen: No tokens, navigating to onboarding');
+        _navigate(RouteNames.onboarding);
+      }
     }
   }
 

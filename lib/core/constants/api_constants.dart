@@ -6,11 +6,11 @@ abstract final class ApiConstants {
   static const bool useLocal = false;
 
   static const String baseUrl = useLocal 
-      ? 'http://127.0.0.1:4000/v1' 
+      ? 'http://192.168.1.2:4000/v1' 
       : 'https://gozolt-new-ride-backend-production.up.railway.app/v1';
 
   static const String wsUrl = useLocal
-      ? 'ws://127.0.0.1:4000'
+      ? 'ws://192.168.1.2:4000'
       : 'wss://gozolt-new-ride-backend-production.up.railway.app';
 
   
