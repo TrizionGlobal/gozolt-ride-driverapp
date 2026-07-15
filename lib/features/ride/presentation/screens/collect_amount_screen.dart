@@ -233,6 +233,23 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                 isDark: isDark,
                               ),
                             ],
+                            Builder(
+                              builder: (context) {
+                                final subtotal = summary.baseFare + summary.distanceFare + summary.timeFare + summary.waitTimeFee + summary.bookingFee;
+                                final minFareAdjustment = summary.totalFare - subtotal;
+                                if (minFareAdjustment > 0.01) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: _FareBreakdownRow(
+                                      label: 'Minimum Fare Adj.',
+                                      amount: minFareAdjustment,
+                                      isDark: isDark,
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
                             if (summary.tipAmount > 0) ...[
                               const SizedBox(height: 12),
                               _FareBreakdownRow(

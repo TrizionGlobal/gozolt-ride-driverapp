@@ -163,6 +163,16 @@ class _RideSummarySheetState extends ConsumerState<RideSummarySheet> {
             _FareRow(label: 'Wait Time Fee', amount: summary.waitTimeFee),
           if (summary.bookingFee > 0)
             _FareRow(label: 'Booking Fee', amount: summary.bookingFee),
+          Builder(
+            builder: (context) {
+              final subtotal = summary.baseFare + summary.distanceFare + summary.timeFare + summary.waitTimeFee + summary.bookingFee;
+              final minFareAdjustment = summary.totalFare - subtotal;
+              if (minFareAdjustment > 0.01) {
+                return _FareRow(label: 'Minimum Fare Adj.', amount: minFareAdjustment);
+              }
+              return const SizedBox.shrink();
+            },
+          ),
           if (summary.surgeMultiplier > 1.0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
