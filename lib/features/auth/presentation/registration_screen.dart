@@ -196,7 +196,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 subtitle: const Text('Capture document scan using device camera', style: TextStyle(fontSize: 12)),
                 onTap: () async {
                   Navigator.pop(context);
-                  final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+                  final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 400, maxHeight: 400, imageQuality: 50);
                   if (photo != null) onPicked(photo.path);
                 },
               ),
@@ -213,7 +213,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 subtitle: const Text('Select a pre-existing photo or scan', style: TextStyle(fontSize: 12)),
                 onTap: () async {
                   Navigator.pop(context);
-                  final XFile? photo = await _picker.pickImage(source: ImageSource.gallery);
+                  final XFile? photo = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 400, maxHeight: 400, imageQuality: 50);
                   if (photo != null) onPicked(photo.path);
                 },
               ),

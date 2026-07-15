@@ -677,7 +677,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: source);
+    final image = await picker.pickImage(source: source, maxWidth: 400, maxHeight: 400, imageQuality: 50);
     if (image != null) {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: image.path,

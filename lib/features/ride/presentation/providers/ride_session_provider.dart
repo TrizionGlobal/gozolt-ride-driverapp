@@ -179,13 +179,12 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
   Future<void> _processNextRequest() async {
     if (_requestQueue.isEmpty) return;
     
-    // Process the first request in the queue
-    final socketData = _requestQueue.first;
+    // Pop the first request from the queue
+    final socketData = _requestQueue.removeAt(0);
 
     final rideId = socketData['rideId'] as String? ?? socketData['ride_id'] as String? ?? socketData['id'] as String?;
     if (rideId == null) {
       if (kDebugMode) print('[RideSession] ERROR: No rideId in socket data');
-      _requestQueue.removeAt(0);
       _processNextRequest();
       return;
     }
@@ -202,6 +201,11 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
       final result = await _repository.getRideDetails(rideId);
       switch (result) {
         case ApiSuccess(:final data):
+          if (data.status != RideStatus.requested) {
+            if (kDebugMode) print('[RideSession] Ride details fetched but status is ${data.status} (skipping): ${data.id}');
+            _processNextRequest();
+            return;
+          }
           if (kDebugMode) print('[RideSession] Ride details fetched OK: ${data.id}, pickup=${data.pickupAddress}, status=${data.status}');
           _showRideRequest(data, timeoutSeconds);
           _playContinuousAlert();
@@ -565,8 +569,6 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     _ref.read(cashPaymentConfirmedProvider.notifier).state = false;
     _ref.read(showCollectAmountProvider.notifier).state = false;
     _driverStatusNotifier.goOnline();
-    // Reconnect socket to ensure driver is visible for new ride requests
-    _socketService.reconnect();
     // Refresh the today-earnings pill on the home screen
     _ref.read(todayEarningsProvider.notifier).fetchTodayEarnings();
     _processNextRequest();

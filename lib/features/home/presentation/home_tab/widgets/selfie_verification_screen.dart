@@ -27,9 +27,9 @@ class _SelfieVerificationScreenState extends ConsumerState<SelfieVerificationScr
       final image = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 80,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 50,
       );
       if (image != null && mounted) {
         setState(() => _capturedImage = image);
