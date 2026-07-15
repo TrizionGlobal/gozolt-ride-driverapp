@@ -266,6 +266,18 @@ class DriverRemoteDataSource {
     }
   }
 
+  Future<DriverEarningsBalance> withdrawTips(double amount) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConstants.driverMe}/wallet/withdraw-tips',
+        data: {'amount': amount},
+      );
+      return DriverEarningsBalance.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<List<DriverPayoutLog>> getWithdrawals() async {
     try {
       final response = await _dio.get('${ApiConstants.driverMe}/wallet/withdrawals');

@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/chat_message.dart';
 import '../providers/chat_provider.dart';
+import '../providers/ride_session_provider.dart';
 
 const _quickMessages = [
   'I am on my way',
@@ -58,6 +59,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider);
+    final avatarUrl = ref.watch(rideSessionProvider)?.rider.avatarUrl;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -79,12 +81,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 border: Border.all(
                   color: AppColors.primaryGold.withOpacity(0.3),
                 ),
+                image: avatarUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(avatarUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: Icon(
-                Icons.person_rounded,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-                size: 18,
-              ),
+              child: avatarUrl == null
+                  ? Icon(
+                      Icons.person_rounded,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      size: 18,
+                    )
+                  : null,
             ),
             const SizedBox(width: 10),
             Text(
@@ -107,14 +117,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.chat_bubble_rounded,
+                          Icons.chat_bubble_outline_rounded,
                           size: 48,
-                          color: AppColors.textMuted.withOpacity(0.3),
+                          color: AppColors.textMuted.withOpacity(0.4),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         Text(
                           'No messages yet',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: AppTextStyles.titleMedium.copyWith(
                             color: AppColors.textMuted,
                           ),
                         ),
@@ -134,7 +144,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         horizontal: 16, vertical: 12),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
-                      return _ChatBubble(message: messages[index]);
+                      return _ChatBubble(message: messages[index], avatarUrl: avatarUrl);
                     },
                   ),
           ),
@@ -258,26 +268,52 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
 class _ChatBubble extends StatelessWidget {
   final ChatMessage message;
+  final String? avatarUrl;
 
-  const _ChatBubble({required this.message});
+  const _ChatBubble({required this.message, this.avatarUrl});
 
   @override
   Widget build(BuildContext context) {
     final isDriver = message.isDriver;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Align(
-        alignment: isDriver ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.7,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: isDriver
-                ? AppColors.primaryGold.withOpacity(0.2)
-                : Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.only(
+      child: Row(
+        mainAxisAlignment:
+            isDriver ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isDriver) ...[
+            // Rider avatar
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDark ? AppColors.surfaceCard : Colors.grey[200],
+                border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.grey[800]!),
+                image: avatarUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(avatarUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: avatarUrl == null
+                  ? Icon(Icons.person, size: 16, color: isDark ? AppColors.textMuted : Colors.grey[600])
+                  : null,
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDriver
+                    ? AppColors.primaryGold.withOpacity(0.2)
+                    : Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
               topRight: const Radius.circular(16),
               bottomLeft: Radius.circular(isDriver ? 16 : 4),
@@ -308,6 +344,8 @@ class _ChatBubble extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      ],
       ),
     );
   }

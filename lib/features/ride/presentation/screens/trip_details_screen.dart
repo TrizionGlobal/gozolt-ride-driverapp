@@ -38,7 +38,7 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
       } else if (detail.status == 'CANCELLED') {
         displayTotal = 0;
       } else {
-        displayTotal = (detail.totalFare ?? 0) + (detail.tipAmount ?? 0);
+        displayTotal = (detail.totalFare ?? 0);
       }
     }
 
@@ -109,22 +109,6 @@ class _TripDetailsScreenState extends ConsumerState<TripDetailsScreen> {
                             fontWeight: FontWeight.w900,
                             color: AppColors.backgroundPrimary,
                             height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.backgroundPrimary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Ride ID: ${detail.id.length > 8 ? detail.id.substring(0, 8) : detail.id}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.backgroundPrimary.withOpacity(0.7),
-                            ),
                           ),
                         ),
                       ],
@@ -430,7 +414,7 @@ class _PaymentDetailsCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isCash = detail.paymentMethod.toLowerCase() == 'cash';
     final String pStatus = detail.paymentStatus.toUpperCase();
-    final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
+    final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || pStatus == 'AUTHORIZED' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
     final methodColor = isCash ? const Color(0xFF4CAF50) : const Color(0xFF2196F3);
     final methodIcon = isCash ? Icons.money : Icons.credit_card;
 
@@ -553,7 +537,7 @@ class _PaymentDetailsCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '€ ${((detail.totalFare ?? 0) + (detail.tipAmount ?? 0)).toStringAsFixed(2)}',
+                '€ ${(detail.totalFare ?? 0).toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -576,13 +560,10 @@ class _EarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasBaseFare = detail.baseFare != null && detail.baseFare! > 0;
-    final bool hasDistanceFare = detail.distanceFare != null && detail.distanceFare! > 0;
-    final bool hasWaitTimeFee = detail.waitTimeFee != null && detail.waitTimeFee! > 0;
     final bool hasTip = detail.tipAmount != null && detail.tipAmount! > 0;
 
-    // If there is no breakdown to show, hide the entire card to prevent it from being empty.
-    if (!hasBaseFare && !hasDistanceFare && !hasWaitTimeFee && !hasTip) {
+    // If there is no tip, hide the entire card.
+    if (!hasTip) {
       return const SizedBox.shrink();
     }
 
@@ -618,48 +599,33 @@ class _EarningCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (hasBaseFare) ...[
-            _FareRow('Base Price', detail.baseFare),
-            if (hasDistanceFare || hasWaitTimeFee || hasTip) const SizedBox(height: 10),
-          ],
-          if (hasDistanceFare) ...[
-            _FareRow('Distance Price', detail.distanceFare),
-            if (hasWaitTimeFee || hasTip) const SizedBox(height: 10),
-          ],
-          if (hasWaitTimeFee) ...[
-            _FareRow('Wait Time Fee', detail.waitTimeFee),
-            if (hasTip) const SizedBox(height: 10),
-          ],
-          if (hasTip) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.volunteer_activism_rounded,
-                        color: Color(0xFF4CAF50), size: 14),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Tip',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
-                      ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.volunteer_activism_rounded,
+                      color: Color(0xFF4CAF50), size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tip',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
                     ),
-                  ],
-                ),
-                Text(
-                  '€ ${detail.tipAmount!.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF4CAF50),
-                    fontWeight: FontWeight.bold,
                   ),
+                ],
+              ),
+              Text(
+                '€ ${detail.tipAmount!.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF4CAF50),
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-          ],
-          // The Total Price row has been removed from here as requested.
+              ),
+            ],
+          ),
         ],
       ),
     );

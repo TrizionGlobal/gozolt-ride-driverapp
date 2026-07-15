@@ -15,6 +15,8 @@ class RiderInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Row(
       children: [
         // Avatar
@@ -23,7 +25,7 @@ class RiderInfoRow extends StatelessWidget {
           height: 44,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.surfaceDark,
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceInputLight,
             border: Border.all(
               color: AppColors.primaryGold.withOpacity(0.3),
               width: 2,
@@ -34,9 +36,9 @@ class RiderInfoRow extends StatelessWidget {
                 ? Image.network(
                     rider.avatarUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => _defaultAvatar(),
+                    errorBuilder: (ctx, err, stack) => _defaultAvatar(isDark),
                   )
-                : _defaultAvatar(),
+                : _defaultAvatar(isDark),
           ),
         ),
         const SizedBox(width: 12),
@@ -48,7 +50,7 @@ class RiderInfoRow extends StatelessWidget {
               Text(
                 rider.fullName,
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.backgroundPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -75,12 +77,12 @@ class RiderInfoRow extends StatelessWidget {
     );
   }
 
-  Widget _defaultAvatar() {
+  Widget _defaultAvatar(bool isDark) {
     return Container(
-      color: AppColors.surfaceDark,
-      child: const Icon(
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceInputLight,
+      child: Icon(
         Icons.person_rounded,
-        color: AppColors.textSecondary,
+        color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
         size: 24,
       ),
     );

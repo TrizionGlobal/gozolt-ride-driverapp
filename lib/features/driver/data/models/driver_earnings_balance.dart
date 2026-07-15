@@ -5,6 +5,8 @@ class DriverEarningsBalance {
   final double totalPaidOut;
   final double pendingPenalties;
   final double availableBalance;
+  final double tipBalance;
+  final double totalTips;
   final DateTime updatedAt;
   final String? payoutDestination;
 
@@ -15,6 +17,8 @@ class DriverEarningsBalance {
     required this.totalPaidOut,
     required this.pendingPenalties,
     required this.availableBalance,
+    required this.tipBalance,
+    required this.totalTips,
     required this.updatedAt,
     this.payoutDestination,
   });
@@ -34,6 +38,8 @@ class DriverEarningsBalance {
       totalPaidOut: parseDouble(json['totalPaidOut']),
       pendingPenalties: parseDouble(json['pendingPenalties']),
       availableBalance: parseDouble(json['availableBalance']),
+      tipBalance: parseDouble(json['tipBalance']),
+      totalTips: parseDouble(json['totalTips']),
       updatedAt: json['updatedAt'] != null 
           ? DateTime.parse(json['updatedAt'] as String) 
           : DateTime.now(),

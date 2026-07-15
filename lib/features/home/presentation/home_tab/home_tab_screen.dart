@@ -64,17 +64,37 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
   static final _defaultLocation = LatLng(AppConstants.defaultLat, AppConstants.defaultLng);
   static const _defaultZoom = 15.0;
 
+  bool? _lastIsDark;
+  String? _lastAvatarUrl;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadCustomMarkers();
   }
 
-  Future<void> _loadCustomMarkers() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ride = ref.read(rideSessionProvider);
+    final avatarUrl = ride?.rider.avatarUrl;
+
+    if (_lastIsDark != isDark || _lastAvatarUrl != avatarUrl) {
+      _lastIsDark = isDark;
+      _lastAvatarUrl = avatarUrl;
+      _loadCustomMarkers(isDark, avatarUrl: avatarUrl);
+      
+      if (_mapController != null) {
+        _mapController!.setMapStyle(isDark ? _darkMapStyle : null);
+      }
+    }
+  }
+
+  Future<void> _loadCustomMarkers(bool isDark, {String? avatarUrl}) async {
     final results = await Future.wait([
       CustomMarkerPainter.carAssetMarker(),
-      CustomMarkerPainter.pickupMarker(),
+      CustomMarkerPainter.pickupMarker(isDark: isDark, avatarUrl: avatarUrl),
       CustomMarkerPainter.dropoffMarker(),
       CustomMarkerPainter.stopMarker(),
     ]);
@@ -317,14 +337,6 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     return markers;
   }
 
-  LatLng _getInitialTarget() {
-    final positionAsync = ref.read(currentPositionProvider);
-    return positionAsync.when(
-      data: (p) => LatLng(p.latitude, p.longitude),
-      loading: () => _defaultLocation,
-      error: (err, stack) => _defaultLocation,
-    );
-  }
 
   /// Build a LatLngBounds that contains all given points, with padding.
   LatLngBounds _boundsFromLocations(List<LatLng> points) {
@@ -468,6 +480,19 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     // Keep location stream alive
     ref.watch(locationStreamProvider);
 
+    final ride = ref.watch(rideSessionProvider);
+    final avatarUrl = ride?.rider.avatarUrl;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_lastAvatarUrl != avatarUrl) {
+      _lastAvatarUrl = avatarUrl;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+           _loadCustomMarkers(isDark, avatarUrl: avatarUrl);
+        }
+      });
+    }
+
     // When GPS resolves, animate map to current location
     ref.listen(currentPositionProvider, (prev, next) {
       next.whenOrNull(
@@ -484,8 +509,8 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
     // Zoom map to show driver + pickup/dropoff when ride status or destination changes
     ref.listen(rideSessionProvider, (prev, next) {
-      // Ride was cancelled by user (prev had a ride, now null)
-      if (prev != null && next == null) {
+      // Ride was cancelled by user (prev had a ride, now null, and wasn't completed)
+      if (prev != null && next == null && prev.status != RideStatus.completed) {
         // Clear cached routes
         setState(() {
           _toPickupRoute = null;
@@ -585,33 +610,57 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       }
     });
 
-    final ride = ref.watch(rideSessionProvider);
     final isOnRide = ride != null;
     final driverStatus = ref.watch(driverStatusProvider);
     final isBottomNavBarVisible = !driverStatus.isOnline && !isOnRide;
     final safeBottom = MediaQuery.of(context).padding.bottom;
     final bottomOffset = isBottomNavBarVisible ? 104.0 : (16.0 + safeBottom);
 
+    final positionAsync = ref.watch(currentPositionProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // Full-screen Google Map
+          // Full-screen Google Map (waits for location to load to avoid flashing Valletta)
           Positioned.fill(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _getInitialTarget(),
-                zoom: _defaultZoom,
+            child: positionAsync.when(
+              data: (pos) => GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(pos.latitude, pos.longitude),
+                  zoom: _defaultZoom,
+                ),
+                style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
+                myLocationEnabled: false,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                compassEnabled: false,
+                mapToolbarEnabled: false,
+                markers: _buildMarkers(),
+                polylines: _buildPolylines(),
               ),
-              style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
-              myLocationEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              compassEnabled: false,
-              mapToolbarEnabled: false,
-              markers: _buildMarkers(),
-              polylines: _buildPolylines(),
+              loading: () => Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (err, stack) => GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _defaultLocation,
+                  zoom: 10.5,
+                ),
+                style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
+                myLocationEnabled: false,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                compassEnabled: false,
+                mapToolbarEnabled: false,
+                markers: _buildMarkers(),
+                polylines: _buildPolylines(),
+              ),
             ),
           ),
 
@@ -685,8 +734,6 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const RideMetricsBubbles(),
-                      const SizedBox(height: 12),
                       const ActiveRideCard(),
                     ],
                   ),

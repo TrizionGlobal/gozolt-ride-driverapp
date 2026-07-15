@@ -42,6 +42,19 @@ class DriverWalletNotifier extends AutoDisposeAsyncNotifier<DriverEarningsBalanc
         return false;
     }
   }
+
+  Future<bool> withdrawTips(double amount) async {
+    final repository = ref.read(driverRepositoryProvider);
+    final result = await repository.withdrawTips(amount);
+    switch (result) {
+      case ApiSuccess(:final data):
+        state = AsyncData(data);
+        ref.invalidate(driverWithdrawalsProvider);
+        return true;
+      case ApiFailure():
+        return false;
+    }
+  }
 }
 
 final driverWithdrawalsProvider = FutureProvider.autoDispose<List<DriverPayoutLog>>((ref) async {

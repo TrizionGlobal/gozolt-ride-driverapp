@@ -118,12 +118,12 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                 decoration: BoxDecoration(
                   color: isCompleted
                       ? AppColors.success.withOpacity(0.15)
-                      : (isCard ? AppColors.info.withOpacity(0.15) : AppColors.warning.withOpacity(0.15)),
+                      : (isCard ? AppColors.success.withOpacity(0.15) : AppColors.warning.withOpacity(0.15)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isCompleted
                         ? AppColors.success.withOpacity(0.3)
-                        : (isCard ? AppColors.info.withOpacity(0.3) : AppColors.warning.withOpacity(0.3)),
+                        : (isCard ? AppColors.success.withOpacity(0.3) : AppColors.warning.withOpacity(0.3)),
                     width: 1.5,
                   ),
                 ),
@@ -134,7 +134,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                       isCompleted
                           ? Icons.check_circle_rounded
                           : (isCard ? Icons.credit_card : Icons.payments_rounded),
-                      color: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.warning),
+                      color: isCompleted ? AppColors.success : (isCard ? AppColors.success : AppColors.warning),
                       size: 24,
                     ),
                     const SizedBox(width: 12),
@@ -142,7 +142,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                       child: Text(
                         statusTitle,
                         style: AppTextStyles.titleMedium.copyWith(
-                          color: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.warning),
+                          color: isCompleted ? AppColors.success : (isCard ? AppColors.success : AppColors.warning),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -404,7 +404,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                     // Report Issue Button
                     SizedBox(
                       width: double.infinity,
-                      height: 44,
+                      height: 54,
                       child: OutlinedButton(
                         onPressed: _isLoading
                             ? null
@@ -418,7 +418,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                           foregroundColor: AppColors.error,
                           side: const BorderSide(color: AppColors.error, width: 1.5),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
+                            borderRadius: BorderRadius.circular(27),
                           ),
                         ),
                         child: Text(
@@ -436,7 +436,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                   // Confirm Payment / Finish Ride Button
                   SizedBox(
                     width: double.infinity,
-                    height: 44,
+                    height: 54,
                     child: ElevatedButton(
                       onPressed: _isLoading
                           ? null
@@ -457,10 +457,10 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isCompleted ? AppColors.success : (isCard ? AppColors.info : AppColors.primaryGold),
-                        foregroundColor: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
+                        backgroundColor: isCompleted ? AppColors.success : AppColors.primaryGold,
+                        foregroundColor: isCompleted ? Colors.white : AppColors.backgroundDark,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(27),
                         ),
                         elevation: 4,
                       ),
@@ -471,7 +471,7 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.5,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
+                                  isCompleted ? Colors.white : AppColors.backgroundDark,
                                 ),
                               ),
                             )
@@ -482,14 +482,14 @@ class _CollectAmountScreenState extends ConsumerState<CollectAmountScreen> {
                                   isCompleted
                                       ? Icons.done_all_rounded
                                       : (isCard ? Icons.credit_card : Icons.check_circle_rounded),
-                                  color: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
+                                  color: isCompleted ? Colors.white : AppColors.backgroundDark,
                                   size: 22,
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
                                   isCompleted ? 'Finish Ride' : (isCard ? 'Payment completed' : 'Cash collected'),
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: isCompleted ? Colors.white : (isCard ? Colors.white : AppColors.backgroundDark),
+                                    color: isCompleted ? Colors.white : AppColors.backgroundDark,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
                                   ),

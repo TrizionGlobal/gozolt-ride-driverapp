@@ -48,10 +48,12 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
 
     // Calculate total earnings from all completed rides (fixed)
     double totalEarnings = 0;
+    double totalTips = 0;
     for (final ride in rides) {
-      if (ride.fare != null && ride.status.toUpperCase() == 'COMPLETED') {
-        totalEarnings += ride.fare!;
+      if (ride.status.toUpperCase() == 'COMPLETED') {
+        if (ride.fare != null) totalEarnings += ride.fare!;
         totalEarnings += ride.tipAmount ?? 0;
+        totalTips += ride.tipAmount ?? 0;
       }
     }
 
@@ -82,72 +84,52 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
             ),
 
             // ── Premium Earnings & Stats Dashboard ──────────────────────
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFD4A843), Color(0xFFF5C518)],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryGold.withOpacity(0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildSummaryStat(
-                          label: 'Total Trips',
-                          value: '${rides.length}',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          title: 'Total Tips',
+                          value: '€ ${totalTips.toStringAsFixed(2)}',
+                          icon: Icons.volunteer_activism_rounded,
+                          color: const Color(0xFF4CAF50),
                         ),
-                        const SizedBox(width: 15),
-                        Container(
-                          height: 24,
-                          width: 1,
-                          color: AppColors.backgroundPrimary.withOpacity(0.15),
-                        ),
-                        const SizedBox(width: 15),
-                        _buildSummaryStat(
-                          label: 'Completed',
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          title: 'Completed',
                           value: '${rides.where((r) => r.status.toUpperCase() == 'COMPLETED').length}',
+                          icon: Icons.check_circle_rounded,
+                          color: AppColors.success,
                         ),
-                        const SizedBox(width: 15),
-                        Container(
-                          height: 24,
-                          width: 1,
-                          color: AppColors.backgroundPrimary.withOpacity(0.15),
-                        ),
-                        const SizedBox(width: 15),
-                        _buildSummaryStat(
-                          label: 'User Cancelled',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          title: 'User Cancelled',
                           value: '${rides.where((r) => r.status.toUpperCase() == 'CANCELLED' && r.cancelledBy?.toUpperCase() == 'USER').length}',
+                          icon: Icons.person_off_rounded,
+                          color: AppColors.warning,
                         ),
-                        const SizedBox(width: 15),
-                        Container(
-                          height: 24,
-                          width: 1,
-                          color: AppColors.backgroundPrimary.withOpacity(0.15),
-                        ),
-                        const SizedBox(width: 15),
-                        _buildSummaryStat(
-                          label: 'Driver Cancelled',
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          title: 'Driver Cancelled',
                           value: '${rides.where((r) => r.status.toUpperCase() == 'CANCELLED' && r.cancelledBy?.toUpperCase() == 'DRIVER').length}',
+                          icon: Icons.directions_car_rounded,
+                          color: AppColors.error,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -191,31 +173,43 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
 
             // ── Ride list ────────────────────────────────────────
             Expanded(
-              child: filteredRides.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.directions_car_rounded,
-                            size: 64,
-                            color: isDark ? Colors.white10 : Colors.grey.shade200,
+              child: RefreshIndicator(
+                color: AppColors.primaryGold,
+                onRefresh: () async {
+                  await ref.read(rideHistoryProvider.notifier).fetchRides();
+                },
+                child: filteredRides.isEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.directions_car_rounded,
+                                size: 64,
+                                color: isDark ? Colors.white10 : Colors.grey.shade200,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _activeFilter == 'all'
+                                    ? 'No rides yet'
+                                    : 'No ${_activeFilter.toLowerCase()} rides',
+                                style: AppTextStyles.titleMedium.copyWith(
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _activeFilter == 'all'
-                                ? 'No rides yet'
-                                : 'No ${_activeFilter.toLowerCase()} rides',
-                            style: AppTextStyles.titleMedium.copyWith(
-                              color: AppColors.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
                       itemCount: filteredRides.length,
                       itemBuilder: (context, index) {
                         return Padding(
@@ -235,35 +229,89 @@ class _HistoryTabScreenState extends ConsumerState<HistoryTabScreen> {
                         );
                       },
                     ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildSummaryStat({required String label, required String value}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.backgroundPrimary,
-          ),
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
         ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: AppColors.backgroundPrimary.withOpacity(0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -553,26 +601,13 @@ class _RideCard extends StatelessWidget {
                               ),
                             )
                           else if (ride.fare != null)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '€ ${ride.fare!.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                                  ),
-                                ),
-                                const Text(
-                                  'Fare',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.textMuted,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              '€ ${ride.fare!.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                              ),
                             ),
                         ],
                       ),

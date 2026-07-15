@@ -54,7 +54,7 @@ class ContactActionsRow extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppColors.textMuted.withOpacity(0.3),
+                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.3) ?? AppColors.textMuted.withOpacity(0.3),
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -64,13 +64,13 @@ class ContactActionsRow extends StatelessWidget {
                   Icon(
                     Icons.chat_bubble_rounded,
                     size: 16,
-                    color: AppColors.textMuted,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     'Send a Message',
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.backgroundPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                 ],

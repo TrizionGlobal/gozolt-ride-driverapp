@@ -73,14 +73,6 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Navigation button
-        Padding(
-          padding: const EdgeInsets.only(right: 16, bottom: 12),
-          child: NavigationButton(
-            destinationLat: ride.pickupLat,
-            destinationLng: ride.pickupLng,
-          ),
-        ),
         // Bottom card
         Container(
           decoration: BoxDecoration(

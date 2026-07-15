@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -124,14 +125,104 @@ class CustomMarkerPainter {
     return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
   }
 
-  /// Dark circle with gold border — for pickup location
-  static Future<BitmapDescriptor> pickupMarker() {
-    return createMarker(
-      fillColor: const Color(0xFF1A1A2E),
-      borderColor: const Color(0xFFE53935),
-      icon: Icons.person_pin_circle,
-      size: 48,
-    );
+  static Future<ui.Image?> _loadNetworkImage(String url) async {
+    try {
+      final imageProvider = NetworkImage(url);
+      final stream = imageProvider.resolve(const ImageConfiguration());
+      final completer = Completer<ui.Image>();
+      stream.addListener(ImageStreamListener((info, _) {
+        completer.complete(info.image);
+      }, onError: (error, stackTrace) {
+        completer.completeError(error);
+      }));
+      return await completer.future;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Profile pin marker — for pickup location
+  static Future<BitmapDescriptor> pickupMarker({required bool isDark, String? avatarUrl}) async {
+    const double size = 120; // High resolution size for crisp marker
+    const double radius = 40;
+    final cx = size / 2;
+    final cy = size / 2 - 10;
+    
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final paint = Paint();
+
+    // Shadow
+    paint.color = Colors.black.withOpacity(0.2);
+    paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawCircle(Offset(cx, cy + 20), radius, paint);
+    paint.maskFilter = null;
+
+    // Pin shape (circle + bottom triangle)
+    final path = Path();
+    path.addOval(Rect.fromCircle(center: Offset(cx, cy), radius: radius));
+    path.moveTo(cx - 20, cy + radius - 5);
+    path.lineTo(cx, cy + radius + 20);
+    path.lineTo(cx + 20, cy + radius - 5);
+    path.close();
+
+    // Fill pin background
+    paint.color = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    canvas.drawPath(path, paint);
+
+    // Inner circle background
+    final innerRadius = radius - 6;
+    paint.color = isDark ? const Color(0xFF2C3E50) : const Color(0xFFF0F0F0);
+    canvas.drawCircle(Offset(cx, cy), innerRadius, paint);
+
+    ui.Image? avatarImage;
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      avatarImage = await _loadNetworkImage(avatarUrl);
+    }
+
+    if (avatarImage != null) {
+      // Draw image clipped to inner circle
+      canvas.save();
+      canvas.clipPath(Path()..addOval(Rect.fromCircle(center: Offset(cx, cy), radius: innerRadius)));
+      
+      final src = Rect.fromLTWH(0, 0, avatarImage.width.toDouble(), avatarImage.height.toDouble());
+      
+      // Calculate destination rect to cover the circle (aspect fill)
+      final scale = (innerRadius * 2) / (avatarImage.width < avatarImage.height ? avatarImage.width : avatarImage.height);
+      final destWidth = avatarImage.width * scale;
+      final destHeight = avatarImage.height * scale;
+      final dest = Rect.fromCenter(center: Offset(cx, cy), width: destWidth, height: destHeight);
+      
+      canvas.drawImageRect(avatarImage, src, dest, Paint());
+      canvas.restore();
+    } else {
+      // Draw default person icon
+      final icon = Icons.person_rounded;
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+      textPainter.text = TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: innerRadius * 1.2,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          cx - textPainter.width / 2,
+          cy - textPainter.height / 2,
+        ),
+      );
+    }
+
+    final picture = pictureRecorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
   }
 
   /// Green glowing flag marker — for dropoff location

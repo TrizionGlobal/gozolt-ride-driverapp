@@ -67,11 +67,12 @@ class _MetricBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 72,
       height: 72,
       decoration: BoxDecoration(
-        color: AppColors.backgroundPrimary,
+        color: Theme.of(context).cardColor,
         shape: BoxShape.circle,
         border: Border.all(
           color: AppColors.primaryGold.withOpacity(0.5),
@@ -79,7 +80,7 @@ class _MetricBubble extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.3),
+            color: AppColors.black.withOpacity(0.15),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -93,7 +94,7 @@ class _MetricBubble extends StatelessWidget {
           Text(
             value,
             style: AppTextStyles.titleSmall.copyWith(
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
               fontWeight: FontWeight.w800,
               fontSize: 15,
             ),
@@ -101,7 +102,7 @@ class _MetricBubble extends StatelessWidget {
           Text(
             unit,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textSecondary,
+              color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
               fontSize: 9,
             ),
           ),

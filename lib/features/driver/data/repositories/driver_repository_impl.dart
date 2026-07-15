@@ -214,6 +214,16 @@ class DriverRepositoryImpl implements DriverRepository {
   }
 
   @override
+  Future<ApiResult<DriverEarningsBalance>> withdrawTips(double amount) async {
+    try {
+      final balance = await _remoteDataSource.withdrawTips(amount);
+      return ApiSuccess(balance);
+    } on ApiException catch (e) {
+      return ApiFailure(e);
+    }
+  }
+
+  @override
   Future<ApiResult<List<DriverPayoutLog>>> getWithdrawals() async {
     try {
       final logs = await _remoteDataSource.getWithdrawals();

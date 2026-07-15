@@ -40,6 +40,7 @@ abstract class DriverRepository {
   Future<ApiResult<DriverEarningsBalance>> addMoney(double amount, {String? paymentIntentId});
   Future<ApiResult<Map<String, dynamic>>> createWalletPaymentIntent(double amount);
   Future<ApiResult<DriverEarningsBalance>> withdraw(double amount);
+  Future<ApiResult<DriverEarningsBalance>> withdrawTips(double amount);
   Future<ApiResult<List<DriverPayoutLog>>> getWithdrawals();
   Future<ApiResult<DriverRatingsResponse>> getRatings();
 }

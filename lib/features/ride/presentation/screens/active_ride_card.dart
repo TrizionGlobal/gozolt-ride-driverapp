@@ -38,14 +38,6 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Navigation button — points to current stop or final dropoff
-        Padding(
-          padding: const EdgeInsets.only(right: 16, bottom: 12),
-          child: NavigationButton(
-            destinationLat: ride.currentStop?.lat ?? ride.dropoffLat,
-            destinationLng: ride.currentStop?.lng ?? ride.dropoffLng,
-          ),
-        ),
         // Bottom card
         Container(
           decoration: BoxDecoration(

@@ -11,13 +11,9 @@ final chatMessagesProvider =
 
 class ChatNotifier extends StateNotifier<List<ChatMessage>> {
   final SocketService _socketService;
-  StreamSubscription<Map<String, dynamic>>? _chatSub;
-
   ChatNotifier({required SocketService socketService})
       : _socketService = socketService,
-        super([]) {
-    _chatSub = _socketService.onChatMessage.listen(_onMessage);
-  }
+        super([]);
 
   void _onMessage(Map<String, dynamic> data) {
     // Ignore own messages to prevent duplicates (already added optimistic local msg)
@@ -55,7 +51,6 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
 
   @override
   void dispose() {
-    _chatSub?.cancel();
     super.dispose();
   }
 }

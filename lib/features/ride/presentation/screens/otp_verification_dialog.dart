@@ -140,10 +140,12 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     maxLength: 1,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.white,
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.white 
+                          : AppColors.textPrimaryLight,
                       height: 1.0,
                     ),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -151,7 +153,9 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                       counterText: '',
                       contentPadding: EdgeInsets.zero,
                       filled: true,
-                      fillColor: AppColors.backgroundDark,
+                      fillColor: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.backgroundDark 
+                          : AppColors.surfaceInputLight,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,

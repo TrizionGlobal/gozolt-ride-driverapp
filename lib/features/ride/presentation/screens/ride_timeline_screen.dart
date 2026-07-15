@@ -172,7 +172,7 @@ class RideTimelineScreen extends StatelessWidget {
       // Payment status (Only for completed or non-cancelled rides)
       final String pStatus = detail.paymentStatus.toUpperCase();
       final isCash = detail.paymentMethod.toLowerCase() == 'cash';
-      final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
+      final isPaid = pStatus == 'PAID' || pStatus == 'COMPLETED' || pStatus == 'SUCCESS' || pStatus == 'AUTHORIZED' || (detail.status.toUpperCase() == 'COMPLETED' && isCash);
       events.add(_TimelineEvent(
         title: isPaid ? 'Payment Received' : 'Payment Pending',
         description: isPaid

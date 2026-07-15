@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +27,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
     with WidgetsBindingObserver {
   final List<int> _tabHistory = [];
   bool _isPopping = false;
+  StreamSubscription? _tipSub;
   @override
   void initState() {
     super.initState();
@@ -37,11 +39,30 @@ class _HomeShellState extends ConsumerState<HomeShell>
     });
     // Initialize location tracking service
     ref.read(locationUpdateProvider);
+
+    // Listen to incoming tips
+    final socketService = ref.read(socketServiceProvider);
+    _tipSub = socketService.onTipAdded.listen((data) {
+      if (!mounted) return;
+      final amount = data['amount'] as num?;
+      if (amount != null && amount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Awesome! You just received a €${amount.toStringAsFixed(2)} tip!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        // Refresh earnings to reflect the new tip
+        ref.read(todayEarningsProvider.notifier).fetchTodayEarnings();
+      }
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _tipSub?.cancel();
     super.dispose();
   }
 
