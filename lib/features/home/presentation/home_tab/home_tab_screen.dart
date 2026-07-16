@@ -14,8 +14,9 @@ import '../../../ride/presentation/providers/ride_session_provider.dart';
 import '../../../ride/presentation/screens/active_ride_card.dart';
 import '../../../ride/presentation/screens/navigate_to_pickup_card.dart';
 import '../../../ride/presentation/screens/ride_request_sheet.dart';
-import '../../../ride/presentation/screens/collect_amount_screen.dart';
+import '../../../ride/presentation/screens/queued_ride_request_sheet.dart';
 import '../../../ride/presentation/screens/ride_summary_sheet.dart';
+import '../../../ride/presentation/screens/collect_amount_screen.dart';
 import 'widgets/go_online_button.dart';
 import 'widgets/home_top_bar.dart';
 import 'widgets/map_overlay_buttons.dart';
@@ -23,6 +24,7 @@ import '../../../ride/presentation/widgets/ride_metrics_bubbles.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/snackbar_utils.dart';
+import '../../../../core/utils/map_utils.dart';
 
 class HomeTabScreen extends ConsumerStatefulWidget {
   const HomeTabScreen({super.key});
@@ -444,9 +446,10 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       // Fetch route if not cached
       _fetchDirectionsRoute(driverPos, pickupPos, isPickupRoute: true);
       final routePoints = _toPickupRoute ?? [driverPos, pickupPos];
+      final trimmedPoints = MapUtils.trimPolyline(routePoints, driverPos);
       polylines.add(Polyline(
         polylineId: const PolylineId('to_pickup'),
-        points: routePoints,
+        points: trimmedPoints,
         color: AppColors.primaryGold,
         width: 5,
         jointType: JointType.round,
@@ -461,9 +464,10 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       // Fetch route if not cached
       _fetchDirectionsRoute(driverPos, destination, isPickupRoute: false);
       final routePoints = _toDropoffRoute ?? [driverPos, destination];
+      final trimmedPoints = MapUtils.trimPolyline(routePoints, driverPos);
       polylines.add(Polyline(
         polylineId: const PolylineId('to_dropoff'),
-        points: routePoints,
+        points: trimmedPoints,
         color: AppColors.primaryGold,
         width: 5,
         jointType: JointType.round,
@@ -610,6 +614,30 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
       }
     });
 
+    // Dynamically frame the map based on the driver's location changes
+    ref.listen(driverPositionProvider, (prev, next) {
+      if (next == null || _mapController == null) return;
+      final currentRide = ref.read(rideSessionProvider);
+      if (currentRide != null && !currentRide.status.isTerminal) {
+        LatLng targetPos;
+        if (currentRide.status.isPrePickup || currentRide.status == RideStatus.requested) {
+          targetPos = LatLng(currentRide.pickupLat, currentRide.pickupLng);
+        } else {
+          targetPos = currentRide.currentStop != null
+              ? LatLng(currentRide.currentStop!.lat, currentRide.currentStop!.lng)
+              : LatLng(currentRide.dropoffLat, currentRide.dropoffLng);
+        }
+        final bounds = MapUtils.boundsFromLocations([
+          LatLng(next.latitude, next.longitude),
+          targetPos,
+        ]);
+        // Re-frame to ensure car and destination remain visible as car moves
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngBounds(bounds, 100),
+        );
+      }
+    });
+
     final isOnRide = ride != null;
     final driverStatus = ref.watch(driverStatusProvider);
     final isBottomNavBarVisible = !driverStatus.isOnline && !isOnRide;
@@ -693,6 +721,17 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
 
           // Ride overlays
           if (ride != null) ..._buildRideOverlays(ride.status),
+          
+          // Queued Ride overlay
+          if (ref.watch(queuedRideProvider) != null)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _AnimatedRideRequest(
+                child: const QueuedRideRequestSheet(),
+              ),
+            ),
         ],
       ),
     );

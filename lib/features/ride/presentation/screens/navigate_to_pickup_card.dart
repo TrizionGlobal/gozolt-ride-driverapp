@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -7,6 +8,7 @@ import '../../../../core/utils/geo_utils.dart';
 import '../../../driver/presentation/providers/location_provider.dart';
 import '../../data/models/ride_status.dart';
 import '../providers/ride_session_provider.dart';
+import '../providers/destination_proximity_provider.dart';
 import '../widgets/address_row.dart';
 import '../widgets/contact_actions_row.dart';
 import '../widgets/gold_action_button.dart';
@@ -63,6 +65,12 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
     final ride = ref.watch(rideSessionProvider);
     if (ride == null) return const SizedBox.shrink();
 
+    ref.listen<bool>(isNearDestinationProvider, (prev, next) {
+      if (next && (prev == null || !prev)) {
+        HapticFeedback.vibrate();
+      }
+    });
+
     // Start timer when driver has arrived
     if (ride.status == RideStatus.driverArrived && _waitTimer == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -90,6 +98,29 @@ class _NavigateToPickupCardState extends ConsumerState<NavigateToPickupCard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (ride.status == RideStatus.driverArrived)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'You have reached the user.',
+                          style: AppTextStyles.titleSmall.copyWith(color: const Color(0xFF4CAF50)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Rider info with live ETA badge
               Row(
                 children: [

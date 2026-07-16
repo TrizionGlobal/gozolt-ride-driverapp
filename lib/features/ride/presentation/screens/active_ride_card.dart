@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -26,6 +27,12 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
     final ride = ref.watch(rideSessionProvider);
     final isNearDestination = ref.watch(isNearDestinationProvider);
     if (ride == null) return const SizedBox.shrink();
+
+    ref.listen<bool>(isNearDestinationProvider, (prev, next) {
+      if (next && (prev == null || !prev)) {
+        HapticFeedback.vibrate();
+      }
+    });
 
     // Listen for destination change requests
     ref.listen<Map<String, dynamic>?>(destinationChangeRequestProvider,
@@ -55,6 +62,29 @@ class _ActiveRideCardState extends ConsumerState<ActiveRideCard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (isNearDestination)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'You have reached the destination.',
+                          style: AppTextStyles.titleSmall.copyWith(color: const Color(0xFF4CAF50)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Rider info with live ETA
               Row(
                 children: [

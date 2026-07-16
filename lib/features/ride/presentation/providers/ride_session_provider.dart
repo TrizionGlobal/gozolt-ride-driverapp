@@ -27,8 +27,10 @@ final cashPaymentConfirmedProvider = StateProvider<bool>((ref) => false);
 
 /// Countdown seconds remaining for ride request.
 final rideRequestCountdownProvider = StateProvider<int>((ref) => 0);
+// Add provider for queued (back-to-back) rides
+final queuedRideProvider = StateProvider<Ride?>((ref) => null);
 
-/// Max countdown seconds (from socket event's timeoutSeconds).
+// Max countdown for ride requests (default: 15s)ocket event's timeoutSeconds).
 final rideRequestMaxCountdownProvider = StateProvider<int>((ref) => 15);
 
 /// Whether to show the collect amount screen after ride completion.
@@ -89,8 +91,17 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
       }
 
       _requestQueue.add(socketData);
+      
       if (state == null) {
         _processNextRequest();
+      } else {
+        // Driver is currently on a ride. If they are in progress, we can queue this next ride.
+        if (state!.status == RideStatus.inProgress && _ref.read(queuedRideProvider) == null) {
+          if (kDebugMode) print('[RideSession] Driver is on a ride, queueing next request: $socketData');
+          _processQueuedRequest(socketData);
+        } else {
+          if (kDebugMode) print('[RideSession] Driver is already queued or not eligible to receive back-to-back ride.');
+        }
       }
     });
 
@@ -249,7 +260,13 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     return Ride(
       id: rideId,
       status: RideStatus.requested,
-      rider: const RiderInfo(id: '', firstName: 'Rider', lastName: '', phone: '', rating: 0),
+      rider: RiderInfo(
+        id: (socketData['riderId'] ?? socketData['rider_id'] ?? '').toString(),
+        firstName: (socketData['riderName'] ?? socketData['rider_name'] ?? 'Rider').toString(),
+        lastName: '',
+        phone: (socketData['riderPhone'] ?? socketData['rider_phone'] ?? '').toString(),
+        rating: 0,
+      ),
       pickupAddress: socketData['pickupAddress'] as String? ?? socketData['pickup_address'] as String? ?? 'Pickup location',
       pickupLat: 0,
       pickupLng: 0,
@@ -261,6 +278,43 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
       estimatedMinutes: etaMinutes,
       createdAt: DateTime.now(),
     );
+  }
+
+  /// Process a ride request meant to be queued (Back-to-Back)
+  Future<void> _processQueuedRequest(Map<String, dynamic> socketData) async {
+    final rideId = (socketData['rideId'] ?? socketData['id'])?.toString();
+    if (rideId == null) return;
+    
+    // Create a minimal ride from the socket data
+    final ride = _buildFallbackRide(socketData, rideId, 0.0, 5);
+    _ref.read(queuedRideProvider.notifier).state = ride;
+    
+    // We don't start a hard countdown that auto-declines here for simplicity,
+    // but in a real app, you would have a separate timer for queued rides.
+  }
+
+  /// Accept the currently queued ride
+  Future<bool> acceptQueuedRide() async {
+    final queuedRide = _ref.read(queuedRideProvider);
+    if (queuedRide == null) return false;
+    
+    final result = await _repository.acceptRide(queuedRide.id);
+    return switch (result) {
+      ApiSuccess(:final data) => () {
+          _ref.read(queuedRideProvider.notifier).state = data;
+          return true;
+        }(),
+      ApiFailure() => false,
+    };
+  }
+
+  /// Decline the currently queued ride
+  void declineQueuedRide() {
+    final queuedRide = _ref.read(queuedRideProvider);
+    if (queuedRide != null) {
+      _repository.respondToRide(queuedRide.id, accepted: false).catchError((_) {});
+      _ref.read(queuedRideProvider.notifier).state = null;
+    }
   }
 
   /// Accept the current ride request.
@@ -477,6 +531,24 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     return true;
   }
 
+  /// Handle what happens after a ride is fully completed and paid
+  void finalizeRideCompletion() {
+    final queuedRide = _ref.read(queuedRideProvider);
+    if (queuedRide != null && queuedRide.status == RideStatus.accepted) {
+      if (kDebugMode) print('[RideSession] Transitioning seamlessly to queued ride: ${queuedRide.id}');
+      state = queuedRide;
+      _ref.read(queuedRideProvider.notifier).state = null;
+      // Change status to enRoute immediately
+      _repository.markEnRoute(queuedRide.id).then((result) {
+        if (result is ApiSuccess) state = (result as ApiSuccess<Ride>).data;
+      });
+    } else {
+      state = null;
+      _ref.read(queuedRideProvider.notifier).state = null;
+      _processNextRequest();
+    }
+  }
+
   /// Cancel ride with a reason.
   Future<bool> cancelRide(String reason) async {
     final ride = state;
@@ -563,15 +635,20 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     if (rideId != null && rideId.isNotEmpty) {
       _socketService.leaveRide(rideId);
     }
-    state = null;
+    
     _ref.read(rideSummaryProvider.notifier).state = null;
     _ref.read(farePreviewProvider.notifier).state = null;
     _ref.read(cashPaymentConfirmedProvider.notifier).state = false;
     _ref.read(showCollectAmountProvider.notifier).state = false;
-    _driverStatusNotifier.goOnline();
+    
+    finalizeRideCompletion();
+    
+    if (state == null) {
+      _driverStatusNotifier.goOnline();
+    }
+    
     // Refresh the today-earnings pill on the home screen
     _ref.read(todayEarningsProvider.notifier).fetchTodayEarnings();
-    _processNextRequest();
   }
 
   void _startCountdown(int seconds) {
