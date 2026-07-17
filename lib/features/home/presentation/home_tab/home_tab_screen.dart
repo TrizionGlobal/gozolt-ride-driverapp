@@ -642,7 +642,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen>
     final driverStatus = ref.watch(driverStatusProvider);
     final isBottomNavBarVisible = !driverStatus.isOnline && !isOnRide;
     final safeBottom = MediaQuery.of(context).padding.bottom;
-    final bottomOffset = isBottomNavBarVisible ? 104.0 : (16.0 + safeBottom);
+    final bottomOffset = isBottomNavBarVisible ? 120.0 : (16.0 + safeBottom);
 
     final positionAsync = ref.watch(currentPositionProvider);
 
