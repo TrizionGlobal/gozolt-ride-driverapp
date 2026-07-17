@@ -698,8 +698,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       );
       if (croppedFile != null) {
+        final file = File(croppedFile.path);
+        final fileSize = await file.length();
+        if (fileSize > 5 * 1024 * 1024) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Image size must be less than 5MB'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+          return;
+        }
         setState(() {
-          _pickedImage = File(croppedFile.path);
+          _pickedImage = file;
           _isAvatarRemoved = false;
         });
       }

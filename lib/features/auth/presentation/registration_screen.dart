@@ -197,7 +197,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 400, maxHeight: 400, imageQuality: 50);
-                  if (photo != null) onPicked(photo.path);
+                  if (photo != null) {
+                    final file = File(photo.path);
+                    final size = await file.length();
+                    if (size > 5 * 1024 * 1024) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                      }
+                      return;
+                    }
+                    onPicked(photo.path);
+                  }
                 },
               ),
               ListTile(
@@ -214,7 +224,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? photo = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 400, maxHeight: 400, imageQuality: 50);
-                  if (photo != null) onPicked(photo.path);
+                  if (photo != null) {
+                    final file = File(photo.path);
+                    final size = await file.length();
+                    if (size > 5 * 1024 * 1024) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                      }
+                      return;
+                    }
+                    onPicked(photo.path);
+                  }
                 },
               ),
               if (allowFiles) ...[
@@ -237,6 +257,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
                       );
                       if (result != null && result.files.single.path != null) {
+                        final file = File(result.files.single.path!);
+                        final size = await file.length();
+                        if (size > 5 * 1024 * 1024) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                          }
+                          return;
+                        }
                         onPicked(result.files.single.path!);
                       }
                     } catch (e) {
