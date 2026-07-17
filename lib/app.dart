@@ -27,20 +27,22 @@ class GozoltDriverApp extends ConsumerWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
-          final brightness = Theme.of(context).brightness;
-          
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          SystemChrome.setSystemUIOverlayStyle(
-            SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
-              systemNavigationBarColor: Colors.transparent,
-              systemNavigationBarDividerColor: Colors.transparent,
-              statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
-              systemNavigationBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
-            ),
+          final isDark = themeMode == ThemeMode.dark || 
+            (themeMode == ThemeMode.system && MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+        final iconBrightness = isDark ? Brightness.light : Brightness.dark;
+        
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarDividerColor: Colors.transparent,
+            statusBarIconBrightness: iconBrightness,
+            systemNavigationBarIconBrightness: iconBrightness,
+          ),
+          child: child ?? const SizedBox.shrink(),
           );
-
-          return child ?? const SizedBox.shrink();
         },
       ),
     );

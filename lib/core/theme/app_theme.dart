@@ -50,6 +50,9 @@ abstract final class AppTheme {
           statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.light,
+          systemNavigationBarColor: AppColors.transparent,
+          systemNavigationBarDividerColor: AppColors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -158,6 +161,9 @@ abstract final class AppTheme {
           statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.transparent,
+          systemNavigationBarDividerColor: AppColors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
