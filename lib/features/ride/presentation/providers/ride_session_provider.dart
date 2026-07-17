@@ -379,7 +379,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
         case ApiSuccess(:final data):
           if (kDebugMode) print('[RideSession] acceptRide SUCCESS: status=${data.status}');
           // Auto-transition to EN_ROUTE after accepting
-          state = ride.copyWith(status: RideStatus.driverEnRoute);
+          state = data.copyWith(status: RideStatus.driverEnRoute);
           _driverStatusNotifier.setOnRide();
           // Fire en-route call to backend (fire-and-forget)
           _repository.markEnRoute(ride.id).then((_) {

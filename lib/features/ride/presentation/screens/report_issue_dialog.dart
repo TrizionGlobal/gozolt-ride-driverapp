@@ -131,51 +131,64 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            // Submit
-            SizedBox(
-              width: 160,
-              height: 40,
-              child: ElevatedButton(
-                onPressed: _selectedIssue != null && !_isSubmitting
-                    ? _submit
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGold,
-                  foregroundColor: AppColors.backgroundDark,
-                  disabledBackgroundColor:
-                      AppColors.primaryGold.withOpacity(0.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            const SizedBox(height: 20),
+            // Cancel and Submit buttons
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-                child: _isSubmitting
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Theme.of(context).textTheme.titleLarge?.color,
-                        ),
-                      )
-                    : const Text(
-                        'Submit Report',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _selectedIssue != null && !_isSubmitting
+                        ? _submit
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: AppColors.primaryGold,
+                      foregroundColor: AppColors.backgroundDark,
+                      disabledBackgroundColor:
+                          AppColors.primaryGold.withOpacity(0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Cancel
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                    child: _isSubmitting
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.backgroundDark,
+                            ),
+                          )
+                        : const Text(
+                            'Submit Report',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
