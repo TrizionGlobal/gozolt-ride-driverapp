@@ -63,4 +63,8 @@ class DriverStatusNotifier extends StateNotifier<DriverStatus> {
   void setOnRide() {
     state = DriverStatus.onRide;
   }
+
+  void setOnline() {
+    state = DriverStatus.online;
+  }
 }

@@ -19,6 +19,7 @@ class Ride {
   final String? otp;
   final String? paymentMethod;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final List<RideStop> stops;
   final int currentStopIndex;
 
@@ -38,6 +39,7 @@ class Ride {
     this.otp,
     this.paymentMethod,
     required this.createdAt,
+    this.updatedAt,
     this.stops = const [],
     this.currentStopIndex = 0,
   });
@@ -82,6 +84,7 @@ class Ride {
       otp: otp ?? this.otp,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       createdAt: createdAt,
+      updatedAt: updatedAt,
       stops: stops ?? this.stops,
       currentStopIndex: currentStopIndex ?? this.currentStopIndex,
     );
@@ -112,6 +115,9 @@ class Ride {
       paymentMethod: json['paymentMethod'] as String?,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.tryParse(json['updatedAt'] as String) 
+          : null,
       stops: (json['stops'] as List<dynamic>?)
               ?.map((s) => RideStop.fromJson(s as Map<String, dynamic>))
               .toList() ??

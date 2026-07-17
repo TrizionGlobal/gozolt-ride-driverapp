@@ -15,6 +15,7 @@ import '../../../driver/presentation/providers/earnings_provider.dart';
 import '../../data/models/chat_message.dart';
 import 'chat_provider.dart';
 import 'ride_provider.dart';
+import '../../../../core/providers/storage_provider.dart';
 
 /// Holds the ride summary after completion so the summary sheet can read it.
 final rideSummaryProvider = StateProvider<RideSummary?>((ref) => null);
@@ -177,13 +178,58 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
 
   /// Checks if there is an active ride for the driver on backend when the app starts
   Future<void> checkActiveRide() async {
+    final storage = _ref.read(secureStorageProvider);
+    final pendingRideId = await storage.getPendingCompletedRide();
+    
+    // First, check if there's a pending completed ride
+    if (pendingRideId != null) {
+      final result = await _repository.getRideDetails(pendingRideId);
+      if (result case ApiSuccess(:final data)) {
+        if (data.status == RideStatus.completed) {
+          final isRecent = data.updatedAt != null && 
+              data.updatedAt!.isAfter(DateTime.now().subtract(const Duration(hours: 24)));
+              
+          if (!isRecent) {
+            if (kDebugMode) print('[RideSession] Ride completed more than 24h ago. Not restoring.');
+            await storage.clearPendingCompletedRide();
+          } else {
+            // Restore the completed ride state
+            state = data;
+            _driverStatusNotifier.setOnRide();
+            _socketService.joinRide(data.id);
+            
+            final paymentMethod = (data.paymentMethod ?? 'cash').toLowerCase();
+            final summary = RideSummary(
+              rideId: data.id,
+              baseFare: 0,
+              distanceFare: 0,
+              timeFare: 0,
+              totalFare: data.fare,
+              driverEarnings: data.fare * 0.8, // Estimate 80%
+              distanceKm: data.distanceKm,
+              durationMinutes: data.estimatedMinutes,
+              paymentMethod: paymentMethod,
+            );
+            _ref.read(farePreviewProvider.notifier).state = summary;
+            _ref.read(showCollectAmountProvider.notifier).state = true;
+            return;
+          }
+        } else {
+          await storage.clearPendingCompletedRide();
+        }
+      } else {
+        await storage.clearPendingCompletedRide();
+      }
+    }
+
+    // Otherwise, check for normal active ride
     final result = await _repository.getActiveRide();
     if (result case ApiSuccess(:final data)) {
       state = data;
-      // If the ride was completed by the driver but payment confirmation was skipped:
-      if (data.status == RideStatus.completed) {
-        _ref.read(showCollectAmountProvider.notifier).state = true;
-      }
+      
+      // Fully restore the driver's active state
+      _driverStatusNotifier.setOnRide();
+      _socketService.joinRide(data.id);
     }
   }
 
@@ -505,7 +551,10 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     }
     
     _ref.read(showCollectAmountProvider.notifier).state = true;
-    // Note: We do NOT change status to completed here.
+    // Save to secure storage so it restores if app is killed before confirmation
+    _ref.read(secureStorageProvider).savePendingCompletedRide(ride.id);
+
+    // Note: We do NOT change status to completed here locally yet.
     // Status remains inProgress so that it's still inProgress in DB until confirmed.
     return true;
   }
@@ -528,11 +577,21 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
     
     _ref.read(cashPaymentConfirmedProvider.notifier).state = true;
     state = ride.copyWith(status: RideStatus.completed);
+    
+    // Save to secure storage so it restores if app is killed
+    _ref.read(secureStorageProvider).savePendingCompletedRide(ride.id);
     return true;
   }
 
   /// Handle what happens after a ride is fully completed and paid
   void finalizeRideCompletion() {
+    // Clear old ride details so they don't affect the next ride
+    _ref.read(showCollectAmountProvider.notifier).state = false;
+    _ref.read(cashPaymentConfirmedProvider.notifier).state = false;
+    _ref.read(farePreviewProvider.notifier).state = null;
+    _ref.read(rideSummaryProvider.notifier).state = null;
+    _ref.read(secureStorageProvider).clearPendingCompletedRide();
+
     final queuedRide = _ref.read(queuedRideProvider);
     if (queuedRide != null && queuedRide.status == RideStatus.accepted) {
       if (kDebugMode) print('[RideSession] Transitioning seamlessly to queued ride: ${queuedRide.id}');
@@ -544,6 +603,7 @@ class RideSessionNotifier extends StateNotifier<Ride?> {
       });
     } else {
       state = null;
+      _driverStatusNotifier.setOnline();
       _ref.read(queuedRideProvider.notifier).state = null;
       _processNextRequest();
     }

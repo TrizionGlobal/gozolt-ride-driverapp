@@ -4,4 +4,5 @@ abstract final class StorageKeys {
   static const String rememberMe = 'remember_me';
   static const String savedDriverId = 'saved_driver_id';
   static const String hasSeenOnboarding = 'has_seen_onboarding';
+  static const String pendingCompletedRide = 'pending_completed_ride_id';
 }

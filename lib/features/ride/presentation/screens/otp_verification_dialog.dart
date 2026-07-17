@@ -204,6 +204,7 @@ class _OtpVerificationDialogState extends State<OtpVerificationDialog> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGold,
                   foregroundColor: AppColors.backgroundDark,
+                  padding: EdgeInsets.zero,
                   disabledBackgroundColor:
                       AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(

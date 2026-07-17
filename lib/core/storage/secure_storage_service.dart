@@ -68,5 +68,23 @@ class SecureStorageService {
   }
 
   // Clear all
-  Future<void> clearAll() => _storage.deleteAll();
+  Future<void> clearAll() async {
+    await _storage.deleteAll();
+  }
+
+  // Pending completed ride
+  Future<void> savePendingCompletedRide(String rideId) async {
+    await _storage.write(
+      key: StorageKeys.pendingCompletedRide,
+      value: rideId,
+    );
+  }
+
+  Future<String?> getPendingCompletedRide() async {
+    return await _storage.read(key: StorageKeys.pendingCompletedRide);
+  }
+
+  Future<void> clearPendingCompletedRide() async {
+    await _storage.delete(key: StorageKeys.pendingCompletedRide);
+  }
 }

@@ -25,7 +25,7 @@ class RideRemoteDataSource {
 
   Future<Ride> getActiveRide() async {
     try {
-      final response = await _dio.get(ApiConstants.ridesActive);
+      final response = await _dio.get(ApiConstants.driverActiveRide);
       return Ride.fromJson(_unwrap(response.data));
     } on DioException catch (e) {
       throw _mapException(e);

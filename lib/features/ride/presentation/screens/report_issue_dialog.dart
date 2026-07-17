@@ -54,7 +54,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
       backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -64,27 +64,30 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
               style: AppTextStyles.titleLarge.copyWith(
                 color: Theme.of(context).textTheme.titleLarge?.color,
                 fontWeight: FontWeight.w700,
+                fontSize: 18,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
-              'Select the type of issue you experienced',
+              'Select the type of issue',
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).textTheme.bodySmall?.color,
+                fontSize: 12,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             // Issue category chips
             Wrap(
               spacing: 8,
-              runSpacing: 8,
+              runSpacing: 4,
+              alignment: WrapAlignment.center,
               children: _issueCategories
                   .map(
                     (issue) => ChoiceChip(
                       label: Text(
                         issue,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: _selectedIssue == issue
                               ? AppColors.backgroundDark
                               : Theme.of(context).textTheme.bodySmall?.color,
@@ -96,25 +99,27 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                       selectedColor: AppColors.primaryGold,
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                     ),
                   )
                   .toList(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             // Description
             TextField(
               controller: _descriptionController,
-              maxLines: 3,
+              maxLines: 2,
               decoration: InputDecoration(
                 hintText: 'Describe the issue (optional)',
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textMuted,
+                  fontSize: 12,
                 ),
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -122,13 +127,14 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
               ),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 12,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             // Submit
             SizedBox(
-              width: double.infinity,
-              height: 50,
+              width: 160,
+              height: 40,
               child: ElevatedButton(
                 onPressed: _selectedIssue != null && !_isSubmitting
                     ? _submit
@@ -139,13 +145,13 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                   disabledBackgroundColor:
                       AppColors.primaryGold.withOpacity(0.4),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 child: _isSubmitting
                     ? SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 16,
+                        height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Theme.of(context).textTheme.titleLarge?.color,
@@ -154,13 +160,13 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
                     : const Text(
                         'Submit Report',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             // Cancel
             GestureDetector(
               onTap: () => Navigator.pop(context),
