@@ -1,4 +1,4 @@
-package com.gozolt.gozolt_driver
+package com.gozolt.gozolt_driver_app
 
 import android.os.Bundle
 import androidx.core.view.WindowCompat
