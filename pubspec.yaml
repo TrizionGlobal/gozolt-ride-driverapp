@@ -1,7 +1,7 @@
 name: gozolt_driver
 description: "Gozolt Driver App - Born in Malta, Loved by Europe"
 publish_to: 'none'
-version: 1.0.1+28
+version: 1.0.1+30
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
