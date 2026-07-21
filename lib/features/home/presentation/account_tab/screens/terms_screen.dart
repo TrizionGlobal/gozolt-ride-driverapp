@@ -198,8 +198,8 @@ class TermsScreen extends StatelessWidget {
                   ),
                   const _ClickableBullet(
                     label: 'Full Terms of Service: ',
-                    linkText: 'https://sites.google.com/view/gozoltlegal/terms-of-service',
-                    launchUri: 'https://sites.google.com/view/gozoltlegal/terms-of-service',
+                    linkText: 'https://sites.google.com/view/gozoltlegal-go-partner/terms-service',
+                    launchUri: 'https://sites.google.com/view/gozoltlegal-go-partner/terms-service',
                   ),
                   const SizedBox(height: 48),
                 ],

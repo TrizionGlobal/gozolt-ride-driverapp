@@ -200,8 +200,8 @@ class PrivacyScreen extends StatelessWidget {
                   ),
                   const _ClickableBullet(
                     label: 'Full Privacy Policy: ',
-                    linkText: 'https://sites.google.com/view/gozoltlegal/privacy-policy',
-                    launchUri: 'https://sites.google.com/view/gozoltlegal/privacy-policy',
+                    linkText: 'https://sites.google.com/view/gozoltlegal-go-partner/privacy-policy',
+                    launchUri: 'https://sites.google.com/view/gozoltlegal-go-partner/privacy-policy',
                   ),
                   const SizedBox(height: 48),
                 ],
