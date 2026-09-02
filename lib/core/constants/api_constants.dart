@@ -7,11 +7,11 @@ abstract final class ApiConstants {
 
   static const String baseUrl = useLocal 
       ? 'http://192.168.1.2:4000/v1' 
-      : 'https://gozolt-new-ride-backend-production.up.railway.app/v1';
+      : 'https://gozolt-new-ride-backend-gozoltridedemo.up.railway.app/v1';
 
   static const String wsUrl = useLocal
       ? 'ws://192.168.1.2:4000'
-      : 'wss://gozolt-new-ride-backend-production.up.railway.app';
+      : 'wss://gozolt-new-ride-backend-gozoltridedemo.up.railway.app';
 
   
 
