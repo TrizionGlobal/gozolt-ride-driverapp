@@ -47,8 +47,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         debugPrint('SplashScreen: Hard fail-safe triggered');
         final hasTokens = await ref.read(secureStorageProvider).getAccessToken() != null;
         if (hasTokens) {
-          _navigate(RouteNames.home);
-        } else {
+       _navigate(RouteNames.partnerServices);       
+       } else {
           _navigate(RouteNames.onboarding);
         }
       }
@@ -108,8 +108,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     ];
 
     if (hasTokens) {
-      debugPrint('SplashScreen: Found tokens, navigating to home');
-      _navigate(intendedRoute ?? RouteNames.home);
+      debugPrint(
+        'SplashScreen: Found tokens, navigating to service selection',
+      );
+      _navigate(
+        intendedRoute ?? RouteNames.partnerServices,
+      );
     } else {
       if (intendedRoute != null && unauthRoutes.contains(intendedRoute)) {
         debugPrint('SplashScreen: Navigating to intended unauth route: $intendedRoute');
@@ -156,7 +160,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // If we're going to the exact same place we currently are (e.g., splash to splash),
     // we should go to home instead to avoid a freeze.
     if (route == RouteNames.splash) {
-      route = RouteNames.home;
+      route = RouteNames.partnerServices;
     }
 
     // We use context.go to ensure the route stack is replaced
