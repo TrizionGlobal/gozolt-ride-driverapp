@@ -57,12 +57,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!formState.isValid) return;
 
     final storage = ref.read(secureStorageProvider);
-    await storage.setRememberMe(formState.rememberMe, driverId: formState.driverId);
+    await storage.setRememberMe(formState.rememberMe,
+        driverId: formState.driverId);
 
     await ref.read(authProvider.notifier).loginWithPassword(
-      driverId: formState.driverId.trim(),
-      password: formState.password,
-    );
+          driverId: formState.driverId.trim(),
+          password: formState.password,
+        );
   }
 
   @override
@@ -72,7 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Listen for auth state changes to navigate or show errors
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next is AuthAuthenticated) {
-        context.go(RouteNames.home);
+        // Authenticated partners choose an approved service before entering
+        // Cab Booking, Food Delivery or Grocery Delivery.
+        context.go(RouteNames.partnerServices);
       } else if (next is AuthError) {
         ref.read(loginFormProvider.notifier).setError(next.message);
       }
@@ -110,16 +113,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 child: IntrinsicHeight(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Spacer(flex: 3),
-                        
+
                         // Logo
                         const Center(child: GozoltLogo(size: 90)),
                         const SizedBox(height: 24),
-                        
+
                         // Title
                         Text(
                           l10n.welcomeBack,
@@ -132,11 +136,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Text(
                           "Login with your credentials to continue",
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: Theme.of(context).brightness == Brightness.dark ? AppColors.textMuted : AppColors.textMutedLight,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.textMuted
+                                    : AppColors.textMutedLight,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const Spacer(flex: 2),
 
                         // Error message
@@ -179,7 +186,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _driverIdController,
-                          onChanged: ref.read(loginFormProvider.notifier).setDriverId,
+                          onChanged:
+                              ref.read(loginFormProvider.notifier).setDriverId,
                           keyboardType: TextInputType.text,
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
@@ -201,7 +209,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _passwordController,
-                          onChanged: ref.read(loginFormProvider.notifier).setPassword,
+                          onChanged:
+                              ref.read(loginFormProvider.notifier).setPassword,
                           obscureText: !_isPasswordVisible,
                           keyboardType: TextInputType.visiblePassword,
                           style: AppTextStyles.bodyLarge.copyWith(
@@ -232,7 +241,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             // Remember me
                             GestureDetector(
-                              onTap: ref.read(loginFormProvider.notifier).toggleRememberMe,
+                              onTap: ref
+                                  .read(loginFormProvider.notifier)
+                                  .toggleRememberMe,
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -245,9 +256,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           .read(loginFormProvider.notifier)
                                           .toggleRememberMe(),
                                       activeColor: AppColors.primaryGold,
-                                      checkColor: Theme.of(context).scaffoldBackgroundColor,
+                                      checkColor: Theme.of(context)
+                                          .scaffoldBackgroundColor,
                                       side: BorderSide(
-                                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
+                                        color: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.color ??
+                                            AppColors.textMuted,
                                         width: 1.5,
                                       ),
                                     ),
@@ -256,13 +272,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   Text(
                                     l10n.rememberMe,
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted,
+                                      color: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color ??
+                                          AppColors.textMuted,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             // Forgot Password
                             GestureDetector(
                               onTap: () {
@@ -285,7 +305,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: isLoading || !formState.isValid ? null : _handleLogin,
+                            onPressed: isLoading || !formState.isValid
+                                ? null
+                                : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -305,12 +327,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
                                     ),
                                   ),
                           ),
                         ),
-                        
+
                         const Spacer(flex: 3),
 
                         // Register section using RichText
@@ -318,7 +342,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: RichText(
                             text: TextSpan(
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color,
                               ),
                               children: [
                                 const TextSpan(text: "Don't have an account? "),
@@ -329,15 +356,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                   recognizer: TapGestureRecognizer()
-                                    ..onTap = () => context.push(RouteNames.register),
+                                    ..onTap =
+                                        () => context.push(RouteNames.register),
                                 ),
                               ],
                             ),
                           ),
                         ),
                         if (formState.errorMessage != null &&
-                            (formState.errorMessage!.toLowerCase().contains('supplier') ||
-                             formState.errorMessage!.toLowerCase().contains('fleet'))) ...[
+                            (formState.errorMessage!
+                                    .toLowerCase()
+                                    .contains('supplier') ||
+                                formState.errorMessage!
+                                    .toLowerCase()
+                                    .contains('fleet'))) ...[
                           const SizedBox(height: 16),
                           Center(
                             child: InkWell(

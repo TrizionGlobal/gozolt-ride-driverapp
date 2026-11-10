@@ -91,7 +91,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     HapticFeedback.lightImpact();
     final phoneNumber = ref.read(loginFormProvider).fullPhoneNumber;
     ref.read(authProvider.notifier).sendOtp(phoneNumber);
-    
+
     _otpKey.currentState?.clear();
     setState(() {
       _currentOtp = '';
@@ -108,7 +108,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next is AuthAuthenticated) {
-        context.go(RouteNames.home);
+        // Route authenticated partners through service selection.
+        context.go(RouteNames.partnerServices);
       } else if (next is AuthError) {
         setState(() {
           _hasError = true;
@@ -126,8 +127,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, 
-                color: Theme.of(context).textTheme.bodyLarge?.color),
+          icon: Icon(Icons.arrow_back_ios_new_rounded,
+              color: Theme.of(context).textTheme.bodyLarge?.color),
           onPressed: () => context.pop(),
         ),
       ),
@@ -163,7 +164,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _errorText!,
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+                  style:
+                      AppTextStyles.bodySmall.copyWith(color: AppColors.error),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -173,19 +175,22 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 children: [
                   Text(
                     "Didn't receive code? ",
-                    style: AppTextStyles.bodyMedium.copyWith(color: Theme.of(context).textTheme.bodySmall?.color),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).textTheme.bodySmall?.color),
                   ),
                   _canResend
                       ? TextButton(
                           onPressed: _resendOtp,
                           child: Text(
                             'Resend',
-                            style: AppTextStyles.titleSmall.copyWith(color: AppColors.primaryGold),
+                            style: AppTextStyles.titleSmall
+                                .copyWith(color: AppColors.primaryGold),
                           ),
                         )
                       : Text(
                           'Resend in ${_resendSeconds}s',
-                          style: AppTextStyles.titleSmall.copyWith(color: AppColors.primaryGold),
+                          style: AppTextStyles.titleSmall
+                              .copyWith(color: AppColors.primaryGold),
                         ),
                 ],
               ),
@@ -193,15 +198,18 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: isLoading || _currentOtp.length != 6 ? null : _verify,
+                  onPressed:
+                      isLoading || _currentOtp.length != 6 ? null : _verify,
                   child: isLoading
-                      ? CircularProgressIndicator(color: Theme.of(context).scaffoldBackgroundColor)
+                      ? CircularProgressIndicator(
+                          color: Theme.of(context).scaffoldBackgroundColor)
                       : const Text(
                           'Verify & Continue',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A2E), // Hardcode to background color for contrast
+                            color: Color(
+                                0xFF1A1A2E), // Hardcode to background color for contrast
                           ),
                         ),
                 ),
