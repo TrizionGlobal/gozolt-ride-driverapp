@@ -97,7 +97,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final result = await _repository.forgotPassword(driverId);
     switch (result) {
       case ApiSuccess():
-        state = const AuthUnauthenticated(); // Stay on current screen but show success
+        state =
+            const AuthUnauthenticated(); // Stay on current screen but show success
         return true;
       case ApiFailure(:final exception):
         state = AuthError(exception.message);
@@ -138,7 +139,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _ref.invalidate(todayEarningsProvider);
     _ref.invalidate(earningsScreenProvider);
     _ref.invalidate(rideSessionProvider);
-    
+
     // Attempt to resolve the locationUpdateProvider to stop tracking
     try {
       _ref.invalidate(locationUpdateProvider);

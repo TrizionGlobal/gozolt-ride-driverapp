@@ -27,7 +27,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ApiResult<void>> verifyRegisterOtp(String phoneNumber, String otp) async {
+  Future<ApiResult<void>> verifyRegisterOtp(
+      String phoneNumber, String otp) async {
     try {
       await _remoteDataSource.verifyRegisterOtp(phoneNumber, otp);
       return const ApiSuccess(null);
@@ -47,7 +48,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ApiResult<LoginResponse>> verifyOtp(String phoneNumber, String otp) async {
+  Future<ApiResult<LoginResponse>> verifyOtp(
+      String phoneNumber, String otp) async {
     try {
       final response = await _remoteDataSource.verifyOtp(phoneNumber, otp);
       await _storage.saveTokens(
@@ -61,9 +63,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ApiResult<LoginResponse>> loginWithPassword(String driverId, String password) async {
+  Future<ApiResult<LoginResponse>> loginWithPassword(
+      String driverId, String password) async {
     try {
-      final response = await _remoteDataSource.loginWithPassword(driverId, password);
+      final response =
+          await _remoteDataSource.loginWithPassword(driverId, password);
       await _storage.saveTokens(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
@@ -112,7 +116,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ApiResult<void>> resetPassword(String driverId, String newPassword) async {
+  Future<ApiResult<void>> resetPassword(
+      String driverId, String newPassword) async {
     try {
       await _remoteDataSource.resetPassword(driverId, newPassword);
       return const ApiSuccess(null);

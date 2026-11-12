@@ -9,45 +9,78 @@ class AuthRemoteDataSource {
   final Dio _dio;
 
   AuthRemoteDataSource(this._dio);
-  
+
   Future<void> register(Map<String, dynamic> data) async {
     try {
-      final extraDocuments = data['extraDocuments'] as List<Map<String, String>>?;
+      final extraDocuments =
+          data['extraDocuments'] as List<Map<String, String>>?;
+
+      final selectedServices =
+          (data['selectedServices'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<String>()
+              .map((service) => service.trim().toUpperCase())
+              .where((service) => service.isNotEmpty)
+              .toSet()
+              .toList(growable: false);
+
       data.remove('extraDocuments');
-      
+      data.remove('selectedServices');
+
       final Map<String, dynamic> formDataMap = {
         ...data,
+        'selectedServices': jsonEncode(selectedServices),
       };
 
       if (data['profileImage'] != null) {
-        formDataMap['profileImage'] = await MultipartFile.fromFile(data['profileImage'] as String, filename: 'profile.jpg');
+        formDataMap['profileImage'] = await MultipartFile.fromFile(
+            data['profileImage'] as String,
+            filename: 'profile.jpg');
       }
       if (data['drivingLicense'] != null) {
-        formDataMap['drivingLicense'] = await MultipartFile.fromFile(data['drivingLicense'] as String, filename: 'license.jpg');
+        formDataMap['drivingLicense'] = await MultipartFile.fromFile(
+            data['drivingLicense'] as String,
+            filename: 'license.jpg');
       }
       if (data['drivingLicenseBack'] != null) {
-        formDataMap['drivingLicenseBack'] = await MultipartFile.fromFile(data['drivingLicenseBack'] as String, filename: 'license_back.jpg');
+        formDataMap['drivingLicenseBack'] = await MultipartFile.fromFile(
+            data['drivingLicenseBack'] as String,
+            filename: 'license_back.jpg');
       }
       if (data['cpcDocument'] != null) {
-        formDataMap['cpcDocument'] = await MultipartFile.fromFile(data['cpcDocument'] as String, filename: 'cpc.jpg');
+        formDataMap['cpcDocument'] = await MultipartFile.fromFile(
+            data['cpcDocument'] as String,
+            filename: 'cpc.jpg');
       }
       if (data['idCardDocument'] != null) {
-        formDataMap['idCardDocument'] = await MultipartFile.fromFile(data['idCardDocument'] as String, filename: 'idcard.jpg');
+        formDataMap['idCardDocument'] = await MultipartFile.fromFile(
+            data['idCardDocument'] as String,
+            filename: 'idcard.jpg');
       }
       if (data['policeConductDocument'] != null) {
-        formDataMap['policeConductDocument'] = await MultipartFile.fromFile(data['policeConductDocument'] as String, filename: 'police_conduct.jpg');
+        formDataMap['policeConductDocument'] = await MultipartFile.fromFile(
+            data['policeConductDocument'] as String,
+            filename: 'police_conduct.jpg');
       }
       if (data['proofOfAddressDocument'] != null) {
-        formDataMap['proofOfAddressDocument'] = await MultipartFile.fromFile(data['proofOfAddressDocument'] as String, filename: 'proof_of_address.jpg');
+        formDataMap['proofOfAddressDocument'] = await MultipartFile.fromFile(
+            data['proofOfAddressDocument'] as String,
+            filename: 'proof_of_address.jpg');
       }
       if (data['medicalCertificateDocument'] != null) {
-        formDataMap['medicalCertificateDocument'] = await MultipartFile.fromFile(data['medicalCertificateDocument'] as String, filename: 'medical_cert.jpg');
+        formDataMap['medicalCertificateDocument'] =
+            await MultipartFile.fromFile(
+                data['medicalCertificateDocument'] as String,
+                filename: 'medical_cert.jpg');
       }
       if (data['workPermitDocument'] != null) {
-        formDataMap['workPermitDocument'] = await MultipartFile.fromFile(data['workPermitDocument'] as String, filename: 'work_permit.jpg');
+        formDataMap['workPermitDocument'] = await MultipartFile.fromFile(
+            data['workPermitDocument'] as String,
+            filename: 'work_permit.jpg');
       }
       if (data['insuranceDocument'] != null) {
-        formDataMap['insuranceDocument'] = await MultipartFile.fromFile(data['insuranceDocument'] as String, filename: 'insurance.jpg');
+        formDataMap['insuranceDocument'] = await MultipartFile.fromFile(
+            data['insuranceDocument'] as String,
+            filename: 'insurance.jpg');
       }
 
       if (extraDocuments != null && extraDocuments.isNotEmpty) {
@@ -56,7 +89,8 @@ class AuthRemoteDataSource {
           final doc = extraDocuments[i];
           if (doc['path'] != null && doc['path']!.isNotEmpty) {
             final fieldName = 'extraDocument_$i';
-            formDataMap[fieldName] = await MultipartFile.fromFile(doc['path']!, filename: 'extra_$i.jpg');
+            formDataMap[fieldName] = await MultipartFile.fromFile(doc['path']!,
+                filename: 'extra_$i.jpg');
             extraNames[fieldName] = doc['name'] ?? 'Extra Document';
           }
         }
@@ -135,7 +169,8 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<LoginResponse> loginWithPassword(String driverId, String password) async {
+  Future<LoginResponse> loginWithPassword(
+      String driverId, String password) async {
     try {
       final response = await _dio.post(
         ApiConstants.loginDriver,
@@ -168,7 +203,8 @@ class AuthRemoteDataSource {
         data: {'driverId': driverId},
       );
     } on DioException catch (e) {
-      throw ServerException(_parseError(e, 'Failed to send OTP. Please check your Driver ID.'));
+      throw ServerException(
+          _parseError(e, 'Failed to send OTP. Please check your Driver ID.'));
     }
   }
 
@@ -188,18 +224,18 @@ class AuthRemoteDataSource {
 
   String _parseError(DioException e, String defaultMsg) {
     // Handle network or connection related errors with a friendly message
-    if (e.type == DioExceptionType.connectionTimeout || 
-        e.type == DioExceptionType.receiveTimeout || 
-        e.type == DioExceptionType.sendTimeout || 
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
         e.type == DioExceptionType.connectionError) {
       return 'Connection lost. Please check your internet connection and try again.';
     }
 
     // Handle unknown types wrapping SocketException (like Failed host lookup)
-    if (e.type == DioExceptionType.unknown && 
-        (e.message?.contains('Failed host lookup') == true || 
-         e.message?.contains('SocketException') == true || 
-         e.message?.contains('Connection refused') == true)) {
+    if (e.type == DioExceptionType.unknown &&
+        (e.message?.contains('Failed host lookup') == true ||
+            e.message?.contains('SocketException') == true ||
+            e.message?.contains('Connection refused') == true)) {
       return 'Connection lost. Please check your internet connection and try again.';
     }
 

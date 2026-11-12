@@ -13,7 +13,9 @@ class WelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoPath = isDark ? AssetPaths.gozoltLogoWithText : AssetPaths.lightGozoltLogoWithText;
+    final logoPath = isDark
+        ? AssetPaths.gozoltLogoWithText
+        : AssetPaths.lightGozoltLogoWithText;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -120,7 +122,12 @@ class WelcomeScreen extends ConsumerWidget {
               Text(
                 'v1.0.1',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5) ?? Colors.grey,
+                  color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.5) ??
+                      Colors.grey,
                   fontSize: 10,
                 ),
               ),

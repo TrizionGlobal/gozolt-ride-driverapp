@@ -18,7 +18,8 @@ const List<CountryCode> supportedCountryCodes = [
   CountryCode(name: 'Pakistan', code: 'PK', dialCode: '+92', flag: '🇵🇰'),
   CountryCode(name: 'Bangladesh', code: 'BD', dialCode: '+880', flag: '🇧🇩'),
   CountryCode(name: 'Sri Lanka', code: 'LK', dialCode: '+94', flag: '🇱🇰'),
-  CountryCode(name: 'United Kingdom', code: 'GB', dialCode: '+44', flag: '🇬🇧'),
+  CountryCode(
+      name: 'United Kingdom', code: 'GB', dialCode: '+44', flag: '🇬🇧'),
   CountryCode(name: 'United States', code: 'US', dialCode: '+1', flag: '🇺🇸'),
   CountryCode(name: 'UAE', code: 'AE', dialCode: '+971', flag: '🇦🇪'),
 ];

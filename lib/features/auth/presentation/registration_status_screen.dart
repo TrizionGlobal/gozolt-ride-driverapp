@@ -20,7 +20,8 @@ class RegistrationStatusScreen extends StatefulWidget {
   });
 
   @override
-  State<RegistrationStatusScreen> createState() => _RegistrationStatusScreenState();
+  State<RegistrationStatusScreen> createState() =>
+      _RegistrationStatusScreenState();
 }
 
 class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
@@ -47,7 +48,8 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   Future<void> _checkStatus() async {
     if (_isChecking) return;
     if (widget.phone == null) {
-      SnackbarUtils.showInfo(context, 'Checking live status... Application is still under review.');
+      SnackbarUtils.showInfo(context,
+          'Checking live status... Application is still under review.');
       return;
     }
 
@@ -60,7 +62,7 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
       final response = await dio.get(
         '${ApiConstants.driverRegistrationStatus}?phone=${Uri.encodeComponent(widget.phone!)}',
       );
-      
+
       if (mounted) {
         final data = response.data as Map<String, dynamic>;
         final status = data['status'] as String?;
@@ -72,12 +74,15 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
             barrierDismissible: false,
             builder: (ctx) => AlertDialog(
               backgroundColor: const Color(0xFF1A1A2E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               title: const Row(
                 children: [
-                  Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
+                  Icon(Icons.check_circle_rounded,
+                      color: Colors.green, size: 28),
                   SizedBox(width: 10),
-                  Text('Application Approved!', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  Text('Application Approved!',
+                      style: TextStyle(color: Colors.white, fontSize: 18)),
                 ],
               ),
               content: Column(
@@ -94,15 +99,20 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.primaryGold.withOpacity(0.3)),
+                      border: Border.all(
+                          color: AppColors.primaryGold.withOpacity(0.3)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Your Driver ID:', style: TextStyle(color: Colors.white70)),
+                        const Text('Your Driver ID:',
+                            style: TextStyle(color: Colors.white70)),
                         Text(
                           driverId ?? 'N/A',
-                          style: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(
+                              color: AppColors.primaryGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
                         ),
                       ],
                     ),
@@ -110,7 +120,8 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
                   const SizedBox(height: 12),
                   const Text(
                     'Please check your email for your temporary password to log in.',
-                    style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
+                    style: TextStyle(
+                        color: Colors.white54, fontSize: 12, height: 1.4),
                   ),
                 ],
               ),
@@ -120,18 +131,23 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
                     Navigator.pop(ctx);
                     context.go(RouteNames.welcome);
                   },
-                  child: const Text('LOG IN NOW', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
+                  child: const Text('LOG IN NOW',
+                      style: TextStyle(
+                          color: AppColors.primaryGold,
+                          fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           );
         } else {
-          SnackbarUtils.showInfo(context, 'Status: ${status?.replaceAll('_', ' ') ?? 'UNDER REVIEW'}. Application is still being processed.');
+          SnackbarUtils.showInfo(context,
+              'Status: ${status?.replaceAll('_', ' ') ?? 'UNDER REVIEW'}. Application is still being processed.');
         }
       }
     } catch (e) {
       if (mounted) {
-        SnackbarUtils.showError(context, 'Unable to fetch status. Application is still under review.');
+        SnackbarUtils.showError(context,
+            'Unable to fetch status. Application is still under review.');
       }
     } finally {
       if (mounted) {
@@ -143,11 +159,14 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
   }
 
   Future<void> _contactSupport() async {
-    final bodyText = widget.phone != null ? 'My registered phone number is: ${widget.phone}' : '';
+    final bodyText = widget.phone != null
+        ? 'My registered phone number is: ${widget.phone}'
+        : '';
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'support@gozolt.com.mt',
-      query: 'subject=Gozolt Driver Onboarding Support Request&body=${Uri.encodeComponent(bodyText)}',
+      query:
+          'subject=Gozolt Driver Onboarding Support Request&body=${Uri.encodeComponent(bodyText)}',
     );
     try {
       if (!await launchUrl(emailLaunchUri)) {
@@ -172,7 +191,8 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -294,12 +314,14 @@ class _RegistrationStatusScreenState extends State<RegistrationStatusScreen>
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.black),
                           ),
                         )
                       : const Text(
                           'Check Live Status',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                 ),
                 const SizedBox(height: 12),

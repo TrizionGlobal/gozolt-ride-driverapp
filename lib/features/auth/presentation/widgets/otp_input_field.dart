@@ -25,7 +25,8 @@ class OtpInputField extends StatefulWidget {
   State<OtpInputField> createState() => OtpInputFieldState();
 }
 
-class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderStateMixin {
+class OtpInputFieldState extends State<OtpInputField>
+    with SingleTickerProviderStateMixin {
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
   late AnimationController _shakeController;
@@ -50,7 +51,8 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
   @override
   void didUpdateWidget(covariant OtpInputField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialValue != oldWidget.initialValue && widget.initialValue != null) {
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != null) {
       for (int i = 0; i < widget.length; i++) {
         if (widget.initialValue!.length > i) {
           _controllers[i].text = widget.initialValue![i];
@@ -99,7 +101,8 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
   }
 
   void _handleKeyPress(RawKeyEvent event, int index) {
-    if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+    if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.backspace) {
       if (_controllers[index].text.isEmpty && index > 0) {
         _focusNodes[index - 1].requestFocus();
         _controllers[index - 1].text = '';
@@ -112,8 +115,9 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
     return AnimatedBuilder(
       animation: _shakeController,
       builder: (context, child) {
-        final double offset = (1 - _shakeController.value) * 10 * 
-            ( (1 - _shakeController.value) > 0.5 ? 1 : -1);
+        final double offset = (1 - _shakeController.value) *
+            10 *
+            ((1 - _shakeController.value) > 0.5 ? 1 : -1);
         return Transform.translate(
           offset: Offset(_shakeController.isAnimating ? offset : 0, 0),
           child: Row(
@@ -133,9 +137,10 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
                     keyboardType: TextInputType.number,
                     maxLength: 1,
                     style: AppTextStyles.headlineMedium.copyWith(
-                      color: widget.hasError 
-                          ? AppColors.error 
-                          : (Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+                      color: widget.hasError
+                          ? AppColors.error
+                          : (Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary),
                       fontWeight: FontWeight.w700,
                     ),
                     inputFormatters: [
@@ -145,14 +150,15 @@ class OtpInputFieldState extends State<OtpInputField> with SingleTickerProviderS
                       counterText: '',
                       contentPadding: EdgeInsets.zero,
                       filled: true,
-                      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                      fillColor:
+                          Theme.of(context).inputDecorationTheme.fillColor,
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: widget.hasError 
-                              ? AppColors.error 
-                              : (Theme.of(context).brightness == Brightness.dark 
-                                  ? AppColors.surfaceDark 
+                          color: widget.hasError
+                              ? AppColors.error
+                              : (Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.surfaceDark
                                   : Colors.grey.shade200),
                           width: 1.5,
                         ),

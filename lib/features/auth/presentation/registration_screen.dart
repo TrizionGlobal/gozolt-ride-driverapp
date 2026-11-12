@@ -13,6 +13,7 @@ import 'widgets/otp_input_field.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/utils/snackbar_utils.dart';
 import '../domain/models/country_code.dart';
+import '../../partner_services/domain/models/partner_service_type.dart';
 
 class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
@@ -28,18 +29,19 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   late final TextEditingController _otpController;
   final _otpKey = GlobalKey<OtpInputFieldState>();
 
-
   // Step 2: Identity & Contact Info
   late final TextEditingController _fullNameController;
   late final TextEditingController _dobController;
   late final TextEditingController _nationalityController;
   late final TextEditingController _nationalIdController;
-  late final TextEditingController _passwordController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _homeAddressController;
   late final TextEditingController _emergencyContactNameController;
   late final TextEditingController _emergencyContactPhoneController;
+  late final TextEditingController _vehicleNumberController;
+  late final TextEditingController _vehicleMakeController;
+  late final TextEditingController _vehicleModelController;
 
   // Step 3: Credentials
   late final TextEditingController _licenseNumberController;
@@ -49,14 +51,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   late final TextEditingController _licenseIssuingCountryController;
   late final TextEditingController _cpcNumberController;
   late final TextEditingController _taxiPhvLicenseController;
-
-  // Step 4: Vehicle & Insurance (Self-Owned only)
-  late final TextEditingController _vehicleNumberController;
-  late final TextEditingController _vehicleMakeController;
-  late final TextEditingController _vehicleModelController;
-  late final TextEditingController _vehicleYearController;
-  late final TextEditingController _vehicleColorController;
-  late final TextEditingController _insurancePolicyNumberController;
 
   CountryCode _selectedCountry = supportedCountryCodes.first;
   CountryCode _selectedEmergencyCountry = supportedCountryCodes.first;
@@ -70,7 +64,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     _dobController = TextEditingController();
     _nationalityController = TextEditingController();
     _nationalIdController = TextEditingController();
-    _passwordController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
     _homeAddressController = TextEditingController();
@@ -88,9 +81,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     _vehicleNumberController = TextEditingController();
     _vehicleMakeController = TextEditingController();
     _vehicleModelController = TextEditingController();
-    _vehicleYearController = TextEditingController();
-    _vehicleColorController = TextEditingController();
-    _insurancePolicyNumberController = TextEditingController();
+    //_vehicleYearController = TextEditingController();
+    //_vehicleColorController = TextEditingController();
+    //_insurancePolicyNumberController = TextEditingController();
   }
 
   @override
@@ -101,7 +94,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     _dobController.dispose();
     _nationalityController.dispose();
     _nationalIdController.dispose();
-    _passwordController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _homeAddressController.dispose();
@@ -119,13 +111,56 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     _vehicleNumberController.dispose();
     _vehicleMakeController.dispose();
     _vehicleModelController.dispose();
-    _vehicleYearController.dispose();
-    _vehicleColorController.dispose();
-    _insurancePolicyNumberController.dispose();
+    //_vehicleYearController.dispose();
+    //_vehicleColorController.dispose();
+    // _insurancePolicyNumberController.dispose();
     super.dispose();
   }
 
-  int get _totalSteps => 3;
+  bool _hasCabService(RegistrationState state) {
+    return state.request.selectedServices.contains(
+      PartnerServiceType.cabBooking.apiValue,
+    );
+  }
+
+  int _totalStepsFor(RegistrationState state) {
+    return _hasCabService(state) ? 6 : 5;
+  }
+
+  int _validationStepFor(
+    int visibleStep,
+    RegistrationState state,
+  ) {
+    if (_hasCabService(state)) {
+      switch (visibleStep) {
+        case 0:
+          return 0;
+        case 1:
+          return 1;
+        case 2:
+          return 2;
+        case 3:
+          return 3;
+        case 4:
+          return 5;
+        default:
+          return -1;
+      }
+    }
+
+    switch (visibleStep) {
+      case 0:
+        return 0;
+      case 1:
+        return 1;
+      case 2:
+        return 3;
+      case 3:
+        return 5;
+      default:
+        return -1;
+    }
+  }
 
   void _showCountryPicker() {
     CountryCodePicker.show(
@@ -135,7 +170,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         setState(() {
           _selectedCountry = country;
         });
-        ref.read(registrationProvider.notifier).setPhoneNumber(country.dialCode + _phoneController.text);
+        ref
+            .read(registrationProvider.notifier)
+            .setPhoneNumber(country.dialCode + _phoneController.text);
       },
     );
   }
@@ -148,7 +185,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         setState(() {
           _selectedEmergencyCountry = country;
         });
-        ref.read(registrationProvider.notifier).setEmergencyContactPhone(country.dialCode + _emergencyContactPhoneController.text);
+        ref.read(registrationProvider.notifier).setEmergencyContactPhone(
+            country.dialCode + _emergencyContactPhoneController.text);
       },
     );
   }
@@ -175,7 +213,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title, style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(title,
+                      style: AppTextStyles.titleMedium
+                          .copyWith(fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
                     onPressed: () => Navigator.pop(context),
@@ -190,19 +230,31 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     color: AppColors.primaryGold.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt_rounded, color: AppColors.primaryGold),
+                  child: const Icon(Icons.camera_alt_rounded,
+                      color: AppColors.primaryGold),
                 ),
-                title: const Text('Take a Photo', style: AppTextStyles.titleSmall),
-                subtitle: const Text('Capture document scan using device camera', style: TextStyle(fontSize: 12)),
+                title:
+                    const Text('Take a Photo', style: AppTextStyles.titleSmall),
+                subtitle: const Text(
+                    'Capture document scan using device camera',
+                    style: TextStyle(fontSize: 12)),
                 onTap: () async {
                   Navigator.pop(context);
-                  final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 400, maxHeight: 400, imageQuality: 50);
+                  final XFile? photo = await _picker.pickImage(
+                      source: ImageSource.camera,
+                      maxWidth: 400,
+                      maxHeight: 400,
+                      imageQuality: 50);
                   if (photo != null) {
                     final file = File(photo.path);
                     final size = await file.length();
                     if (size > 5 * 1024 * 1024) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('File size must be less than 5MB'),
+                                backgroundColor: AppColors.error));
                       }
                       return;
                     }
@@ -217,19 +269,30 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     color: AppColors.primaryGold.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.photo_library_rounded, color: AppColors.primaryGold),
+                  child: const Icon(Icons.photo_library_rounded,
+                      color: AppColors.primaryGold),
                 ),
-                title: const Text('Choose from Gallery', style: AppTextStyles.titleSmall),
-                subtitle: const Text('Select a pre-existing photo or scan', style: TextStyle(fontSize: 12)),
+                title: const Text('Choose from Gallery',
+                    style: AppTextStyles.titleSmall),
+                subtitle: const Text('Select a pre-existing photo or scan',
+                    style: TextStyle(fontSize: 12)),
                 onTap: () async {
                   Navigator.pop(context);
-                  final XFile? photo = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 400, maxHeight: 400, imageQuality: 50);
+                  final XFile? photo = await _picker.pickImage(
+                      source: ImageSource.gallery,
+                      maxWidth: 400,
+                      maxHeight: 400,
+                      imageQuality: 50);
                   if (photo != null) {
                     final file = File(photo.path);
                     final size = await file.length();
                     if (size > 5 * 1024 * 1024) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('File size must be less than 5MB'),
+                                backgroundColor: AppColors.error));
                       }
                       return;
                     }
@@ -245,23 +308,39 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       color: AppColors.primaryGold.withOpacity(0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primaryGold),
+                    child: const Icon(Icons.picture_as_pdf_rounded,
+                        color: AppColors.primaryGold),
                   ),
-                  title: const Text('Upload PDF / Document File', style: AppTextStyles.titleSmall),
-                  subtitle: const Text('Select a PDF, DOCX, or text file from device storage', style: TextStyle(fontSize: 12)),
+                  title: const Text('Upload PDF / Document File',
+                      style: AppTextStyles.titleSmall),
+                  subtitle: const Text(
+                      'Select a PDF, DOCX, or text file from device storage',
+                      style: TextStyle(fontSize: 12)),
                   onTap: () async {
                     Navigator.pop(context);
                     try {
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles(
                         type: FileType.custom,
-                        allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+                        allowedExtensions: [
+                          'pdf',
+                          'doc',
+                          'docx',
+                          'jpg',
+                          'jpeg',
+                          'png'
+                        ],
                       );
                       if (result != null && result.files.single.path != null) {
                         final file = File(result.files.single.path!);
                         final size = await file.length();
                         if (size > 5 * 1024 * 1024) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File size must be less than 5MB'), backgroundColor: AppColors.error));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('File size must be less than 5MB'),
+                                    backgroundColor: AppColors.error));
                           }
                           return;
                         }
@@ -283,9 +362,12 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
   Future<void> _selectDate(BuildContext context, String fieldType) async {
     String currentValue = '';
-    if (fieldType == 'dob') currentValue = _dobController.text;
-    else if (fieldType == 'licenseIssue') currentValue = _licenseIssueDateController.text;
-    else if (fieldType == 'licenseExpiry') currentValue = _licenseExpiryDateController.text;
+    if (fieldType == 'dob')
+      currentValue = _dobController.text;
+    else if (fieldType == 'licenseIssue')
+      currentValue = _licenseIssueDateController.text;
+    else if (fieldType == 'licenseExpiry')
+      currentValue = _licenseExpiryDateController.text;
 
     DateTime initialDate = DateTime.now();
     if (currentValue.isNotEmpty) {
@@ -324,7 +406,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       },
     );
     if (picked != null) {
-      final formatted = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      final formatted =
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       final notifier = ref.read(registrationProvider.notifier);
       setState(() {
         if (fieldType == 'dob') {
@@ -341,20 +424,47 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     }
   }
 
-  String _getStepTitle(int step, String driverType) {
+  String _getStepTitle(
+    int step,
+    RegistrationState state,
+  ) {
+    if (_hasCabService(state)) {
+      switch (step) {
+        case 0:
+          return 'OTP Verification';
+        case 1:
+          return 'Services Selection';
+        case 2:
+          return 'Vehicle Arrangement';
+        case 3:
+          return 'Personal Details';
+        case 4:
+          return 'Documents';
+        case 5:
+          return 'Confirmation';
+        default:
+          return '';
+      }
+    }
+
     switch (step) {
       case 0:
         return 'OTP Verification';
       case 1:
-        return 'Identity & Contact';
+        return 'Services Selection';
       case 2:
-        return 'Licences & Credentials';
+        return 'Personal Details';
+      case 3:
+        return 'Documents';
+      case 4:
+        return 'Confirmation';
       default:
         return '';
     }
   }
 
-  Future<void> _handleBack(RegistrationState state, RegistrationNotifier notifier) async {
+  Future<void> _handleBack(
+      RegistrationState state, RegistrationNotifier notifier) async {
     if (state.currentStep > 0) {
       notifier.setStep(state.currentStep - 1);
     } else {
@@ -382,7 +492,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(registrationProvider);
     final notifier = ref.read(registrationProvider.notifier);
-    final totalSteps = _totalSteps;
+    final totalSteps = _totalStepsFor(state);
 
     final isButtonEnabled = () {
       if (state.isLoading) return false;
@@ -393,11 +503,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           return _otpController.text.trim().length == 6;
         }
       }
+
+      if (state.currentStep == 1) {
+        return state.request.selectedServices.isNotEmpty;
+      }
+
       return true;
     }();
 
     ref.listen<RegistrationState>(registrationProvider, (previous, next) {
-      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage) {
         if (next.currentStep == 0 && next.isOtpSent && !next.isOtpVerified) {
           _otpKey.currentState?.shake();
         }
@@ -405,127 +521,141 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     });
 
     return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-        await _handleBack(state, notifier);
-      },
-      child: Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          _getStepTitle(state.currentStep, state.request.driverType),
-          style: AppTextStyles.titleMedium,
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => _handleBack(state, notifier),
-        ),
-      ),
-      body: Column(
-        children: [
-          // Step progress indicator bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          await _handleBack(state, notifier);
+        },
+        child: Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Text(
+              _getStepTitle(state.currentStep, state),
+              style: AppTextStyles.titleMedium,
+            ),
+            centerTitle: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              onPressed: () => _handleBack(state, notifier),
+            ),
+          ),
+          body: Column(
+            children: [
+              // Step progress indicator bar
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Column(
                   children: [
-                    Text('Step ${state.currentStep + 1} of $totalSteps', style: AppTextStyles.titleSmall.copyWith(color: AppColors.primaryGold)),
-                    Text(
-                      _getStepTitle(state.currentStep, state.request.driverType),
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Step ${state.currentStep + 1} of $totalSteps',
+                            style: AppTextStyles.titleSmall
+                                .copyWith(color: AppColors.primaryGold)),
+                        Text(
+                          _getStepTitle(state.currentStep, state),
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.textMuted),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: List.generate(totalSteps, (index) {
+                        return Expanded(
+                          child: Container(
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              color: index <= state.currentStep
+                                  ? AppColors.primaryGold
+                                  : AppColors.textMuted.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: List.generate(totalSteps, (index) {
-                    return Expanded(
-                      child: Container(
-                        height: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        decoration: BoxDecoration(
-                          color: index <= state.currentStep 
-                            ? AppColors.primaryGold 
-                            : AppColors.textMuted.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
-          
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _buildStep(state.currentStep, state, notifier),
               ),
-            ),
-          ),
-          
-          // Bottom Navigation Buttons
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                if (state.errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.error_outline_rounded, color: Colors.redAccent),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              state.errorMessage!,
-                              style: AppTextStyles.bodyMedium.copyWith(color: Colors.redAccent),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      backgroundColor: isButtonEnabled ? AppColors.primaryGold : AppColors.primaryGold.withOpacity(0.3),
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: isButtonEnabled ? () => _handleContinue(state, notifier) : null,
-                    child: state.isLoading 
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : Text(
-                          _getButtonText(state, totalSteps),
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildStep(state.currentStep, state, notifier),
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              // Bottom Navigation Buttons
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline_rounded,
+                                  color: Colors.redAccent),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  state.errorMessage!,
+                                  style: AppTextStyles.bodyMedium
+                                      .copyWith(color: Colors.redAccent),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          backgroundColor: isButtonEnabled
+                              ? AppColors.primaryGold
+                              : AppColors.primaryGold.withOpacity(0.3),
+                          foregroundColor: Colors.black,
+                        ),
+                        onPressed: isButtonEnabled
+                            ? () => _handleContinue(state, notifier)
+                            : null,
+                        child: state.isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.black)
+                            : Text(
+                                _getButtonText(state, totalSteps),
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 
   String _getButtonText(RegistrationState state, int totalSteps) {
@@ -534,10 +664,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       if (!state.isOtpVerified) return 'Verify Code';
       return 'Continue';
     }
-    return state.currentStep < totalSteps - 1 ? 'Continue' : 'Submit Registration';
+    return state.currentStep < totalSteps - 1
+        ? 'Continue'
+        : 'Submit Registration';
   }
 
-  Future<void> _handleContinue(RegistrationState state, RegistrationNotifier notifier) async {
+  Future<void> _handleContinue(
+      RegistrationState state, RegistrationNotifier notifier) async {
     // 1. Validation and action for Step 0 (OTP)
     if (state.currentStep == 0) {
       if (_phoneController.text.trim().isEmpty) {
@@ -550,9 +683,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         if (success && mounted) {
           SnackbarUtils.showSuccess(context, 'OTP sent successfully!');
         } else if (!success && mounted) {
-          final errorMsg = ref.read(registrationProvider).errorMessage ?? 'Failed to send OTP';
-          final isAlreadyRegistered = errorMsg.toLowerCase().contains('already registered') ||
-              errorMsg.toLowerCase().contains('pending approval');
+          final errorMsg = ref.read(registrationProvider).errorMessage ??
+              'Failed to send OTP';
+          final isAlreadyRegistered =
+              errorMsg.toLowerCase().contains('already registered') ||
+                  errorMsg.toLowerCase().contains('pending approval');
           if (isAlreadyRegistered) {
             _showAlreadyRegisteredDialog();
           }
@@ -564,7 +699,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           return;
         }
         final phone = _selectedCountry.dialCode + _phoneController.text.trim();
-        final success = await notifier.verifyRegisterOtp(phone, _otpController.text.trim());
+        final success =
+            await notifier.verifyRegisterOtp(phone, _otpController.text.trim());
         if (success && mounted) {
           SnackbarUtils.showSuccess(context, 'Phone number verified!');
           notifier.setStep(1);
@@ -577,14 +713,25 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     }
 
     // 2. Common step validation
-    final error = _validateStep(state.currentStep, state);
+    final validationStep = _validationStepFor(
+      state.currentStep,
+      state,
+    );
+
+    final error = validationStep < 0
+        ? null
+        : _validateStep(
+            validationStep,
+            state,
+          );
+
     if (error != null) {
       _showError(error);
       return;
     }
 
     // 3. Move forward or submit
-    final totalSteps = _totalSteps;
+    final totalSteps = _totalStepsFor(state);
     if (state.currentStep < totalSteps - 1) {
       notifier.setStep(state.currentStep + 1);
     } else {
@@ -598,9 +745,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           },
         );
       } else if (!success && mounted) {
-        final errorMsg = ref.read(registrationProvider).errorMessage ?? 'Registration failed';
-        final isAlreadyRegistered = errorMsg.toLowerCase().contains('already registered') ||
-            errorMsg.toLowerCase().contains('pending approval');
+        final errorMsg = ref.read(registrationProvider).errorMessage ??
+            'Registration failed';
+        final isAlreadyRegistered =
+            errorMsg.toLowerCase().contains('already registered') ||
+                errorMsg.toLowerCase().contains('pending approval');
         if (isAlreadyRegistered) {
           _showAlreadyRegisteredDialog();
         }
@@ -620,19 +769,21 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.info_outline_rounded, color: AppColors.primaryGold, size: 28),
+            const Icon(Icons.info_outline_rounded,
+                color: AppColors.primaryGold, size: 28),
             const SizedBox(width: 10),
-            Text('Already Registered', style: TextStyle(
-              color: isDark ? Colors.white : Colors.black, 
-              fontSize: 18, 
-              fontWeight: FontWeight.bold,
-            )),
+            Text('Already Registered',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                )),
           ],
         ),
         content: Text(
           'You have already registered as a driver.\n\nPlease wait for your supplier to approve your account. You will receive a notification once approved.',
           style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87, 
+            color: isDark ? Colors.white70 : Colors.black87,
             height: 1.5,
             fontSize: 14,
           ),
@@ -643,7 +794,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               Navigator.pop(ctx);
               context.go(RouteNames.welcome);
             },
-            child: const Text('OK', style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
+            child: const Text('OK',
+                style: TextStyle(
+                    color: AppColors.primaryGold, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -666,7 +819,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Exit', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text('Exit',
+                style: TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -677,57 +832,648 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     SnackbarUtils.showError(context, message);
   }
 
-  String? _validateStep(int step, RegistrationState state) {
+  String? _validateStep(
+    int step,
+    RegistrationState state,
+  ) {
     final isFleet = state.request.driverType == 'FLEET';
+    final hasCabService = state.request.selectedServices.contains(
+      PartnerServiceType.cabBooking.apiValue,
+    );
+
+    final hasDeliveryService = state.request.selectedServices.any(
+      (service) =>
+          service == PartnerServiceType.foodDelivery.apiValue ||
+          service == PartnerServiceType.groceryDelivery.apiValue,
+    );
+
+    final deliveryVehicleType = state.request.vehicleType?.trim().toUpperCase();
+
+    final requiresDrivingLicence = hasCabService ||
+        (hasDeliveryService &&
+            deliveryVehicleType != null &&
+            deliveryVehicleType != 'BICYCLE');
+
     switch (step) {
-      case 0:
-        if (!state.isOtpVerified) return 'Please verify your phone number via OTP first';
-        break;
-      case 1: // Identity & Contact Details
-        if (state.request.fullName.trim().isEmpty) return 'Please enter your full legal name';
-        if (state.request.dateOfBirth == null || state.request.dateOfBirth!.isEmpty) return 'Please select your Date of Birth';
-        if (state.request.nationality == null || state.request.nationality!.isEmpty) return 'Please enter your Nationality';
-        if (state.request.nationalId == null || state.request.nationalId!.isEmpty) return 'Please enter your Passport/National ID';
-        if (!isFleet) {
-          if (state.request.password == null || state.request.password!.trim().isEmpty) return 'Please enter a Password';
-          if (state.request.password!.length < 6) return 'Password must be at least 6 characters';
+      case 0: // OTP Verification
+        if (!state.isOtpVerified) {
+          return 'Please verify your phone number via OTP first';
         }
-        if (state.request.profileImagePath?.isEmpty ?? true) return 'Please upload your verification Profile Photo (Selfie)';
-        if (state.request.email.trim().isEmpty) return 'Please enter your email address';
-        if (state.request.homeAddress == null || state.request.homeAddress!.isEmpty) return 'Please enter your home address';
-        if (state.request.emergencyContactName == null || state.request.emergencyContactName!.isEmpty) return 'Emergency contact name is required';
-        if (state.request.emergencyContactPhone == null || state.request.emergencyContactPhone!.isEmpty) return 'Emergency contact phone number is required';
         break;
-      case 2: // Credentials
-        if (state.request.licenseNumber == null || state.request.licenseNumber!.isEmpty) return 'Please enter your driver licence number';
-        if (state.request.licenseCategory == null || state.request.licenseCategory!.isEmpty) return 'Please select licence category';
-        if (state.request.licenseIssueDate == null || state.request.licenseIssueDate!.isEmpty) return 'Please select licence issue date';
-        if (state.request.licenseExpiryDate == null || state.request.licenseExpiryDate!.isEmpty) return 'Please select licence expiry date';
-        if (state.request.licenseIssuingCountry == null || state.request.licenseIssuingCountry!.isEmpty) return 'Please enter licence issuing country';
-        if (state.request.cpcCertificateNumber == null || state.request.cpcCertificateNumber!.isEmpty) return 'CPC Certificate number is required';
-        if (state.request.cpcDocumentPath?.isEmpty ?? true) return 'Please upload scan of your CPC Certificate card';
-        if (state.request.drivingLicensePath?.isEmpty ?? true) return 'Please upload your primary Driving License scan';
-        if (state.request.drivingLicenseBackPath?.isEmpty ?? true) return 'Please upload your Driving License (Back) scan';
-        break;
-      case 4: // Vehicle details (Self-Owned only)
-        if (!isFleet) {
-          if (state.request.vehicleType == null || state.request.vehicleType!.trim().isEmpty) return 'Please select a Vehicle Type';
-          if (state.request.vehicleNumber == null || state.request.vehicleNumber!.trim().isEmpty) return 'Please enter your vehicle plate number';
-          if (state.request.insurancePolicyNumber == null || state.request.insurancePolicyNumber!.isEmpty) return 'Insurance policy number is required';
-          if (state.request.insuranceDocumentPath?.isEmpty ?? true) return 'Please upload your third-party vehicle insurance document';
+
+      case 1: // Service Selection
+        if (state.request.selectedServices.isEmpty) {
+          return 'Please select at least one service';
         }
+        break;
+
+      case 2: // Vehicle Arrangement
+        if (state.request.driverType != 'FLEET' &&
+            state.request.driverType != 'SELF_OWNED') {
+          return 'Please choose your vehicle arrangement';
+        }
+        break;
+
+      case 3: // Identity & Contact Details
+        if (state.request.fullName.trim().isEmpty) {
+          return 'Please enter your full legal name';
+        }
+
+        if (state.request.dateOfBirth == null ||
+            state.request.dateOfBirth!.trim().isEmpty) {
+          return 'Please select your Date of Birth';
+        }
+
+        if (state.request.nationality == null ||
+            state.request.nationality!.trim().isEmpty) {
+          return 'Please enter your Nationality';
+        }
+
+        if (state.request.nationalId == null ||
+            state.request.nationalId!.trim().isEmpty) {
+          return 'Please enter your Passport/National ID';
+        }
+        if (hasDeliveryService) {
+          final vehicleType = state.request.vehicleType?.trim().toUpperCase();
+
+          if (vehicleType == null || vehicleType.isEmpty) {
+            return 'Please select your delivery vehicle type';
+          }
+
+          const allowedVehicleTypes = <String>{
+            'MOTORCYCLE',
+            'SCOOTER',
+            'BICYCLE',
+            'CAR',
+          };
+
+          if (!allowedVehicleTypes.contains(vehicleType)) {
+            return 'Please select a valid delivery vehicle type';
+          }
+
+          if (state.request.vehicleMake == null ||
+              state.request.vehicleMake!.trim().isEmpty) {
+            return 'Please enter your delivery vehicle make';
+          }
+
+          if (state.request.vehicleModel == null ||
+              state.request.vehicleModel!.trim().isEmpty) {
+            return 'Please enter your delivery vehicle model';
+          }
+
+          if (vehicleType != 'BICYCLE') {
+            final vehicleNumber =
+                state.request.vehicleNumber?.trim().toUpperCase() ?? '';
+
+            if (vehicleNumber.isEmpty) {
+              return 'Please enter your delivery vehicle plate number';
+            }
+
+            if (!RegExp(r'^[A-Z0-9 -]{2,20}$').hasMatch(vehicleNumber)) {
+              return 'Please enter a valid delivery vehicle plate number';
+            }
+          }
+        }
+
+        if (state.request.profileImagePath?.trim().isEmpty ?? true) {
+          return 'Please upload your verification Profile Photo (Selfie)';
+        }
+
+        final email = state.request.email.trim().toLowerCase();
+
+        if (email.isEmpty) {
+          return 'Please enter your email address';
+        }
+
+        if (!RegExp(
+          r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+        ).hasMatch(email)) {
+          return 'Please enter a valid email address';
+        }
+
+        if (state.request.homeAddress == null ||
+            state.request.homeAddress!.trim().isEmpty) {
+          return 'Please enter your home address';
+        }
+
+        if (state.request.emergencyContactName == null ||
+            state.request.emergencyContactName!.trim().isEmpty) {
+          return 'Emergency contact name is required';
+        }
+
+        if (state.request.emergencyContactPhone == null ||
+            state.request.emergencyContactPhone!.trim().isEmpty) {
+          return 'Emergency contact phone number is required';
+        }
+        break;
+
+      case 4: // Credentials & Documents
+        if (requiresDrivingLicence) {
+          if (state.request.licenseNumber == null ||
+              state.request.licenseNumber!.trim().isEmpty) {
+            return 'Please enter your driver licence number';
+          }
+
+          if (state.request.licenseCategory == null ||
+              state.request.licenseCategory!.trim().isEmpty) {
+            return 'Please select licence category';
+          }
+
+          if (state.request.licenseIssueDate == null ||
+              state.request.licenseIssueDate!.trim().isEmpty) {
+            return 'Please select licence issue date';
+          }
+
+          if (state.request.licenseExpiryDate == null ||
+              state.request.licenseExpiryDate!.trim().isEmpty) {
+            return 'Please select licence expiry date';
+          }
+
+          if (state.request.licenseIssuingCountry == null ||
+              state.request.licenseIssuingCountry!.trim().isEmpty) {
+            return 'Please enter licence issuing country';
+          }
+
+          if (state.request.drivingLicensePath?.trim().isEmpty ?? true) {
+            return 'Please upload your primary Driving Licence scan';
+          }
+
+          if (state.request.drivingLicenseBackPath?.trim().isEmpty ?? true) {
+            return 'Please upload your Driving Licence back scan';
+          }
+        }
+
+        if (state.request.idCardDocumentPath?.trim().isEmpty ?? true) {
+          return 'Please upload your Passport or National ID document';
+        }
+
+        if (state.request.proofOfAddressDocumentPath?.trim().isEmpty ?? true) {
+          return 'Please upload your proof of address';
+        }
+
+        if (hasCabService) {
+          if (state.request.cpcCertificateNumber == null ||
+              state.request.cpcCertificateNumber!.trim().isEmpty) {
+            return 'Please enter your CPC certificate number';
+          }
+
+          if (state.request.cpcDocumentPath?.trim().isEmpty ?? true) {
+            return 'Please upload your Passenger Transport or Taxi Driver Permit';
+          }
+
+          if (state.request.policeConductDocumentPath?.trim().isEmpty ?? true) {
+            return 'Please upload your Police Conduct Certificate';
+          }
+
+          if (state.request.medicalCertificateDocumentPath?.trim().isEmpty ??
+              true) {
+            return 'Please upload your Medical Fitness Certificate';
+          }
+        }
+
         break;
     }
+
     return null;
   }
 
-  Widget _buildStep(int step, RegistrationState state, RegistrationNotifier notifier) {
-    switch (step) {
-      case 0: return _buildOtpStep(state, notifier);
-      case 1: return _buildIdentityContactStep(state, notifier);
-      case 2: return _buildCredentialsStep(state, notifier);
-      default: return const SizedBox();
+  Widget _buildStep(
+    int step,
+    RegistrationState state,
+    RegistrationNotifier notifier,
+  ) {
+    if (_hasCabService(state)) {
+      switch (step) {
+        case 0:
+          return _buildOtpStep(state, notifier);
+        case 1:
+          return _buildServiceSelectionStep(state, notifier);
+        case 2:
+          return _buildVehicleArrangementStep(state, notifier);
+        case 3:
+          return _buildIdentityContactStep(state, notifier);
+        case 4:
+          return _buildCredentialsStep(state, notifier);
+        case 5:
+          return _buildConfirmationStep(state);
+        default:
+          return const SizedBox();
+      }
     }
+
+    switch (step) {
+      case 0:
+        return _buildOtpStep(state, notifier);
+      case 1:
+        return _buildServiceSelectionStep(state, notifier);
+      case 2:
+        return _buildIdentityContactStep(state, notifier);
+      case 3:
+        return _buildCredentialsStep(state, notifier);
+      case 4:
+        return _buildConfirmationStep(state);
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildServiceSelectionStep(
+    RegistrationState state,
+    RegistrationNotifier notifier,
+  ) {
+    return Column(
+      key: const ValueKey<String>('service-selection-step'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Choose your services',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.primaryGold,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...PartnerServiceType.values.map((service) {
+          final selected = state.request.selectedServices.contains(
+            service.apiValue,
+          );
+
+          final icon = switch (service) {
+            PartnerServiceType.cabBooking => Icons.local_taxi_rounded,
+            PartnerServiceType.foodDelivery => Icons.restaurant_rounded,
+            PartnerServiceType.groceryDelivery => Icons.shopping_basket_rounded,
+          };
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Material(
+              color: selected
+                  ? AppColors.primaryGold.withOpacity(0.14)
+                  : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  notifier.toggleSelectedService(service.apiValue);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: selected
+                          ? AppColors.primaryGold
+                          : AppColors.textMuted.withOpacity(0.25),
+                      width: selected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGold.withOpacity(0.16),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 22,
+                          color: AppColors.primaryGold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              service.displayName,
+                              style: AppTextStyles.titleSmall.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              service.description,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Checkbox(
+                        value: selected,
+                        activeColor: AppColors.primaryGold,
+                        checkColor: const Color(0xFF04213C),
+                        onChanged: (_) {
+                          notifier.toggleSelectedService(service.apiValue);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        Center(
+          child: Text(
+            'Select at least one service',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVehicleArrangementStep(
+    RegistrationState state,
+    RegistrationNotifier notifier,
+  ) {
+    Widget buildArrangementOption({
+      required String value,
+      required IconData icon,
+      required String title,
+    }) {
+      final selected = state.request.driverType == value;
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Material(
+          color: selected
+              ? AppColors.primaryGold.withOpacity(0.14)
+              : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              notifier.setDriverType(value);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: selected
+                      ? AppColors.primaryGold
+                      : AppColors.textMuted.withOpacity(0.25),
+                  width: selected ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 22,
+                      color: AppColors.primaryGold,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    selected
+                        ? Icons.check_circle_rounded
+                        : Icons.radio_button_unchecked_rounded,
+                    color:
+                        selected ? AppColors.primaryGold : AppColors.textMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      key: const ValueKey<String>('vehicle-arrangement-step'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Vehicle arrangement',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.primaryGold,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
+        buildArrangementOption(
+          value: 'SELF_OWNED',
+          icon: Icons.directions_car_filled_rounded,
+          title: 'I use my own vehicle',
+        ),
+        buildArrangementOption(
+          value: 'FLEET',
+          icon: Icons.business_rounded,
+          title: 'Fleet or operator vehicle',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmationStep(
+    RegistrationState state,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Widget buildReviewRow({
+      required String label,
+      required String value,
+    }) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 9,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 112,
+              child: Text(
+                label,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                value,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark
+                      ? AppColors.textPrimary
+                      : AppColors.textPrimaryLight,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final selectedServiceNames = state.request.selectedServices.map(
+      (value) {
+        return PartnerServiceType.fromApiValue(value)?.displayName ?? value;
+      },
+    ).join(', ');
+
+    final hasCabService = state.request.selectedServices.contains(
+      PartnerServiceType.cabBooking.apiValue,
+    );
+
+    final hasDeliveryService = state.request.selectedServices.any(
+      (service) =>
+          service == PartnerServiceType.foodDelivery.apiValue ||
+          service == PartnerServiceType.groceryDelivery.apiValue,
+    );
+
+    final cabVehicleArrangement = state.request.driverType == 'FLEET'
+        ? 'Fleet or operator vehicle'
+        : 'Own vehicle';
+
+    final deliveryVehicleType = state.request.vehicleType?.trim().toUpperCase();
+
+    String deliveryVehicleLabel;
+
+    switch (deliveryVehicleType) {
+      case 'MOTORCYCLE':
+        deliveryVehicleLabel = 'Motorcycle';
+        break;
+      case 'SCOOTER':
+        deliveryVehicleLabel = 'Scooter';
+        break;
+      case 'BICYCLE':
+        deliveryVehicleLabel = 'Bicycle';
+        break;
+      default:
+        deliveryVehicleLabel = 'Not selected';
+    }
+
+    return Column(
+      key: const ValueKey<String>('registration-confirmation-step'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Review your application',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.primaryGold,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Please check your information before submitting.',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textMuted,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.textMuted.withOpacity(0.25),
+            ),
+          ),
+          child: Column(
+            children: [
+              buildReviewRow(
+                label: 'Full name',
+                value: state.request.fullName.trim().isEmpty
+                    ? 'Not provided'
+                    : state.request.fullName.trim(),
+              ),
+              const Divider(height: 1),
+              buildReviewRow(
+                label: 'Email',
+                value: state.request.email.trim().isEmpty
+                    ? 'Not provided'
+                    : state.request.email.trim(),
+              ),
+              const Divider(height: 1),
+              buildReviewRow(
+                label: 'Services',
+                value: selectedServiceNames.isEmpty
+                    ? 'No service selected'
+                    : selectedServiceNames,
+              ),
+              if (hasCabService) ...[
+                const Divider(height: 1),
+                buildReviewRow(
+                  label: 'Cab arrangement',
+                  value: cabVehicleArrangement,
+                ),
+              ],
+              if (hasDeliveryService) ...[
+                const Divider(height: 1),
+                buildReviewRow(
+                  label: 'Delivery vehicle',
+                  value: deliveryVehicleLabel,
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGold.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.primaryGold.withOpacity(0.35),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                size: 20,
+                color: AppColors.primaryGold,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Your selected services and documents will be reviewed before approval. Login details will be provided after approval.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: isDark ? Colors.white70 : Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildOtpStep(RegistrationState state, RegistrationNotifier notifier) {
@@ -735,7 +1481,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Driver Application', style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryGold)),
+        Text('Driver Application',
+            style: AppTextStyles.headlineMedium.copyWith(
+                fontWeight: FontWeight.bold, color: AppColors.primaryGold)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
@@ -746,19 +1494,21 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.drive_eta_rounded, color: AppColors.primaryGold, size: 28),
+              const Icon(Icons.drive_eta_rounded,
+                  color: AppColors.primaryGold, size: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Join Gozolt as a driver! Verify your phone number to start your application process.',
-                  style: AppTextStyles.bodyMedium.copyWith(color: isDark ? Colors.white : Colors.black87),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: isDark ? Colors.white : Colors.black87),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 24),
-        
+
         // Phone number input
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -773,13 +1523,19 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               },
               keyboardType: TextInputType.phone,
               maxLength: 10,
-              buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+              buildCounter: (context,
+                      {required currentLength,
+                      required isFocused,
+                      maxLength}) =>
+                  null,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
                 hintText: 'Enter Mobile Number',
                 filled: true,
                 fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
                 prefixIcon: GestureDetector(
                   onTap: state.isOtpSent ? null : _showCountryPicker,
                   child: Container(
@@ -788,17 +1544,26 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     decoration: BoxDecoration(
                       border: Border(
                         right: BorderSide(
-                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                          color:
+                              Theme.of(context).dividerColor.withOpacity(0.1),
                         ),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
+                        Text(_selectedCountry.flag,
+                            style: const TextStyle(fontSize: 20)),
                         const SizedBox(width: 4),
-                        Text(_selectedCountry.dialCode, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
-                        if (!state.isOtpSent) const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        Text(_selectedCountry.dialCode,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontWeight: FontWeight.bold)),
+                        if (!state.isOtpSent)
+                          const Icon(Icons.arrow_drop_down, color: Colors.grey),
                       ],
                     ),
                   ),
@@ -807,11 +1572,12 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             ),
           ],
         ),
-        
+
         if (state.isOtpSent) ...[
           const SizedBox(height: 24),
           const SizedBox(height: 16),
-          const Text('Enter 6-Digit Verification Code', style: AppTextStyles.titleSmall),
+          const Text('Enter 6-Digit Verification Code',
+              style: AppTextStyles.titleSmall),
           const SizedBox(height: 8),
           OtpInputField(
             key: _otpKey,
@@ -828,7 +1594,6 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               setState(() {});
             },
           ),
-
         ],
 
         if (state.isOtpVerified) ...[
@@ -842,12 +1607,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.green, size: 28),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Phone number verified successfully!',
-                    style: AppTextStyles.bodyMedium.copyWith(color: Colors.green, fontWeight: FontWeight.bold),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.green, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -859,18 +1626,20 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-
-  Widget _buildIdentityContactStep(RegistrationState state, RegistrationNotifier notifier) {
-    final isFleet = state.request.driverType == 'FLEET';
+  Widget _buildIdentityContactStep(
+      RegistrationState state, RegistrationNotifier notifier) {
+    final hasDeliveryService = state.request.selectedServices.any(
+      (service) =>
+          service == PartnerServiceType.foodDelivery.apiValue ||
+          service == PartnerServiceType.groceryDelivery.apiValue,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Personal details', style: AppTextStyles.headlineSmall),
-        const SizedBox(height: 8),
-        
         // Profile photo card
-        _buildSelfieUploadCard('Profile Photo', state.request.profileImagePath, () {
+        _buildSelfieUploadCard('Profile Photo', state.request.profileImagePath,
+            () {
           _showUploadSourceSheet(
             title: 'Upload Selfie Photo',
             allowFiles: false,
@@ -878,45 +1647,160 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           );
         }),
         const SizedBox(height: 24),
-        
-        _buildTextField('Full Legal Name', _fullNameController, (v) => notifier.setFullName(v), hintText: 'Enter name exactly as on passport'),
+
+        _buildTextField('Full Legal Name', _fullNameController,
+            (v) => notifier.setFullName(v),
+            hintText: 'Enter name exactly as on passport'),
         const SizedBox(height: 16),
-        
+
         // Date of birth
-        _buildDatePickerField('Date of Birth', _dobController, () => _selectDate(context, 'dob')),
+        _buildDatePickerField(
+            'Date of Birth', _dobController, () => _selectDate(context, 'dob')),
         const SizedBox(height: 16),
-        
-        _buildTextField('Nationality / Country of Residence', _nationalityController, (v) {
+
+        _buildTextField(
+            'Nationality / Country of Residence', _nationalityController, (v) {
           notifier.setNationality(v);
           notifier.setCountryOfResidence(v);
         }, hintText: 'e.g. Malta'),
         const SizedBox(height: 16),
-        
-        _buildTextField('National ID or Passport number', _nationalIdController, (v) {
+
+        _buildTextField('National ID or Passport number', _nationalIdController,
+            (v) {
           notifier.setNationalId(v);
           notifier.setAadhaar(v);
         }, hintText: 'e.g. MT984210A'),
         const SizedBox(height: 16),
 
-        if (!isFleet) ...[
-          _buildTextField('Account Password', _passwordController, (v) => notifier.setPassword(v), obscureText: true, hintText: 'Minimum 6 characters'),
-          const SizedBox(height: 16),
+        if (hasDeliveryService) ...[
+          RichText(
+            text: TextSpan(
+              text: 'Delivery vehicle',
+              style: AppTextStyles.titleSmall.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+              children: const [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: state.request.vehicleType?.trim().isEmpty ?? true
+                ? null
+                : state.request.vehicleType,
+            isExpanded: true,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Select delivery vehicle',
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white54
+                    : Colors.black45,
+              ),
+              filled: true,
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white10
+                  : Colors.grey.shade100,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 'MOTORCYCLE',
+                child: Text('Motorcycle'),
+              ),
+              DropdownMenuItem(
+                value: 'SCOOTER',
+                child: Text('Scooter'),
+              ),
+              DropdownMenuItem(
+                value: 'BICYCLE',
+                child: Text('Bicycle'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                notifier.setVehicleType(value);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            'Vehicle make',
+            _vehicleMakeController,
+            notifier.setVehicleMake,
+            hintText: 'e.g. Honda',
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            'Vehicle model',
+            _vehicleModelController,
+            notifier.setVehicleModel,
+            hintText: 'e.g. PCX',
+          ),
+          const SizedBox(height: 12),
+          if (state.request.vehicleType?.toUpperCase() != 'BICYCLE') ...[
+            _buildTextField(
+              'Vehicle plate number',
+              _vehicleNumberController,
+              (value) {
+                notifier.setVehicleNumber(
+                  value.trim().toUpperCase(),
+                );
+              },
+              hintText: 'e.g. ABC 123',
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'[A-Za-z0-9 -]'),
+                ),
+                LengthLimitingTextInputFormatter(20),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
         ],
 
-        _buildTextField('Email Address', _emailController, (v) => notifier.setEmail(v), keyboardType: TextInputType.emailAddress, hintText: 'name@example.com'),
+        _buildTextField(
+          'Email Address',
+          _emailController,
+          (v) => notifier.setEmail(v),
+          keyboardType: TextInputType.emailAddress,
+          hintText: 'name@example.com',
+        ),
         const SizedBox(height: 16),
 
-        _buildTextField('Home address', _homeAddressController, (v) => notifier.setHomeAddress(v), maxLines: 2, hintText: 'Complete residential address'),
+        _buildTextField('Home address', _homeAddressController,
+            (v) => notifier.setHomeAddress(v),
+            maxLines: 2, hintText: 'Complete residential address'),
         const SizedBox(height: 24),
-        
-        
-        _buildTextField('Emergency contact name', _emergencyContactNameController, (v) => notifier.setEmergencyContactName(v), hintText: 'e.g. Spouse/Parent Name'),
+
+        _buildTextField(
+            'Emergency contact name',
+            _emergencyContactNameController,
+            (v) => notifier.setEmergencyContactName(v),
+            hintText: 'e.g. Spouse/Parent Name'),
         const SizedBox(height: 16),
-        
+
         _buildTextField(
           'Emergency contact phone number',
           _emergencyContactPhoneController,
-          (v) => notifier.setEmergencyContactPhone(_selectedEmergencyCountry.dialCode + v),
+          (v) => notifier
+              .setEmergencyContactPhone(_selectedEmergencyCountry.dialCode + v),
           keyboardType: TextInputType.phone,
           hintText: 'Enter Mobile Number',
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -935,9 +1819,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_selectedEmergencyCountry.flag, style: const TextStyle(fontSize: 20)),
+                  Text(_selectedEmergencyCountry.flag,
+                      style: const TextStyle(fontSize: 20)),
                   const SizedBox(width: 4),
-                  Text(_selectedEmergencyCountry.dialCode, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+                  Text(_selectedEmergencyCountry.dialCode,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          fontWeight: FontWeight.bold)),
                   const Icon(Icons.arrow_drop_down, color: Colors.grey),
                 ],
               ),
@@ -949,106 +1837,200 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildCredentialsStep(RegistrationState state, RegistrationNotifier notifier) {
+  Widget _buildCredentialsStep(
+    RegistrationState state,
+    RegistrationNotifier notifier,
+  ) {
+    final hasCabService = state.request.selectedServices.contains(
+      PartnerServiceType.cabBooking.apiValue,
+    );
+    final hasDeliveryService = state.request.selectedServices.any(
+      (service) =>
+          service == PartnerServiceType.foodDelivery.apiValue ||
+          service == PartnerServiceType.groceryDelivery.apiValue,
+    );
+
+    final deliveryVehicleType = state.request.vehicleType?.trim().toUpperCase();
+
+    final requiresDrivingLicence = hasCabService ||
+        (hasDeliveryService &&
+            deliveryVehicleType != null &&
+            deliveryVehicleType != 'BICYCLE');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Driver Credentials', style: AppTextStyles.headlineSmall),
-        const SizedBox(height: 8),
-        const Text('Please verify your professional transport credentials.', style: AppTextStyles.bodyMedium),
-        const SizedBox(height: 24),
-        
-        _buildTextField("Driver's licence number", _licenseNumberController, (v) => notifier.setLicenseNumber(v), hintText: 'e.g. DL-123456-MT'),
-        const SizedBox(height: 16),
-        
-        _buildTextField("Licence category (B/B+E/D etc.)", _licenseCategoryController, (v) => notifier.setLicenseCategory(v), hintText: 'e.g. B (Manual/Automatic)'),
-        const SizedBox(height: 16),
-        
-        Row(
-          children: [
-            Expanded(child: _buildDatePickerField('Licence Issue Date', _licenseIssueDateController, () => _selectDate(context, 'licenseIssue'))),
-            const SizedBox(width: 16),
-            Expanded(child: _buildDatePickerField('Licence Expiry Date', _licenseExpiryDateController, () => _selectDate(context, 'licenseExpiry'))),
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        _buildTextField("Licence issuing country", _licenseIssuingCountryController, (v) => notifier.setLicenseIssuingCountry(v), hintText: 'e.g. Malta'),
-        const SizedBox(height: 24),
-        
-        const SizedBox(height: 12),
-        
-        _buildTextField("Professional Competence Certificate (CPC)", _cpcNumberController, (v) => notifier.setCpcCertificateNumber(v), hintText: 'CPC Card Cardholder Number'),
-        const SizedBox(height: 16),
-        
-        _buildTextField("Taxi/PHV licence number (if applicable)", _taxiPhvLicenseController, (v) => notifier.setTaxiPhvLicenseNumber(v), hintText: 'e.g. PHV-MT-9042', isRequired: false),
-        const SizedBox(height: 24),
-        
-        _buildUploadCard('Passport / National ID Card', state.request.idCardDocumentPath, () {
+        if (requiresDrivingLicence) ...[
+          _buildTextField(
+            "Driver's licence number",
+            _licenseNumberController,
+            (value) => notifier.setLicenseNumber(value),
+            hintText: 'e.g. DL-123456-MT',
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Licence category (B/B+E/D etc.)',
+            _licenseCategoryController,
+            (value) => notifier.setLicenseCategory(value),
+            hintText: 'e.g. B (Manual/Automatic)',
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDatePickerField(
+                  'Licence Issue Date',
+                  _licenseIssueDateController,
+                  () => _selectDate(
+                    context,
+                    'licenseIssue',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDatePickerField(
+                  'Licence Expiry Date',
+                  _licenseExpiryDateController,
+                  () => _selectDate(
+                    context,
+                    'licenseExpiry',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Licence issuing country',
+            _licenseIssuingCountryController,
+            (value) => notifier.setLicenseIssuingCountry(value),
+            hintText: 'e.g. Malta',
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        if (hasCabService) ...[
+          const SizedBox(height: 12),
+          _buildTextField(
+            'Professional Competence Certificate (CPC)',
+            _cpcNumberController,
+            (value) => notifier.setCpcCertificateNumber(value),
+            hintText: 'CPC cardholder number',
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Taxi/PHV licence number (if applicable)',
+            _taxiPhvLicenseController,
+            (value) => notifier.setTaxiPhvLicenseNumber(value),
+            hintText: 'e.g. PHV-MT-9042',
+            isRequired: false,
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        _buildUploadCard(
+            'Passport / National ID Card', state.request.idCardDocumentPath,
+            () {
           _showUploadSourceSheet(
             title: 'Upload Passport / ID Card',
             onPicked: (path) => notifier.setIdCardDocumentPath(path),
           );
         }, onRemove: () => notifier.setIdCardDocumentPath("")),
         const SizedBox(height: 16),
-        
-        _buildUploadCard("Driving License (Front)", state.request.drivingLicensePath, () {
-          _showUploadSourceSheet(
-            title: "Upload Driving License (Front)",
-            onPicked: (path) => notifier.setLicensePath(path),
-          );
-        }, onRemove: () => notifier.setLicensePath("")),
-        const SizedBox(height: 16),
-        
-        _buildUploadCard("Driving License (Back)", state.request.drivingLicenseBackPath, () {
-          _showUploadSourceSheet(
-            title: "Upload Driving License (Back)",
-            onPicked: (path) => notifier.setLicenseBackPath(path),
-          );
-        }, onRemove: () => notifier.setLicenseBackPath("")),
-        const SizedBox(height: 16),
-        
-        _buildUploadCard('Passenger Transport Driver Permit / Taxi Driver Permit', state.request.cpcDocumentPath, () {
-          _showUploadSourceSheet(
-            title: 'Upload Transport/Taxi Permit',
-            onPicked: (path) => notifier.setCpcDocumentPath(path),
-          );
-        }, onRemove: () => notifier.setCpcDocumentPath("")),
-        const SizedBox(height: 16),
-        
-        _buildUploadCard('Police Conduct Certificate', state.request.policeConductDocumentPath, () {
-          _showUploadSourceSheet(
-            title: 'Upload Police Conduct',
-            onPicked: (path) => notifier.setPoliceConductDocumentPath(path),
-          );
-        }, onRemove: () => notifier.setPoliceConductDocumentPath("")),
-        const SizedBox(height: 16),
-        
-        _buildUploadCard('Proof of Address (Utility Bill / Bank Statement)', state.request.proofOfAddressDocumentPath, () {
+
+        if (requiresDrivingLicence) ...[
+          _buildUploadCard(
+            'Driving Licence (Front)',
+            state.request.drivingLicensePath,
+            () {
+              _showUploadSourceSheet(
+                title: 'Upload Driving Licence (Front)',
+                onPicked: (path) => notifier.setLicensePath(path),
+              );
+            },
+            onRemove: () => notifier.setLicensePath(''),
+          ),
+          const SizedBox(height: 16),
+          _buildUploadCard(
+            'Driving Licence (Back)',
+            state.request.drivingLicenseBackPath,
+            () {
+              _showUploadSourceSheet(
+                title: 'Upload Driving Licence (Back)',
+                onPicked: (path) => notifier.setLicenseBackPath(path),
+              );
+            },
+            onRemove: () => notifier.setLicenseBackPath(''),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        if (hasCabService) ...[
+          _buildUploadCard(
+            'Passenger Transport Driver Permit / Taxi Driver Permit',
+            state.request.cpcDocumentPath,
+            () {
+              _showUploadSourceSheet(
+                title: 'Upload Transport/Taxi Permit',
+                onPicked: (path) => notifier.setCpcDocumentPath(path),
+              );
+            },
+            onRemove: () => notifier.setCpcDocumentPath(''),
+          ),
+          const SizedBox(height: 16),
+          _buildUploadCard(
+            'Police Conduct Certificate',
+            state.request.policeConductDocumentPath,
+            () {
+              _showUploadSourceSheet(
+                title: 'Upload Police Conduct',
+                onPicked: (path) => notifier.setPoliceConductDocumentPath(path),
+              );
+            },
+            onRemove: () => notifier.setPoliceConductDocumentPath(''),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        _buildUploadCard('Proof of Address (Utility Bill / Bank Statement)',
+            state.request.proofOfAddressDocumentPath, () {
           _showUploadSourceSheet(
             title: 'Upload Proof of Address',
             onPicked: (path) => notifier.setProofOfAddressDocumentPath(path),
           );
         }, onRemove: () => notifier.setProofOfAddressDocumentPath("")),
         const SizedBox(height: 16),
-        
-        _buildUploadCard('Medical Fitness Certificate', state.request.medicalCertificateDocumentPath, () {
-          _showUploadSourceSheet(
-            title: 'Upload Medical Certificate',
-            onPicked: (path) => notifier.setMedicalCertificateDocumentPath(path),
-          );
-        }, onRemove: () => notifier.setMedicalCertificateDocumentPath("")),
-        const SizedBox(height: 16),
-        
-        _buildUploadCard('Work Permit / Residence Permit (Only for Non-EU Drivers)', state.request.workPermitDocumentPath, () {
+
+        if (hasCabService) ...[
+          _buildUploadCard(
+            'Medical Fitness Certificate',
+            state.request.medicalCertificateDocumentPath,
+            () {
+              _showUploadSourceSheet(
+                title: 'Upload Medical Certificate',
+                onPicked: (path) =>
+                    notifier.setMedicalCertificateDocumentPath(path),
+              );
+            },
+            onRemove: () => notifier.setMedicalCertificateDocumentPath(''),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        _buildUploadCard(
+            'Work Permit / Residence Permit (Only for Non-EU Drivers)',
+            state.request.workPermitDocumentPath, () {
           _showUploadSourceSheet(
             title: 'Upload Work/Residence Permit',
             onPicked: (path) => notifier.setWorkPermitDocumentPath(path),
           );
-        }, isRequired: false, onRemove: () => notifier.setWorkPermitDocumentPath("")),
+        },
+            isRequired: false,
+            onRemove: () => notifier.setWorkPermitDocumentPath("")),
         const SizedBox(height: 16),
         // --- Extra Documents ---
-        const Text('Additional Documents (Optional)', style: AppTextStyles.titleMedium),
+        const Text('Additional Documents (Optional)',
+            style: AppTextStyles.titleSmall),
         const SizedBox(height: 8),
         ...state.request.extraDocuments.asMap().entries.map((entry) {
           final int idx = entry.key;
@@ -1063,44 +2045,57 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     Expanded(
                       child: TextFormField(
                         initialValue: doc['name'],
-                        onChanged: (v) => notifier.updateExtraDocumentName(idx, v),
+                        onChanged: (v) =>
+                            notifier.updateExtraDocumentName(idx, v),
                         decoration: InputDecoration(
                           hintText: 'Document Name',
                           filled: true,
-                          fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white10
+                                  : Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                      icon: const Icon(Icons.remove_circle_outline,
+                          color: Colors.red),
                       onPressed: () => notifier.removeExtraDocument(idx),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                _buildUploadCard('Upload scan', doc['path']?.isEmpty == true ? null : doc['path'], () {
+                _buildUploadCard('Upload scan',
+                    doc['path']?.isEmpty == true ? null : doc['path'], () {
                   _showUploadSourceSheet(
-                    title: 'Upload ${doc['name']?.isEmpty == true ? "Document" : doc['name']}',
-                    onPicked: (path) => notifier.updateExtraDocumentPath(idx, path),
+                    title:
+                        'Upload ${doc['name']?.isEmpty == true ? "Document" : doc['name']}',
+                    onPicked: (path) =>
+                        notifier.updateExtraDocumentPath(idx, path),
                   );
-                }, isRequired: false, onRemove: () => notifier.updateExtraDocumentPath(idx, "")),
+                },
+                    isRequired: false,
+                    onRemove: () => notifier.updateExtraDocumentPath(idx, "")),
               ],
             ),
           );
         }),
         TextButton.icon(
           onPressed: () => notifier.addExtraDocument(),
-          icon: const Icon(Icons.add_circle_outline, color: AppColors.primaryGold),
-          label: const Text('Add Document', style: TextStyle(color: AppColors.primaryGold)),
+          icon: const Icon(Icons.add_circle_outline,
+              color: AppColors.primaryGold),
+          label: const Text('Add Document',
+              style: TextStyle(color: AppColors.primaryGold)),
         ),
         const SizedBox(height: 16),
       ],
     );
   }
-
-
 
   Widget _buildTextField(
     String label,
@@ -1121,9 +2116,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            style: AppTextStyles.titleSmall
+                .copyWith(color: isDark ? Colors.white : Colors.black87),
             children: [
-              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              if (isRequired)
+                const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -1140,7 +2137,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             hintText: hintText,
             filled: true,
             fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
             prefixIcon: prefixIcon,
           ),
         ),
@@ -1148,7 +2147,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildDatePickerField(String label, TextEditingController controller, VoidCallback onTap, {bool isRequired = true}) {
+  Widget _buildDatePickerField(
+      String label, TextEditingController controller, VoidCallback onTap,
+      {bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1156,9 +2157,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            style: AppTextStyles.titleSmall
+                .copyWith(color: isDark ? Colors.white : Colors.black87),
             children: [
-              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              if (isRequired)
+                const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -1167,14 +2170,20 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           controller: controller,
           readOnly: true,
           onTap: onTap,
-          style: const TextStyle(fontSize: 13),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: isDark ? Colors.white : Colors.black87,
+          ),
           decoration: InputDecoration(
             hintText: 'YYYY-MM-DD',
-            hintStyle: TextStyle(fontSize: 13, color: isDark ? Colors.white38 : Colors.black38),
-            filled: true,
+            hintStyle: AppTextStyles.bodyMedium.copyWith(
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
             fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            suffixIcon: const Icon(Icons.calendar_today_rounded, color: AppColors.primaryGold, size: 20),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
+            suffixIcon: const Icon(Icons.calendar_today_rounded,
+                color: AppColors.primaryGold, size: 20),
           ),
         ),
       ],
@@ -1183,10 +2192,15 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
   bool _isImageFile(String path) {
     final ext = path.toLowerCase();
-    return ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.webp') || ext.endsWith('.gif');
+    return ext.endsWith('.png') ||
+        ext.endsWith('.jpg') ||
+        ext.endsWith('.jpeg') ||
+        ext.endsWith('.webp') ||
+        ext.endsWith('.gif');
   }
 
-  Widget _buildSelfieUploadCard(String label, String? path, VoidCallback onTap, {bool isRequired = true}) {
+  Widget _buildSelfieUploadCard(String label, String? path, VoidCallback onTap,
+      {bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1194,9 +2208,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            style: AppTextStyles.titleSmall
+                .copyWith(color: isDark ? Colors.white : Colors.black87),
             children: [
-              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              if (isRequired)
+                const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -1217,13 +2233,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.face_retouching_natural_rounded, color: AppColors.primaryGold, size: 32),
+                        Icon(Icons.face_retouching_natural_rounded,
+                            color: AppColors.primaryGold, size: 32),
                         SizedBox(height: 4),
-                        Text('Selfie', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text('Selfie',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
                       ],
                     )
                   : ClipOval(
-                      child: Image.file(File(path), width: 110, height: 110, fit: BoxFit.cover),
+                      child: Image.file(File(path),
+                          width: 110, height: 110, fit: BoxFit.cover),
                     ),
             ),
           ),
@@ -1232,7 +2252,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     );
   }
 
-  Widget _buildUploadCard(String label, String? path, VoidCallback onTap, {VoidCallback? onRemove, bool isRequired = true}) {
+  Widget _buildUploadCard(String label, String? path, VoidCallback onTap,
+      {VoidCallback? onRemove, bool isRequired = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bool isEmpty = path == null || path.isEmpty;
     return Column(
@@ -1241,9 +2262,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: AppTextStyles.titleSmall.copyWith(color: isDark ? Colors.white : Colors.black87),
+            style: AppTextStyles.titleSmall
+                .copyWith(color: isDark ? Colors.white : Colors.black87),
             children: [
-              if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              if (isRequired)
+                const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -1256,104 +2279,127 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             decoration: BoxDecoration(
               color: isDark ? Colors.white10 : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryGold.withOpacity(0.3), style: BorderStyle.solid),
+              border: Border.all(
+                  color: AppColors.primaryGold.withOpacity(0.3),
+                  style: BorderStyle.solid),
             ),
-            child: isEmpty 
-              ? InkWell(
-                  onTap: onTap,
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            child: isEmpty
+                ? InkWell(
+                    onTap: onTap,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.cloud_upload_outlined,
+                            color: AppColors.primaryGold, size: 28),
+                        SizedBox(height: 8),
+                        Text('Tap to upload document scan'),
+                      ],
+                    ),
+                  )
+                : Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Icon(Icons.cloud_upload_outlined, color: AppColors.primaryGold, size: 28),
-                      SizedBox(height: 8),
-                      Text('Tap to upload document scan'),
-                    ],
-                  ),
-                )
-              : Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _isImageFile(path)
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(File(path), width: double.infinity, height: 110, fit: BoxFit.cover),
-                          )
-                        : Container(
-                            width: double.infinity,
-                            height: 110,
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryGold.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(8),
+                      _isImageFile(path)
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(File(path),
+                                  width: double.infinity,
+                                  height: 110,
+                                  fit: BoxFit.cover),
+                            )
+                          : Container(
+                              width: double.infinity,
+                              height: 110,
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryGold
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      path.toLowerCase().endsWith('.pdf')
+                                          ? Icons.picture_as_pdf_rounded
+                                          : Icons.description_rounded,
+                                      color: AppColors.primaryGold,
+                                      size: 28,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    path.toLowerCase().endsWith('.pdf') 
-                                        ? Icons.picture_as_pdf_rounded 
-                                        : Icons.description_rounded,
-                                    color: AppColors.primaryGold,
-                                    size: 28,
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          path.split('/').last,
+                                          style: AppTextStyles.titleSmall
+                                              .copyWith(
+                                                  fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Document uploaded',
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                                  color: AppColors.textMuted,
+                                                  fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        path.split('/').last,
-                                        style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Document uploaded',
-                                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted, fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 32),
-                              ],
+                                  const SizedBox(width: 32),
+                                ],
+                              ),
+                            ),
+                      if (_isImageFile(path))
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: const BorderRadius.vertical(
+                                  bottom: Radius.circular(12)),
+                            ),
+                            child: Text(
+                              path.split('/').last,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                    if (_isImageFile(path))
+                        ),
                       Positioned(
-                        bottom: 0, left: 0, right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                          ),
-                          child: Text(
-                            path.split('/').last,
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        right: 8,
+                        top: 8,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black54,
+                          radius: 14,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.close,
+                                size: 16, color: Colors.white),
+                            onPressed: onRemove ?? onTap,
                           ),
                         ),
                       ),
-                    Positioned(
-                      right: 8, top: 8,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.black54,
-                        radius: 14,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                          onPressed: onRemove ?? onTap,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
           ),
         ),
       ],

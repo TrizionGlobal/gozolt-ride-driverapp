@@ -13,7 +13,8 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key, required this.driverId});
 
   @override
-  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
@@ -110,8 +111,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textMutedColor = isDark ? AppColors.textMuted : AppColors.textMutedLight;
-    
+    final textMutedColor =
+        isDark ? AppColors.textMuted : AppColors.textMutedLight;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -130,7 +132,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             children: [
               Text(
                 'Create New Password',
-                style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.headlineMedium
+                    .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -142,23 +145,28 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               // Password field
               Text(
                 "New Password",
-                style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.titleSmall
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
                 keyboardType: TextInputType.visiblePassword,
-                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   hintText: 'Enter new password',
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _isPasswordVisible
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: AppColors.textMuted,
                     ),
-                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                    onPressed: () => setState(
+                        () => _isPasswordVisible = !_isPasswordVisible),
                   ),
                 ),
               ),
@@ -168,18 +176,26 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                  color: isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                  border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey.shade200),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildValidationRow('Minimum 8 characters', _hasLength, textMutedColor),
-                    _buildValidationRow('At least one uppercase letter', _hasUppercase, textMutedColor),
-                    _buildValidationRow('At least one lowercase letter', _hasLowercase, textMutedColor),
-                    _buildValidationRow('At least one number', _hasNumber, textMutedColor),
-                    _buildValidationRow('At least one special character', _hasSpecial, textMutedColor),
+                    _buildValidationRow(
+                        'Minimum 8 characters', _hasLength, textMutedColor),
+                    _buildValidationRow('At least one uppercase letter',
+                        _hasUppercase, textMutedColor),
+                    _buildValidationRow('At least one lowercase letter',
+                        _hasLowercase, textMutedColor),
+                    _buildValidationRow(
+                        'At least one number', _hasNumber, textMutedColor),
+                    _buildValidationRow('At least one special character',
+                        _hasSpecial, textMutedColor),
                   ],
                 ),
               ),
@@ -188,7 +204,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               // Confirm Password field
               Text(
                 "Confirm Password",
-                style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.titleSmall
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -196,21 +213,26 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 obscureText: !_isConfirmPasswordVisible,
                 onChanged: (_) => setState(() {}),
                 keyboardType: TextInputType.visiblePassword,
-                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   hintText: 'Confirm new password',
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isConfirmPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _isConfirmPasswordVisible
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: AppColors.textMuted,
                     ),
-                    onPressed: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                    onPressed: () => setState(() =>
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
                   ),
                 ),
               ),
-              
-              if (_confirmPasswordController.text.isNotEmpty && _passwordController.text != _confirmPasswordController.text)
+
+              if (_confirmPasswordController.text.isNotEmpty &&
+                  _passwordController.text != _confirmPasswordController.text)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, left: 4),
                   child: Text(

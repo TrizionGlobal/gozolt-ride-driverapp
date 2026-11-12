@@ -41,7 +41,9 @@ class RegistrationState {
   }
 }
 
-final registrationProvider = StateNotifierProvider.autoDispose<RegistrationNotifier, RegistrationState>((ref) {
+final registrationProvider =
+    StateNotifierProvider.autoDispose<RegistrationNotifier, RegistrationState>(
+        (ref) {
   final repository = ref.watch(authRepositoryProvider);
   return RegistrationNotifier(repository);
 });
@@ -49,89 +51,191 @@ final registrationProvider = StateNotifierProvider.autoDispose<RegistrationNotif
 class RegistrationNotifier extends StateNotifier<RegistrationState> {
   final AuthRepository _repository;
 
-  RegistrationNotifier(this._repository) : super(RegistrationState(
-    request: RegistrationRequest(
-      fullName: '',
-      phoneNumber: '',
-      email: '',
-      driverType: 'FLEET',
-    ),
-  ));
+  RegistrationNotifier(this._repository)
+      : super(RegistrationState(
+          request: RegistrationRequest(
+            fullName: '',
+            phoneNumber: '',
+            email: '',
+            driverType: 'SELF_OWNED',
+          ),
+        ));
+  void setStep(int step) {
+    state = state.copyWith(
+      currentStep: step,
+      clearError: true,
+    );
+  }
 
-  void setStep(int step) => state = state.copyWith(currentStep: step);
-  
-  void updateRequest(RegistrationRequest request) => state = state.copyWith(request: request);
+  void updateRequest(RegistrationRequest request) =>
+      state = state.copyWith(request: request);
 
-  void setFullName(String value) => state = state.copyWith(request: state.request.copyWith(fullName: value));
-  void setPhoneNumber(String value) => state = state.copyWith(request: state.request.copyWith(phoneNumber: value));
-  void setEmail(String value) => state = state.copyWith(request: state.request.copyWith(email: value));
-  void setDriverType(String value) => state = state.copyWith(request: state.request.copyWith(driverType: value));
-  void setSupplierCode(String value) => state = state.copyWith(request: state.request.copyWith(supplierCode: value));
-  void setPassword(String value) => state = state.copyWith(request: state.request.copyWith(password: value));
-  void setVehicleType(String value) => state = state.copyWith(request: state.request.copyWith(vehicleType: value));
-  void setVehicleNumber(String value) => state = state.copyWith(request: state.request.copyWith(vehicleNumber: value));
-  void setLicensePath(String value) => state = state.copyWith(request: state.request.copyWith(drivingLicensePath: value));
-  void setLicenseBackPath(String value) => state = state.copyWith(request: state.request.copyWith(drivingLicenseBackPath: value));
-  void setAadhaar(String value) => state = state.copyWith(request: state.request.copyWith(aadhaarNumber: value));
-  void setProfileImage(String value) => state = state.copyWith(request: state.request.copyWith(profileImagePath: value));
+  void setFullName(String value) =>
+      state = state.copyWith(request: state.request.copyWith(fullName: value));
+  void setPhoneNumber(String value) => state =
+      state.copyWith(request: state.request.copyWith(phoneNumber: value));
+  void setEmail(String value) =>
+      state = state.copyWith(request: state.request.copyWith(email: value));
+  void setDriverType(String value) => state =
+      state.copyWith(request: state.request.copyWith(driverType: value));
+  void toggleSelectedService(String service) {
+    final normalizedService = service.trim().toUpperCase();
+
+    if (normalizedService.isEmpty) {
+      return;
+    }
+
+    final selectedServices = List<String>.from(
+      state.request.selectedServices,
+    );
+
+    if (selectedServices.contains(normalizedService)) {
+      selectedServices.remove(normalizedService);
+    } else {
+      selectedServices.add(normalizedService);
+    }
+
+    final hasCabService = selectedServices.contains(
+      'CAB_BOOKING',
+    );
+
+    state = state.copyWith(
+      request: state.request.copyWith(
+        selectedServices: List<String>.unmodifiable(
+          selectedServices,
+        ),
+        driverType: hasCabService ? state.request.driverType : 'SELF_OWNED',
+      ),
+      clearError: true,
+    );
+  }
+
+  bool isServiceSelected(String service) {
+    return state.request.selectedServices.contains(
+      service.trim().toUpperCase(),
+    );
+  }
+
+  void setSupplierCode(String value) => state =
+      state.copyWith(request: state.request.copyWith(supplierCode: value));
+  void setVehicleType(String value) => state =
+      state.copyWith(request: state.request.copyWith(vehicleType: value));
+  void setVehicleNumber(String value) => state =
+      state.copyWith(request: state.request.copyWith(vehicleNumber: value));
+  void setVehicleMake(String value) {
+    state = state.copyWith(
+      request: state.request.copyWith(
+        vehicleMake: value.trim(),
+      ),
+    );
+  }
+
+  void setVehicleModel(String value) {
+    state = state.copyWith(
+      request: state.request.copyWith(
+        vehicleModel: value.trim(),
+      ),
+    );
+  }
+
+  void setLicensePath(String value) => state = state.copyWith(
+      request: state.request.copyWith(drivingLicensePath: value));
+  void setLicenseBackPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(drivingLicenseBackPath: value));
+  void setAadhaar(String value) => state =
+      state.copyWith(request: state.request.copyWith(aadhaarNumber: value));
+  void setProfileImage(String value) => state =
+      state.copyWith(request: state.request.copyWith(profileImagePath: value));
 
   // Additional Identity Details
-  void setDateOfBirth(String value) => state = state.copyWith(request: state.request.copyWith(dateOfBirth: value));
-  void setNationality(String value) => state = state.copyWith(request: state.request.copyWith(nationality: value));
-  void setCountryOfResidence(String value) => state = state.copyWith(request: state.request.copyWith(countryOfResidence: value));
-  void setNationalId(String value) => state = state.copyWith(request: state.request.copyWith(nationalId: value));
-  void setEmergencyContactName(String value) => state = state.copyWith(request: state.request.copyWith(emergencyContactName: value));
-  void setEmergencyContactPhone(String value) => state = state.copyWith(request: state.request.copyWith(emergencyContactPhone: value));
-  void setHomeAddress(String value) => state = state.copyWith(request: state.request.copyWith(homeAddress: value));
+  void setDateOfBirth(String value) => state =
+      state.copyWith(request: state.request.copyWith(dateOfBirth: value));
+  void setNationality(String value) => state =
+      state.copyWith(request: state.request.copyWith(nationality: value));
+  void setCountryOfResidence(String value) => state = state.copyWith(
+      request: state.request.copyWith(countryOfResidence: value));
+  void setNationalId(String value) => state =
+      state.copyWith(request: state.request.copyWith(nationalId: value));
+  void setEmergencyContactName(String value) => state = state.copyWith(
+      request: state.request.copyWith(emergencyContactName: value));
+  void setEmergencyContactPhone(String value) => state = state.copyWith(
+      request: state.request.copyWith(emergencyContactPhone: value));
+  void setHomeAddress(String value) => state =
+      state.copyWith(request: state.request.copyWith(homeAddress: value));
 
   // Driver Credentials
-  void setLicenseNumber(String value) => state = state.copyWith(request: state.request.copyWith(licenseNumber: value));
-  void setLicenseCategory(String value) => state = state.copyWith(request: state.request.copyWith(licenseCategory: value));
-  void setLicenseIssueDate(String value) => state = state.copyWith(request: state.request.copyWith(licenseIssueDate: value));
-  void setLicenseExpiryDate(String value) => state = state.copyWith(request: state.request.copyWith(licenseExpiryDate: value));
-  void setLicenseIssuingCountry(String value) => state = state.copyWith(request: state.request.copyWith(licenseIssuingCountry: value));
-  void setCpcCertificateNumber(String value) => state = state.copyWith(request: state.request.copyWith(cpcCertificateNumber: value));
-  void setTaxiPhvLicenseNumber(String value) => state = state.copyWith(request: state.request.copyWith(taxiPhvLicenseNumber: value));
-  void setCpcDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(cpcDocumentPath: value));
-  void setIdCardDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(idCardDocumentPath: value));
-  void setPoliceConductDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(policeConductDocumentPath: value));
-  void setProofOfAddressDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(proofOfAddressDocumentPath: value));
-  void setMedicalCertificateDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(medicalCertificateDocumentPath: value));
-  void setWorkPermitDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(workPermitDocumentPath: value));
+  void setLicenseNumber(String value) => state =
+      state.copyWith(request: state.request.copyWith(licenseNumber: value));
+  void setLicenseCategory(String value) => state =
+      state.copyWith(request: state.request.copyWith(licenseCategory: value));
+  void setLicenseIssueDate(String value) => state =
+      state.copyWith(request: state.request.copyWith(licenseIssueDate: value));
+  void setLicenseExpiryDate(String value) => state =
+      state.copyWith(request: state.request.copyWith(licenseExpiryDate: value));
+  void setLicenseIssuingCountry(String value) => state = state.copyWith(
+      request: state.request.copyWith(licenseIssuingCountry: value));
+  void setCpcCertificateNumber(String value) => state = state.copyWith(
+      request: state.request.copyWith(cpcCertificateNumber: value));
+  void setTaxiPhvLicenseNumber(String value) => state = state.copyWith(
+      request: state.request.copyWith(taxiPhvLicenseNumber: value));
+  void setCpcDocumentPath(String value) => state =
+      state.copyWith(request: state.request.copyWith(cpcDocumentPath: value));
+  void setIdCardDocumentPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(idCardDocumentPath: value));
+  void setPoliceConductDocumentPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(policeConductDocumentPath: value));
+  void setProofOfAddressDocumentPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(proofOfAddressDocumentPath: value));
+  void setMedicalCertificateDocumentPath(String value) =>
+      state = state.copyWith(
+          request:
+              state.request.copyWith(medicalCertificateDocumentPath: value));
+  void setWorkPermitDocumentPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(workPermitDocumentPath: value));
 
   // Vehicle & Insurance Setters
-  void setInsurancePolicyNumber(String value) => state = state.copyWith(request: state.request.copyWith(insurancePolicyNumber: value));
-  void setInsuranceDocumentPath(String value) => state = state.copyWith(request: state.request.copyWith(insuranceDocumentPath: value));
+  void setInsurancePolicyNumber(String value) => state = state.copyWith(
+      request: state.request.copyWith(insurancePolicyNumber: value));
+  void setInsuranceDocumentPath(String value) => state = state.copyWith(
+      request: state.request.copyWith(insuranceDocumentPath: value));
 
   // Extra Documents Setters
   void addExtraDocument() {
     final docs = List<Map<String, String>>.from(state.request.extraDocuments);
     docs.add({'name': '', 'path': ''});
-    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+    state =
+        state.copyWith(request: state.request.copyWith(extraDocuments: docs));
   }
 
   void updateExtraDocumentName(int index, String name) {
     final docs = List<Map<String, String>>.from(state.request.extraDocuments);
     docs[index] = {'name': name, 'path': docs[index]['path']!};
-    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+    state =
+        state.copyWith(request: state.request.copyWith(extraDocuments: docs));
   }
 
   void updateExtraDocumentPath(int index, String path) {
     final docs = List<Map<String, String>>.from(state.request.extraDocuments);
     docs[index] = {'name': docs[index]['name']!, 'path': path};
-    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+    state =
+        state.copyWith(request: state.request.copyWith(extraDocuments: docs));
   }
 
   void removeExtraDocument(int index) {
     final docs = List<Map<String, String>>.from(state.request.extraDocuments);
     docs.removeAt(index);
-    state = state.copyWith(request: state.request.copyWith(extraDocuments: docs));
+    state =
+        state.copyWith(request: state.request.copyWith(extraDocuments: docs));
   }
 
   void clearError() => state = state.copyWith(clearError: true);
 
   void resetOtp() {
-    state = state.copyWith(isOtpSent: false, isOtpVerified: false, errorMessage: null, clearError: true);
+    state = state.copyWith(
+        isOtpSent: false,
+        isOtpVerified: false,
+        errorMessage: null,
+        clearError: true);
   }
 
   Future<bool> sendRegisterOtp(String phoneNumber) async {
@@ -143,7 +247,8 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
         setPhoneNumber(phoneNumber);
         return true;
       case ApiFailure(:final exception):
-        state = state.copyWith(isLoading: false, errorMessage: exception.message);
+        state =
+            state.copyWith(isLoading: false, errorMessage: exception.message);
         return false;
     }
   }
@@ -156,22 +261,24 @@ class RegistrationNotifier extends StateNotifier<RegistrationState> {
         state = state.copyWith(isLoading: false, isOtpVerified: true);
         return true;
       case ApiFailure(:final exception):
-        state = state.copyWith(isLoading: false, errorMessage: exception.message);
+        state =
+            state.copyWith(isLoading: false, errorMessage: exception.message);
         return false;
     }
   }
 
   Future<bool> register() async {
     state = state.copyWith(isLoading: true, clearError: true);
-    
+
     final result = await _repository.register(state.request.toJson());
-    
+
     switch (result) {
       case ApiSuccess():
         state = state.copyWith(isLoading: false);
         return true;
       case ApiFailure(:final exception):
-        state = state.copyWith(isLoading: false, errorMessage: exception.message);
+        state =
+            state.copyWith(isLoading: false, errorMessage: exception.message);
         return false;
     }
   }

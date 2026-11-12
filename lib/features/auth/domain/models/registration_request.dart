@@ -5,10 +5,12 @@ class RegistrationRequest {
   final String phoneNumber;
   final String email;
   final String driverType; // 'FLEET' or 'SELF_OWNED'
+  final List<String> selectedServices;
   final String? supplierCode;
-  final String? password;
   final String? vehicleType;
   final String? vehicleNumber;
+  final String? vehicleMake;
+  final String? vehicleModel;
   final String? drivingLicensePath;
   final String? drivingLicenseBackPath;
   final String? aadhaarNumber;
@@ -52,10 +54,12 @@ class RegistrationRequest {
     required this.phoneNumber,
     required this.email,
     required this.driverType,
+    this.selectedServices = const <String>[],
     this.supplierCode,
-    this.password,
     this.vehicleType,
     this.vehicleNumber,
+    this.vehicleMake,
+    this.vehicleModel,
     this.drivingLicensePath,
     this.drivingLicenseBackPath,
     this.aadhaarNumber,
@@ -91,10 +95,16 @@ class RegistrationRequest {
       'phoneNumber': phoneNumber,
       'email': email,
       'driverType': driverType,
+      'selectedServices': selectedServices,
       if (supplierCode != null) 'supplierCode': supplierCode,
-      if (password != null) 'password': password,
-      if (vehicleType != null) 'vehicleType': vehicleType,
-      if (vehicleNumber != null) 'vehicleNumber': vehicleNumber,
+      if (vehicleType != null && vehicleType!.trim().isNotEmpty)
+        'vehicleType': vehicleType!.trim().toUpperCase(),
+      if (vehicleNumber != null && vehicleNumber!.trim().isNotEmpty)
+        'vehicleNumber': vehicleNumber!.trim().toUpperCase(),
+      if (vehicleMake != null && vehicleMake!.trim().isNotEmpty)
+        'vehicleMake': vehicleMake!.trim(),
+      if (vehicleModel != null && vehicleModel!.trim().isNotEmpty)
+        'vehicleModel': vehicleModel!.trim(),
       'drivingLicense': drivingLicensePath,
       'drivingLicenseBack': drivingLicenseBackPath,
       'aadhaarNumber': aadhaarNumber ?? nationalId,
@@ -135,10 +145,12 @@ class RegistrationRequest {
     String? phoneNumber,
     String? email,
     String? driverType,
+    List<String>? selectedServices,
     String? supplierCode,
-    String? password,
     String? vehicleType,
     String? vehicleNumber,
+    String? vehicleMake,
+    String? vehicleModel,
     String? drivingLicensePath,
     String? drivingLicenseBackPath,
     String? aadhaarNumber,
@@ -172,12 +184,15 @@ class RegistrationRequest {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       email: email ?? this.email,
       driverType: driverType ?? this.driverType,
+      selectedServices: selectedServices ?? this.selectedServices,
       supplierCode: supplierCode ?? this.supplierCode,
-      password: password ?? this.password,
       vehicleType: vehicleType ?? this.vehicleType,
       vehicleNumber: vehicleNumber ?? this.vehicleNumber,
+      vehicleMake: vehicleMake ?? this.vehicleMake,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
       drivingLicensePath: drivingLicensePath ?? this.drivingLicensePath,
-      drivingLicenseBackPath: drivingLicenseBackPath ?? this.drivingLicenseBackPath,
+      drivingLicenseBackPath:
+          drivingLicenseBackPath ?? this.drivingLicenseBackPath,
       aadhaarNumber: aadhaarNumber ?? this.aadhaarNumber,
       profileImagePath: profileImagePath ?? this.profileImagePath,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
@@ -185,23 +200,31 @@ class RegistrationRequest {
       countryOfResidence: countryOfResidence ?? this.countryOfResidence,
       nationalId: nationalId ?? this.nationalId,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
-      emergencyContactPhone: emergencyContactPhone ?? this.emergencyContactPhone,
+      emergencyContactPhone:
+          emergencyContactPhone ?? this.emergencyContactPhone,
       homeAddress: homeAddress ?? this.homeAddress,
       licenseNumber: licenseNumber ?? this.licenseNumber,
       licenseCategory: licenseCategory ?? this.licenseCategory,
       licenseIssueDate: licenseIssueDate ?? this.licenseIssueDate,
       licenseExpiryDate: licenseExpiryDate ?? this.licenseExpiryDate,
-      licenseIssuingCountry: licenseIssuingCountry ?? this.licenseIssuingCountry,
+      licenseIssuingCountry:
+          licenseIssuingCountry ?? this.licenseIssuingCountry,
       cpcCertificateNumber: cpcCertificateNumber ?? this.cpcCertificateNumber,
       taxiPhvLicenseNumber: taxiPhvLicenseNumber ?? this.taxiPhvLicenseNumber,
       cpcDocumentPath: cpcDocumentPath ?? this.cpcDocumentPath,
       idCardDocumentPath: idCardDocumentPath ?? this.idCardDocumentPath,
-      policeConductDocumentPath: policeConductDocumentPath ?? this.policeConductDocumentPath,
-      proofOfAddressDocumentPath: proofOfAddressDocumentPath ?? this.proofOfAddressDocumentPath,
-      medicalCertificateDocumentPath: medicalCertificateDocumentPath ?? this.medicalCertificateDocumentPath,
-      workPermitDocumentPath: workPermitDocumentPath ?? this.workPermitDocumentPath,
-      insurancePolicyNumber: insurancePolicyNumber ?? this.insurancePolicyNumber,
-      insuranceDocumentPath: insuranceDocumentPath ?? this.insuranceDocumentPath,
+      policeConductDocumentPath:
+          policeConductDocumentPath ?? this.policeConductDocumentPath,
+      proofOfAddressDocumentPath:
+          proofOfAddressDocumentPath ?? this.proofOfAddressDocumentPath,
+      medicalCertificateDocumentPath:
+          medicalCertificateDocumentPath ?? this.medicalCertificateDocumentPath,
+      workPermitDocumentPath:
+          workPermitDocumentPath ?? this.workPermitDocumentPath,
+      insurancePolicyNumber:
+          insurancePolicyNumber ?? this.insurancePolicyNumber,
+      insuranceDocumentPath:
+          insuranceDocumentPath ?? this.insuranceDocumentPath,
       extraDocuments: extraDocuments ?? this.extraDocuments,
     );
   }

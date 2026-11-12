@@ -12,10 +12,12 @@ class ForgotPasswordOtpScreen extends ConsumerStatefulWidget {
   const ForgotPasswordOtpScreen({super.key, required this.driverId});
 
   @override
-  ConsumerState<ForgotPasswordOtpScreen> createState() => _ForgotPasswordOtpScreenState();
+  ConsumerState<ForgotPasswordOtpScreen> createState() =>
+      _ForgotPasswordOtpScreenState();
 }
 
-class _ForgotPasswordOtpScreenState extends ConsumerState<ForgotPasswordOtpScreen> {
+class _ForgotPasswordOtpScreenState
+    extends ConsumerState<ForgotPasswordOtpScreen> {
   String _currentOtp = '';
   bool _isLoading = false;
   int _countdown = 30;
@@ -47,7 +49,7 @@ class _ForgotPasswordOtpScreenState extends ConsumerState<ForgotPasswordOtpScree
 
   Future<void> _handleVerify() async {
     if (_currentOtp.length != 6) return;
-    
+
     // Pass OTP to next screen
     context.push(
       RouteNames.resetPassword,
@@ -61,7 +63,8 @@ class _ForgotPasswordOtpScreenState extends ConsumerState<ForgotPasswordOtpScree
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textMutedColor = isDark ? AppColors.textMuted : AppColors.textMutedLight;
+    final textMutedColor =
+        isDark ? AppColors.textMuted : AppColors.textMutedLight;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -81,7 +84,8 @@ class _ForgotPasswordOtpScreenState extends ConsumerState<ForgotPasswordOtpScree
             children: [
               Text(
                 'Verify Phone',
-                style: AppTextStyles.headlineLarge.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.headlineLarge
+                    .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -105,17 +109,22 @@ class _ForgotPasswordOtpScreenState extends ConsumerState<ForgotPasswordOtpScree
                 children: [
                   Text(
                     "Didn't receive code? ",
-                    style: AppTextStyles.bodyMedium.copyWith(color: textMutedColor),
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: textMutedColor),
                   ),
                   GestureDetector(
-                    onTap: _countdown == 0 ? () {
-                      _startTimer();
-                      // Would normally call resend OTP here
-                    } : null,
+                    onTap: _countdown == 0
+                        ? () {
+                            _startTimer();
+                            // Would normally call resend OTP here
+                          }
+                        : null,
                     child: Text(
                       _countdown > 0 ? "Resend in ${_countdown}s" : "Resend",
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: _countdown > 0 ? textMutedColor : AppColors.primaryGold,
+                        color: _countdown > 0
+                            ? textMutedColor
+                            : AppColors.primaryGold,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

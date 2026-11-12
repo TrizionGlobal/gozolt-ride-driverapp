@@ -12,7 +12,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -34,14 +35,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     setState(() => _isLoading = true);
 
-    final success = await ref.read(authProvider.notifier).forgotPassword(driverId);
-    
+    final success =
+        await ref.read(authProvider.notifier).forgotPassword(driverId);
+
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
         context.push(RouteNames.resetPassword, extra: {'driverId': driverId});
       } else {
-        // The error is already handled and shown by the AuthNotifier state listener if we wanted, 
+        // The error is already handled and shown by the AuthNotifier state listener if we wanted,
         // but let's just let the AuthNotifier update the state and we show a snackbar here if there's an error.
         final state = ref.read(authProvider);
         if (state is AuthError) {
@@ -54,7 +56,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textMutedColor = isDark ? AppColors.textMuted : AppColors.textMutedLight;
+    final textMutedColor =
+        isDark ? AppColors.textMuted : AppColors.textMutedLight;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -74,7 +77,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             children: [
               Text(
                 'Reset Password',
-                style: AppTextStyles.headlineMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.headlineMedium
+                    .copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -84,13 +88,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               const SizedBox(height: 32),
               Text(
                 "Driver ID",
-                style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.titleSmall
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _driverIdController,
                 keyboardType: TextInputType.text,
-                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(fontWeight: FontWeight.w600),
                 decoration: const InputDecoration(
                   hintText: 'Enter Driver ID',
                   prefixIcon: Icon(Icons.badge_outlined),
